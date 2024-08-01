@@ -1,0 +1,14 @@
+{
+    "blend": {
+        "func": "add",
+        "srcrgb": "one",
+        "dstrgb": "zero"
+    },
+    "vertex": "copy_depth",
+    "fragment": "copy_depth",
+    "attributes": [],
+    "samplers": [
+        { "name": "DiffuseDepthSampler" }
+    ],
+    "uniforms": []
+}
