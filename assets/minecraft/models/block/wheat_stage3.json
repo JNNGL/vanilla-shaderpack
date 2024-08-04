@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/crop", "textures": {"crop": "minecraft:block/wheat_stage3", "shadow_crop": "shadow/shadowmask256"}}

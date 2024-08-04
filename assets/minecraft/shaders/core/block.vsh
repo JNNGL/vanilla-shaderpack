@@ -2,6 +2,7 @@
 
 #moj_import <light.glsl>
 #moj_import <fog.glsl>
+#moj_import <shadow.glsl>
 
 in vec3 Position;
 in vec4 Color;
@@ -16,19 +17,49 @@ uniform mat4 ModelViewMat;
 uniform mat4 ProjMat;
 uniform vec3 ChunkOffset;
 uniform int FogShape;
+uniform float GameTime;
 
 out float vertexDistance;
 out vec4 vertexColor;
 out vec2 texCoord0;
 out vec4 normal;
 flat out int dataQuad;
+flat out int shadowQuad;
+flat out int shadowMapPart;
+out vec4 glPos;
+
+const vec2 shadowMapOffsets[] = vec2[](
+    vec2(-1.0, -1.0),
+    vec2(+1.0, -1.0),
+    vec2(-1.0, +1.0),
+    vec2(+1.0, +1.0)
+);
 
 void main() {
+    ivec4 col = ivec4(round(texture(Sampler0, UV0) * 255.0));
     vec3 pos = Position + ChunkOffset;
-    gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);
+    shadowQuad = col == ivec4(0, 0, 0, 1) || col == ivec4(0, 0, 0, 200) ? 1 : 0;
+    dataQuad = col.rgb == ivec3(76, 195, 86) ? 1 : 0;
+    shadowMapPart = getShadowMapPart(GameTime);
 
-    ivec3 col = ivec3(round(texture(Sampler0, UV0).rgb * 255.0));
-    dataQuad = (col == ivec3(76, 195, 86) ? 1 : 0);
+    gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);
+    glPos = gl_Position;
+
+    if (shadowQuad > 0) {
+        if (ChunkOffset == vec3(0.0)) {
+            gl_Position = vec4(-10.0);
+            return;
+        }
+
+        mat4 proj = ortho(-2.5, 2.5, -2.5, 2.5, 0.05, 100.0);
+        mat4 view = lookAt(vec3(3.0, 20.0, 10.0), vec3(0.0), vec3(0.0, 1.0, 0.0));
+        gl_Position = proj * view * vec4(pos - fract(ChunkOffset), 1.0);
+        float aspect = ProjMat[1][1] / ProjMat[0][0]; 
+        gl_Position.xy = gl_Position.xy * 0.5 + shadowMapOffsets[shadowMapPart];
+        glPos = gl_Position;
+        gl_Position.z = -0.5 + gl_Position.z * 0.5;
+        // gl_Position.x = (gl_Position.x - (aspect - 1.0)) / aspect;
+    }
 
     vertexDistance = fog_distance(pos, FogShape);
     vertexColor = Color * minecraft_sample_lightmap(Sampler2, UV2);
@@ -36,7 +67,7 @@ void main() {
     normal = ProjMat * ModelViewMat * vec4(Normal, 0.0);
 
     if (dataQuad > 0) {
-        if (gl_VertexID >= 48) {
+        if (gl_VertexID >= 48 || ChunkOffset == vec3(0.0)) {
             gl_Position = vec4(-10.0);
             return;
         }

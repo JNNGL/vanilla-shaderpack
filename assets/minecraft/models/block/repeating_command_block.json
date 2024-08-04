@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/template_command_block", "textures": {"back": "minecraft:block/repeating_command_block_back", "front": "minecraft:block/repeating_command_block_front", "side": "minecraft:block/repeating_command_block_side", "shadow_back": "shadow/shadowmask50", "shadow_front": "shadow/shadowmask50", "shadow_side": "shadow/shadowmask50"}}

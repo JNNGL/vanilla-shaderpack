@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/orientable_vertical", "textures": {"front": "minecraft:block/dispenser_front_vertical", "side": "minecraft:block/furnace_top", "shadow_front": "shadow/shadowmask0", "shadow_side": "shadow/shadowmask0"}}

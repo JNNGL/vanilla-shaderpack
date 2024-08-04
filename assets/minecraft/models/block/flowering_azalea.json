@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/template_azalea", "textures": {"side": "minecraft:block/flowering_azalea_side", "top": "minecraft:block/flowering_azalea_top", "shadow_side": "shadow/shadowmask12", "shadow_top": "shadow/shadowmask0"}}

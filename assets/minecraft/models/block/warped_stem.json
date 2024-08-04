@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/cube_column", "textures": {"end": "minecraft:block/warped_stem_top", "side": "minecraft:block/warped_stem", "shadow_end": "shadow/shadowmask0", "shadow_side": "shadow/shadowmask81"}}

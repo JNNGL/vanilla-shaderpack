@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/cross", "textures": {"cross": "minecraft:block/amethyst_cluster", "shadow_cross": "shadow/shadowmask8"}}

@@ -1,0 +1,1 @@
+{"parent": "block/crafter", "textures": {"top": "block/crafter_top_triggered", "south": "block/crafter_south_triggered", "west": "block/crafter_west_triggered", "east": "block/crafter_east_triggered", "shadow_top": "shadow/shadowmask0", "shadow_south": "shadow/shadowmask0", "shadow_west": "shadow/shadowmask0", "shadow_east": "shadow/shadowmask0"}}

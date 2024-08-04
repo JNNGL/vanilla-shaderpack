@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/template_anvil", "textures": {"top": "minecraft:block/anvil_top", "shadow_top": "shadow/shadowmask9"}}

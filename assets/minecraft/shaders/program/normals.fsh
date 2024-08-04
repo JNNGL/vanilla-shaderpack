@@ -1,4 +1,4 @@
-#version 150
+#version 330
 
 uniform sampler2D DiffuseSampler;
 uniform sampler2D DiffuseDepthSampler;
@@ -11,14 +11,20 @@ flat in mat4 invViewProj;
 out vec4 fragColor;
 
 vec3 getPositionWorldSpace(in vec2 uv, in float z) {
-  vec4 positionClip = vec4(uv, z, 1.0) * 2.0 - 1.0;
-  vec4 positionWorld = invViewProj * positionClip;
-  return positionWorld.xyz / positionWorld.w;
+    vec4 positionClip = vec4(uv, z, 1.0) * 2.0 - 1.0;
+    vec4 positionWorld = invViewProj * positionClip;
+    return positionWorld.xyz / positionWorld.w;
+}
+
+float unpackDepth(vec4 color) {
+    uvec4 depthData = uvec4(color * 255.0);
+    uint bits = (depthData.r << 24) | (depthData.g << 16) | (depthData.b << 8) | depthData.a;
+    return uintBitsToFloat(bits);
 }
 
 vec3 getNormal(sampler2D s, vec2 uv) {
     vec2 uv0 = uv;
-    float depth0 = texture(s, uv0, 0).r;
+    float depth0 = unpackDepth(texture(s, uv0, 0));
     if (depth0 == 1.0) {
         return vec3(0.0);
     }
@@ -28,10 +34,10 @@ vec3 getNormal(sampler2D s, vec2 uv) {
     vec2 uv3 = uv + vec2(-1, 0) / InSize;
     vec2 uv4 = uv + vec2(0, -1) / InSize;
 
-    float depth1 = texture(s, uv1, 0).r;
-    float depth2 = texture(s, uv2, 0).r;
-    float depth3 = texture(s, uv3, 0).r;
-    float depth4 = texture(s, uv4, 0).r;
+    float depth1 = unpackDepth(texture(s, uv1, 0));
+    float depth2 = unpackDepth(texture(s, uv2, 0));
+    float depth3 = unpackDepth(texture(s, uv3, 0));
+    float depth4 = unpackDepth(texture(s, uv4, 0));
 
     float sgn = 1.0;
     vec3 p0 = getPositionWorldSpace(uv0, depth0);

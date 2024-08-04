@@ -15,9 +15,133 @@
         "prevDepth",
         "prevNormals",
         "final",
-        "depthBuffer"
+        "depthBuffer",
+        { "name": "shadowmap", "width": 1024, "height": 1024 },
+        { "name": "shadowmapCache", "width": 1024, "height": 1024 },
+        "main",
+        "mainDepth",
+        "prevMain",
+        "prevMainDepth"
     ],
     "passes": [
+        {
+            "name": "shadowmap",
+            "intarget": "minecraft:main",
+            "outtarget": "shadowmap",
+            "auxtargets": [
+                {
+                    "name": "DiffuseDepthSampler",
+                    "id": "minecraft:main:depth"
+                },
+                {
+                    "name": "ShadowCacheSampler",
+                    "id": "shadowmapCache"
+                },
+                {
+                    "name": "PreviousDataSampler",
+                    "id": "prevAo"
+                }
+            ]
+        },
+        {
+            "name": "copy",
+            "intarget": "shadowmap",
+            "outtarget": "shadowmapCache"
+        },
+        {
+            "name": "hide_shadowmap",
+            "intarget": "minecraft:main",
+            "outtarget": "main",
+            "auxtargets": [
+                {
+                    "name": "PreviousDiffuseSampler",
+                    "id": "prevMain"
+                }
+            ]
+        },
+        {
+            "name": "copy",
+            "intarget": "main",
+            "outtarget": "prevMain"
+        },
+        {
+            "name": "hide_shadowmap_depth",
+            "intarget": "minecraft:main",
+            "outtarget": "mainDepth",
+            "auxtargets": [
+                {
+                    "name": "DiffuseDepthSampler",
+                    "id": "minecraft:main:depth"
+                },
+                {
+                    "name": "PreviousDepthSampler",
+                    "id": "prevMainDepth"
+                }
+            ]
+        },
+        {
+            "name": "copy",
+            "intarget": "mainDepth",
+            "outtarget": "prevMainDepth"
+        },
+        {
+            "name": "normals",
+            "intarget": "minecraft:main",
+            "outtarget": "normals",
+            "auxtargets": [
+                {
+                    "name": "DiffuseDepthSampler",
+                    "id": "mainDepth"
+                }
+            ]
+        },
+        {
+            "name": "copy",
+            "intarget": "minecraft:main",
+            "outtarget": "prevAo"
+        },
+        {
+            "name": "shadow",
+            "intarget": "main",
+            "outtarget": "swap",
+            "auxtargets": [
+                {
+                    "name": "DataSampler",
+                    "id": "minecraft:main"
+                },
+                {
+                    "name": "DiffuseDepthSampler",
+                    "id": "mainDepth"
+                },
+                {
+                    "name": "ShadowMapSampler",
+                    "id": "shadowmap"
+                },
+                {
+                    "name": "NormalSampler",
+                    "id": "normals"
+                },
+                {
+                    "name": "NoiseSampler",
+                    "id": "blue_noise",
+                    "width": 1,
+                    "height": 1,
+                    "bilinear": false
+                }
+            ]
+        },
+        {
+            "name": "copy",
+            "intarget": "swap",
+            "outtarget": "minecraft:main"
+        }
+    ],
+    "passes_": [
+        {
+            "name": "shadowmap",
+            "intarget": "minecraft:main",
+            "outtarget": "shadowmap"
+        },
         {
             "name": "normals",
             "intarget": "minecraft:main",

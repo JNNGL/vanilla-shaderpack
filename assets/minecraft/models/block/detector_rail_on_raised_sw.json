@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/template_rail_raised_sw", "textures": {"rail": "minecraft:block/detector_rail_on", "shadow_rail": "shadow/shadowmask95"}}

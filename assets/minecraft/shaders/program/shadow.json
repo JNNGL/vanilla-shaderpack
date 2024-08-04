@@ -1,0 +1,19 @@
+{
+    "blend": {
+        "func": "add",
+        "srcrgb": "one",
+        "dstrgb": "zero"
+    },
+    "vertex": "shadow",
+    "fragment": "shadow",
+    "attributes": [],
+    "samplers": [
+        { "name": "DiffuseSampler" },
+        { "name": "DiffuseDepthSampler" },
+        { "name": "ShadowMapSampler" },
+        { "name": "NormalSampler" },
+        { "name": "NoiseSampler" },
+        { "name": "DataSampler" }
+    ],
+    "uniforms": []
+}

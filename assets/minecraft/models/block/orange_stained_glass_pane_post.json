@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/template_glass_pane_post", "textures": {"edge": "minecraft:block/orange_stained_glass_pane_top", "pane": "minecraft:block/orange_stained_glass", "shadow_edge": "shadow/shadowmask36", "shadow_pane": "shadow/shadowmask0"}}

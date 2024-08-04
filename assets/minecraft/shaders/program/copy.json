@@ -1,0 +1,13 @@
+{
+    "blend": {
+        "func": "add",
+        "srcrgb": "one",
+        "dstrgb": "zero"
+    },
+    "vertex": "copy",
+    "fragment": "copy",
+    "samplers": [
+        { "name": "DiffuseSampler" }
+    ],
+    "uniforms": []
+}

@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/template_torch", "textures": {"torch": "minecraft:block/redstone_torch", "shadow_torch": "shadow/shadowmask73"}}

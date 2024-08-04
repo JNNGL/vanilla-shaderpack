@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/inner_stairs", "textures": {"bottom": "minecraft:block/polished_granite", "side": "minecraft:block/polished_granite", "top": "minecraft:block/polished_granite", "shadow_bottom": "shadow/shadowmask0", "shadow_side": "shadow/shadowmask0", "shadow_top": "shadow/shadowmask0"}}

@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/slab", "textures": {"bottom": "minecraft:block/polished_tuff", "side": "minecraft:block/polished_tuff", "top": "minecraft:block/polished_tuff", "shadow_bottom": "shadow/shadowmask0", "shadow_side": "shadow/shadowmask0", "shadow_top": "shadow/shadowmask0"}}

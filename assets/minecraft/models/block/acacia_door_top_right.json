@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/door_top_right", "textures": {"bottom": "minecraft:block/acacia_door_bottom", "top": "minecraft:block/acacia_door_top", "shadow_bottom": "shadow/shadowmask1", "shadow_top": "shadow/shadowmask2"}}

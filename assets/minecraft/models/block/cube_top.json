@@ -1,0 +1,1 @@
+{"parent": "block/cube", "textures": {"particle": "#side", "down": "#side", "up": "#top", "north": "#side", "east": "#side", "south": "#side", "west": "#side", "shadow_down": "#shadow_side", "shadow_up": "#shadow_top", "shadow_north": "#shadow_side", "shadow_east": "#shadow_side", "shadow_south": "#shadow_side", "shadow_west": "#shadow_side"}}

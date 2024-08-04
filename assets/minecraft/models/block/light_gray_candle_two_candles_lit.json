@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/template_two_candles", "textures": {"all": "minecraft:block/light_gray_candle_lit", "particle": "minecraft:block/light_gray_candle_lit", "shadow_all": "shadow/shadowmask34"}}

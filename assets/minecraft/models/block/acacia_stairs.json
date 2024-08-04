@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/stairs", "textures": {"bottom": "minecraft:block/acacia_planks", "side": "minecraft:block/acacia_planks", "top": "minecraft:block/acacia_planks", "shadow_bottom": "shadow/shadowmask0", "shadow_side": "shadow/shadowmask0", "shadow_top": "shadow/shadowmask0"}}

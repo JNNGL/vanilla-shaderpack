@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/crop", "textures": {"crop": "minecraft:block/potatoes_stage1", "shadow_crop": "shadow/shadowmask177"}}

@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/template_glass_pane_side_alt", "textures": {"edge": "minecraft:block/blue_stained_glass_pane_top", "pane": "minecraft:block/blue_stained_glass", "shadow_edge": "shadow/shadowmask36", "shadow_pane": "shadow/shadowmask0"}}

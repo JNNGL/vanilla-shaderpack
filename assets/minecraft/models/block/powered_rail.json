@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/rail_flat", "textures": {"rail": "minecraft:block/powered_rail", "shadow_rail": "shadow/shadowmask193"}}

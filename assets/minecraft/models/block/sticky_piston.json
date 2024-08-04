@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/template_piston", "textures": {"bottom": "minecraft:block/piston_bottom", "platform": "minecraft:block/piston_top_sticky", "side": "minecraft:block/piston_side", "shadow_bottom": "shadow/shadowmask0", "shadow_platform": "shadow/shadowmask0", "shadow_side": "shadow/shadowmask0"}}

@@ -1,11 +1,6 @@
 #version 150
 
-in vec4 Position;
-
 uniform sampler2D DiffuseSampler;
-
-uniform mat4 ProjMat;
-uniform vec2 InSize;
 
 out vec2 texCoord;
 flat out mat4 invViewProj;
@@ -21,7 +16,17 @@ float decodeFloat(vec3 ivec) {
     return float(v) / 40000.0;
 }
 
+const vec4[] corners = vec4[](
+    vec4(-1, -1, 0, 1),
+    vec4(1, -1, 0, 1),
+    vec4(1, 1, 0, 1),
+    vec4(-1, 1, 0, 1)
+);
+
 void main() {
+    vec4 outPos = corners[gl_VertexID];
+    gl_Position = outPos;
+
     mat4 projection;
     mat4 modelView = mat4(1.0);
 
@@ -36,9 +41,6 @@ void main() {
     }
 
     invViewProj = inverse(projection * modelView);
-
-    vec4 outPos = ProjMat * vec4(Position.xy, 0.0, 1.0);
-    gl_Position = vec4(outPos.xy, 0.2, 1.0);
 
     texCoord = outPos.xy * 0.5 + 0.5;
 }
