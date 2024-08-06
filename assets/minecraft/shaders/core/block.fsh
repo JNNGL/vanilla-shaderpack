@@ -59,10 +59,10 @@ vec3 packDepthClipSpaceRGB8(float depth) {
     return vec3(bits >> 16, (bits >> 8) & 0xFFu, bits & 0xFFu) / 255.0;
 }
 
-const ivec2 shadowOffsets[] = ivec2[](ivec2(0, 0), ivec2(1, 0), ivec2(1, 1), ivec2(1, 0));
+const ivec2 shadowOffsets[] = ivec2[](ivec2(0, 0), ivec2(1, 1), ivec2(1, 0), ivec2(0, 1));
 
 void main() {
-    if (shadowQuad > 0 && (ivec2(gl_FragCoord.xy + shadowOffsets[shadowMapPart]) % 2) != 1) {
+    if (shadowQuad > 0 && (ivec2(gl_FragCoord.xy + shadowOffsets[shadowMapPart]) % 2) != ivec2(0, 0)) {
         discard;
     }
 
@@ -109,8 +109,6 @@ void main() {
     fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
     
     if (shadowQuad > 0) {
-        vec3 screenSpace = glPos.xyz / glPos.w;
-        if (clamp(screenSpace, -1.0, 0.9999999) != screenSpace) discard;
-        fragColor = vec4(packDepthClipSpaceRGB8(screenSpace.z), 1.0);
+        fragColor = vec4(packDepthClipSpaceRGB8(glPos.z / glPos.w), 1.0);
     }
 }

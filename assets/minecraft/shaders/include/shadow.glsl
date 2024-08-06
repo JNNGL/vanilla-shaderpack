@@ -1,4 +1,4 @@
-mat4 ortho(float left, float right, float bottom, float top, float near, float far) {
+mat4 orthographicProjectionMatrix(float left, float right, float bottom, float top, float near, float far) {
     return mat4(
         2.0 / (right - left), 0.0, 0.0, 0.0,
         0.0, 2.0 / (top - bottom), 0.0, 0.0,
@@ -7,7 +7,7 @@ mat4 ortho(float left, float right, float bottom, float top, float near, float f
     );
 }
 
-mat4 lookAt(vec3 eye, vec3 center, vec3 up) {
+mat4 lookAtTransformationMatrix(vec3 eye, vec3 center, vec3 up) {
     vec3 f = normalize(center - eye);
     vec3 u = normalize(up);
     vec3 s = normalize(cross(f, u));
@@ -29,8 +29,6 @@ mat4 lookAt(vec3 eye, vec3 center, vec3 up) {
     return result;
 }
 
-// based on https://github.com/bradleyq/shader-toolkit/blob/main/holo-minimap/assets/minecraft/shaders/include/holo.glsl
-#define BIGPRIME 781633
 int getShadowMapPart(float time) {
-    return int(round(time * BIGPRIME)) % 4;
+    return int(round(time * 514229)) % 4;
 }

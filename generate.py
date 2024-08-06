@@ -106,11 +106,9 @@ def patchBlockModel(modelName, modelData):
             patched = True
     if not "parent" in modelData:
         if not "textures" in modelData: modelData["textures"] = {}
-        # Append data texture
         modelData["textures"]["marker"] = "custom/marker"
         patched = True
     if "elements" in modelData:
-        # Append shadow faces
         elements = copy.deepcopy(modelData["elements"])
         for element in elements:
             for face in element["faces"]:
@@ -118,7 +116,6 @@ def patchBlockModel(modelName, modelData):
                 faceTexture = "#shadow_" + faceTexture.removeprefix("#")
                 element["faces"][face]["texture"] = faceTexture
             modelData["elements"].append(element)
-        # Append data face
         modelData["elements"].append(
             {
                 "from": [ 8, 8, 8 ],

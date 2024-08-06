@@ -16,8 +16,8 @@
         "prevNormals",
         "final",
         "depthBuffer",
-        { "name": "shadowmap", "width": 1024, "height": 1024 },
-        { "name": "shadowmapCache", "width": 1024, "height": 1024 },
+        "shadowmap",
+        "shadowmapCache",
         "main",
         "mainDepth",
         "prevMain",
@@ -131,8 +131,9 @@
             ]
         },
         {
-            "name": "copy",
+            "name": "fxaa",
             "intarget": "swap",
+            "use_linear_filter": true,
             "outtarget": "minecraft:main"
         }
     ],

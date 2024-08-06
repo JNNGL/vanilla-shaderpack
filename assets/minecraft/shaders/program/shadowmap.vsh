@@ -20,7 +20,7 @@ float decodeFloat(vec3 ivec) {
     return float(v) / 40000.0;
 }
 
-mat4 ortho(float left, float right, float bottom, float top, float near, float far) {
+mat4 orthographicProjectionMatrix(float left, float right, float bottom, float top, float near, float far) {
     return mat4(
         2.0 / (right - left), 0.0, 0.0, 0.0,
         0.0, 2.0 / (top - bottom), 0.0, 0.0,
@@ -29,7 +29,7 @@ mat4 ortho(float left, float right, float bottom, float top, float near, float f
     );
 }
 
-mat4 lookAt(vec3 eye, vec3 center, vec3 up) {
+mat4 lookAtTransformationMatrix(vec3 eye, vec3 center, vec3 up) {
     vec3 f = normalize(center - eye);
     vec3 u = normalize(up);
     vec3 s = normalize(cross(f, u));
@@ -78,8 +78,9 @@ void main() {
 
     offset = mod(floor(position) - floor(prevPosition) + 8.0, 16.0) - 8.0;
 
-    mat4 proj = ortho(-10.0, 10.0, -10.0, 10.0, 0.05, 100.0);
-    mat4 view = lookAt(vec3(3.0, 20.0, 10.0), vec3(0.0), vec3(0.0, 1.0, 0.0));
+    // mat4 proj = orthographicProjectionMatrix(-128.0, 128.0, -128.0, 128.0, 0.05, 100.0);
+    mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 100.0);
+    mat4 view = lookAtTransformationMatrix(vec3(3.0, 20.0, 10.0), vec3(0.0), vec3(0.0, 1.0, 0.0));
     lightProjMat = proj * view;
     invLightProjMat = inverse(lightProjMat);
 

@@ -49,11 +49,11 @@ float unpackDepthClipSpaceRGB8(vec3 rgb) {
 
 #define FAR 0.9999999 // TODO: rewrite depth packing to work with [0, 1] range
 
-const ivec2 shadowOffsets[] = ivec2[](ivec2(0, 0), ivec2(1, 0), ivec2(1, 1), ivec2(1, 0));
+const ivec2 shadowOffsets[] = ivec2[](ivec2(0, 0), ivec2(1, 1), ivec2(1, 0), ivec2(0, 1));
 
 void main() {
-    vec2 partTexCoord = ((texCoord * 2.0 - 1.0) * 2.0 + shadowMapOffsets[part]) * 0.5 + 0.5;
-    if (clamp(partTexCoord, 0.0, 1.0) != partTexCoord) {
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    if (((coord + shadowOffsets[part]) % 2) != ivec2(0, 0)) {
         // TODO: compute the offset in vertex shader
         float depthClip = unpackDepthClipSpaceRGB8(texture(ShadowCacheSampler, texCoord).rgb);
         vec3 worldSpace = (invLightProjMat * vec4(texCoord * 2.0 - 1.0, depthClip, 1.0)).xyz;
@@ -69,7 +69,6 @@ void main() {
         fragColor = vec4(packDepthClipSpaceRGB8(projDepth + projOffset.z * 2.0), 1.0);
         return;
     }
-    ivec2 coord = (ivec2(partTexCoord * (InSize.xy - 1)) >> 1) * 2 + 1 - shadowOffsets[part];
     fragColor = texelFetch(DiffuseSampler, coord, 0);
     float depth = texelFetch(DiffuseDepthSampler, coord, 0).r;
     if (depth >= 0.5) {

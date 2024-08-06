@@ -22,43 +22,45 @@ float unpackDepth(vec4 color) {
     return uintBitsToFloat(bits);
 }
 
-vec3 getNormal(sampler2D s, vec2 uv) {
-    vec2 uv0 = uv;
-    float depth0 = unpackDepth(texture(s, uv0, 0));
-    if (depth0 == 1.0) {
-        return vec3(0.0);
-    }
+// based on https://atyuwen.github.io/posts/normal-reconstruction/
+vec3 getNormal(vec2 uv) {
+    float depthCenter = unpackDepth(texture(DiffuseDepthSampler, uv));
+    vec3 positionCenter = getPositionWorldSpace(uv, depthCenter);
 
-    vec2 uv1 = uv + vec2(1, 0) / InSize;
-    vec2 uv2 = uv + vec2(0, 1) / InSize;
-    vec2 uv3 = uv + vec2(-1, 0) / InSize;
-    vec2 uv4 = uv + vec2(0, -1) / InSize;
+    vec4 horizontal = vec4(
+        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(-1.0, 0.0) / InSize)),
+        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(+1.0, 0.0) / InSize)),
+        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(-2.0, 0.0) / InSize)),
+        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(+2.0, 0.0) / InSize))
+    );
 
-    float depth1 = unpackDepth(texture(s, uv1, 0));
-    float depth2 = unpackDepth(texture(s, uv2, 0));
-    float depth3 = unpackDepth(texture(s, uv3, 0));
-    float depth4 = unpackDepth(texture(s, uv4, 0));
+    vec4 vertical = vec4(
+        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(0.0, -1.0) / InSize)),
+        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(0.0, +1.0) / InSize)),
+        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(0.0, -2.0) / InSize)),
+        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(0.0, +2.0) / InSize))
+    );
 
-    float sgn = 1.0;
-    vec3 p0 = getPositionWorldSpace(uv0, depth0);
-    vec3 p1, p2;
-    if (abs(depth1 - depth0) < abs(depth3 - depth0)) {
-        p1 = getPositionWorldSpace(uv1, depth1);
-    } else {
-        p1 = getPositionWorldSpace(uv3, depth3);
-        sgn = -1.0;
-    }
-    if (abs(depth2 - depth0) < abs(depth4 - depth0)) {
-        p2 = getPositionWorldSpace(uv2, depth2);
-        sgn *= -1.0;
-    } else {
-        p2 = getPositionWorldSpace(uv4, depth4);
-    }
+    vec3 positionLeft = getPositionWorldSpace(uv + vec2(-1.0, 0.0) / InSize, horizontal.x);
+    vec3 positionRight = getPositionWorldSpace(uv + vec2(1.0, 0.0) / InSize, horizontal.y);
+    vec3 positionDown = getPositionWorldSpace(uv + vec2(0.0, -1.0) / InSize, vertical.x);
+    vec3 positionUp = getPositionWorldSpace(uv + vec2(0.0, 1.0) / InSize, vertical.y);
 
-    return sgn * normalize(cross(p2 - p0, p1 - p0));
+    vec3 left = positionCenter - positionLeft;
+    vec3 right = positionRight - positionCenter;
+    vec3 down = positionCenter - positionDown;
+    vec3 up = positionUp - positionCenter;
+
+    vec2 he = abs((2 * horizontal.xy - horizontal.zw) - depthCenter);
+    vec2 ve = abs((2 * vertical.xy - vertical.zw) - depthCenter);
+
+    vec3 horizontalDeriv = he.x < he.y ? left : right;
+    vec3 verticalDeriv = ve.x < ve.y ? down : up;
+
+    return normalize(cross(horizontalDeriv, verticalDeriv));
 }
 
 void main() {
-    vec3 worldNormal = getNormal(DiffuseDepthSampler, texCoord);
+    vec3 worldNormal = getNormal(texCoord);
     fragColor = vec4(worldNormal * 0.5 + 0.5, 1.0);
 }

@@ -28,13 +28,6 @@ flat out int shadowQuad;
 flat out int shadowMapPart;
 out vec4 glPos;
 
-const vec2 shadowMapOffsets[] = vec2[](
-    vec2(-1.0, -1.0),
-    vec2(+1.0, -1.0),
-    vec2(-1.0, +1.0),
-    vec2(+1.0, +1.0)
-);
-
 void main() {
     ivec4 col = ivec4(round(texture(Sampler0, UV0) * 255.0));
     vec3 pos = Position + ChunkOffset;
@@ -51,14 +44,16 @@ void main() {
             return;
         }
 
-        mat4 proj = ortho(-2.5, 2.5, -2.5, 2.5, 0.05, 100.0);
-        mat4 view = lookAt(vec3(3.0, 20.0, 10.0), vec3(0.0), vec3(0.0, 1.0, 0.0));
-        gl_Position = proj * view * vec4(pos - fract(ChunkOffset), 1.0);
-        float aspect = ProjMat[1][1] / ProjMat[0][0]; 
-        gl_Position.xy = gl_Position.xy * 0.5 + shadowMapOffsets[shadowMapPart];
+        // mat4 proj = orthographicProjectionMatrix(-128.0, 128.0, -128.0, 128.0, 0.05, 100.0);
+        mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 100.0);
+        mat4 view = lookAtTransformationMatrix(vec3(3.0, 20.0, 10.0), vec3(0.0), vec3(0.0, 1.0, 0.0));
+
+        pos -= fract(ChunkOffset);
+        gl_Position = proj * view * vec4(pos, 1.0);
+        // float distortionFactor = length(gl_Position.xy) + 0.1;
+        // gl_Position.xy /= distortionFactor;
         glPos = gl_Position;
         gl_Position.z = -0.5 + gl_Position.z * 0.5;
-        // gl_Position.x = (gl_Position.x - (aspect - 1.0)) / aspect;
     }
 
     vertexDistance = fog_distance(pos, FogShape);

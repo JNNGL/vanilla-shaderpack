@@ -1,3 +1,5 @@
+// https://blog.simonrodriguez.fr/articles/2016/07/implementing_fxaa.html
+
 #version 330
 
 uniform sampler2D DiffuseSampler;
@@ -53,8 +55,8 @@ void main() {
     float lumaRightCorners = lumaDownRight + lumaUpRight;
     float lumaUpCorners = lumaUpRight + lumaUpLeft;
 
-    float edgeHorizontal = abs(-2.0 * lumaLeft + lumaLeftCorners) + abs(-2.0 * lumaCenter + lumaDownUp ) * 2.0   + abs(-2.0 * lumaRight + lumaRightCorners);
-    float edgeVertical =   abs(-2.0 * lumaUp + lumaUpCorners)     + abs(-2.0 * lumaCenter + lumaLeftRight) * 2.0 + abs(-2.0 * lumaDown  + lumaDownCorners);
+    float edgeHorizontal = abs(-2.0 * lumaLeft + lumaLeftCorners) + abs(-2.0 * lumaCenter + lumaDownUp) * 2.0   + abs(-2.0 * lumaRight + lumaRightCorners);
+    float edgeVertical = abs(-2.0 * lumaUp + lumaUpCorners) + abs(-2.0 * lumaCenter + lumaLeftRight) * 2.0 + abs(-2.0 * lumaDown + lumaDownCorners);
 
     bool isHorizontal = (edgeHorizontal >= edgeVertical);
 
