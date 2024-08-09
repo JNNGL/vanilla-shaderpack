@@ -9,6 +9,7 @@ uniform sampler2D NoiseSampler;
 in vec2 texCoord;
 flat in mat4 invViewProj;
 flat in vec3 offset;
+flat in vec3 shadowEye;
 
 out vec4 fragColor;
 
@@ -106,7 +107,7 @@ float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, ve
     float filterSize = 1.0;
 
     vec3 tangent = normalize(cross(lightDir, normal)) * filterSize * 1.2;
-    vec3 bitangent = normalize(cross(tangent, normal)) * filterSize;
+    vec3 bitangent = normalize(cross(tangent, normal)) * filterSize * 2.0;
 
     float contribution = 0.0;
     float totalWeight = 0.0;
@@ -158,11 +159,11 @@ void main() {
     vec3 fragPos = getWorldSpacePosition(texCoord, depth);
     vec3 normal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
     
-    vec3 lightDir = normalize(vec3(1.5, 10.0, 5.0));
+    vec3 lightDir = normalize(shadowEye);
 
     //mat4 proj = orthographicProjectionMatrix(-128.0, 128.0, -128.0, 128.0, 0.05, 100.0);
-    mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 100.0);
-    mat4 view = lookAtTransformationMatrix(vec3(3.0, 20.0, 10.0), vec3(0.0), vec3(0.0, 1.0, 0.0));
+    mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 128.0);
+    mat4 view = lookAtTransformationMatrix(shadowEye, vec3(0.0), vec3(0.0, 1.0, 0.0));
     mat4 lightProj = proj * view;
 
     if (depth == 1.0) {

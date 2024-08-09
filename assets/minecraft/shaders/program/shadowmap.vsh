@@ -20,6 +20,11 @@ float decodeFloat(vec3 ivec) {
     return float(v) / 40000.0;
 }
 
+float decodeFloat1024(vec3 ivec) {
+    int v = decodeInt(ivec);
+    return float(v) / 1024.0;
+}
+
 mat4 orthographicProjectionMatrix(float left, float right, float bottom, float top, float near, float far) {
     return mat4(
         2.0 / (right - left), 0.0, 0.0, 0.0,
@@ -76,13 +81,25 @@ void main() {
         prevPosition[i] = decodeFloat(color.rgb) * 16.0;
     }
 
+    vec3 shadowEye, prevShadowEye;
+    for (int i = 0; i < 3; i++) {
+        vec4 color = texelFetch(DiffuseSampler, ivec2(31 + i, 0), 0);
+        shadowEye[i] = decodeFloat1024(color.rgb);
+    }
+
+    for (int i = 0; i < 3; i++) {
+        vec4 color = texelFetch(PreviousDataSampler, ivec2(31 + i, 0), 0);
+        prevShadowEye[i] = decodeFloat1024(color.rgb);
+    }
+
     offset = mod(floor(position) - floor(prevPosition) + 8.0, 16.0) - 8.0;
 
     // mat4 proj = orthographicProjectionMatrix(-128.0, 128.0, -128.0, 128.0, 0.05, 100.0);
-    mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 100.0);
-    mat4 view = lookAtTransformationMatrix(vec3(3.0, 20.0, 10.0), vec3(0.0), vec3(0.0, 1.0, 0.0));
+    mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 128.0);
+    mat4 view = lookAtTransformationMatrix(shadowEye, vec3(0.0), vec3(0.0, 1.0, 0.0));
+    mat4 prevView = lookAtTransformationMatrix(prevShadowEye, vec3(0.0), vec3(0.0, 1.0, 0.0));
     lightProjMat = proj * view;
-    invLightProjMat = inverse(lightProjMat);
+    invLightProjMat = inverse(proj * view);
 
     texCoord = outPos.xy * 0.5 + 0.5;
 }

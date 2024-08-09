@@ -131,9 +131,9 @@
             ]
         },
         {
-            "name": "fxaa",
-            "intarget": "swap",
-            "use_linear_filter": true,
+            "name": "blit",
+            "intarget": "main",
+            "use_linear_filter": false,
             "outtarget": "minecraft:main"
         }
     ],

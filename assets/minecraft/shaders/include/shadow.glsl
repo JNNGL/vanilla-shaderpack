@@ -32,3 +32,19 @@ mat4 lookAtTransformationMatrix(vec3 eye, vec3 center, vec3 up) {
 int getShadowMapPart(float time) {
     return int(round(time * 514229)) % 4;
 }
+
+mat3 rotationZMatrix(float theta) {
+    float cosT = cos(theta);
+    float sinT = sin(theta);
+    return mat3(
+        cosT, -sinT, 0.0, 
+        sinT, cosT, 0.0,
+        0.0, 0.0, 1.0
+    );
+}
+
+vec3 getShadowEyeLocation(float time) {
+    // mat3 rotation = rotationZMatrix(-radians(mod(degrees(time * 50), 180)));
+    // return rotation * vec3(128.0, 0.0, 15.0);
+    return vec3(10, 20, 5);
+}

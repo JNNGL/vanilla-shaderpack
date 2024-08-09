@@ -68,7 +68,7 @@ void main() {
 
     if (dataQuad > 0) {
         vec2 pixel = floor(gl_FragCoord.xy);
-        if (pixel.y >= 1.0 || pixel.x >= 31.0) {
+        if (pixel.y >= 1.0 || pixel.x >= 34.0) {
             discard;
         }
 
@@ -94,6 +94,9 @@ void main() {
             fragColor = encodeFloat(mod(ChunkOffset[index], 16.0) / 16.0);
         } else if (pixel.x == 30) {
             fragColor = encodeInt(getShadowMapPart(GameTime));
+        } else if (pixel.x <= 33) {
+            int index = int(pixel.x) - 31;
+            fragColor = encodeFloat1024(getShadowEyeLocation(GameTime)[index]);
         }
         return;
     }

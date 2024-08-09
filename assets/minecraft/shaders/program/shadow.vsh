@@ -7,6 +7,7 @@ uniform vec2 InSize;
 out vec2 texCoord;
 flat out mat4 invViewProj;
 flat out vec3 offset;
+flat out vec3 shadowEye;
 
 int decodeInt(vec3 ivec) {
     ivec *= 255.0;
@@ -51,6 +52,11 @@ void main() {
     for (int i = 0; i < 3; i++) {
         vec4 color = texelFetch(DataSampler, ivec2(27 + i, 0), 0);
         offset[i] = decodeFloat(color.rgb) * 16.0;
+    }
+
+    for (int i = 0; i < 3; i++) {
+        vec4 color = texelFetch(DataSampler, ivec2(31 + i, 0), 0);
+        shadowEye[i] = decodeFloat1024(color.rgb);
     }
 
     invViewProj = inverse(projection * modelView);

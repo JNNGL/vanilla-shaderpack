@@ -45,8 +45,8 @@ void main() {
         }
 
         // mat4 proj = orthographicProjectionMatrix(-128.0, 128.0, -128.0, 128.0, 0.05, 100.0);
-        mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 100.0);
-        mat4 view = lookAtTransformationMatrix(vec3(3.0, 20.0, 10.0), vec3(0.0), vec3(0.0, 1.0, 0.0));
+        mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 128.0);
+        mat4 view = lookAtTransformationMatrix(getShadowEyeLocation(GameTime), vec3(0.0), vec3(0.0, 1.0, 0.0));
 
         pos -= fract(ChunkOffset);
         gl_Position = proj * view * vec4(pos, 1.0);
