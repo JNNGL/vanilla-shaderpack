@@ -1,1 +1,0 @@
-{"parent": "minecraft:block/inner_stairs", "textures": {"bottom": "minecraft:block/prismarine", "side": "minecraft:block/prismarine", "top": "minecraft:block/prismarine", "shadow_bottom": "shadow/shadowmask50", "shadow_side": "shadow/shadowmask50", "shadow_top": "shadow/shadowmask50"}}

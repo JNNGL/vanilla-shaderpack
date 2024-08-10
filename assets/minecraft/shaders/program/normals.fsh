@@ -16,29 +16,27 @@ vec3 getPositionWorldSpace(in vec2 uv, in float z) {
     return positionWorld.xyz / positionWorld.w;
 }
 
-float unpackDepth(vec4 color) {
-    uvec4 depthData = uvec4(color * 255.0);
-    uint bits = (depthData.r << 24) | (depthData.g << 16) | (depthData.b << 8) | depthData.a;
-    return uintBitsToFloat(bits);
-}
-
 // based on https://atyuwen.github.io/posts/normal-reconstruction/
 vec3 getNormal(vec2 uv) {
-    float depthCenter = unpackDepth(texture(DiffuseDepthSampler, uv));
+    float depthCenter = texture(DiffuseDepthSampler, uv).r;
+    if (depthCenter == 1.0) {
+        return vec3(0.0);
+    }
+
     vec3 positionCenter = getPositionWorldSpace(uv, depthCenter);
 
     vec4 horizontal = vec4(
-        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(-1.0, 0.0) / InSize)),
-        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(+1.0, 0.0) / InSize)),
-        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(-2.0, 0.0) / InSize)),
-        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(+2.0, 0.0) / InSize))
+        texture(DiffuseDepthSampler, uv + vec2(-1.0, 0.0) / InSize).r,
+        texture(DiffuseDepthSampler, uv + vec2(+1.0, 0.0) / InSize).r,
+        texture(DiffuseDepthSampler, uv + vec2(-2.0, 0.0) / InSize).r,
+        texture(DiffuseDepthSampler, uv + vec2(+2.0, 0.0) / InSize).r
     );
 
     vec4 vertical = vec4(
-        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(0.0, -1.0) / InSize)),
-        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(0.0, +1.0) / InSize)),
-        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(0.0, -2.0) / InSize)),
-        unpackDepth(texture(DiffuseDepthSampler, uv + vec2(0.0, +2.0) / InSize))
+        texture(DiffuseDepthSampler, uv + vec2(0.0, -1.0) / InSize).r,
+        texture(DiffuseDepthSampler, uv + vec2(0.0, +1.0) / InSize).r,
+        texture(DiffuseDepthSampler, uv + vec2(0.0, -2.0) / InSize).r,
+        texture(DiffuseDepthSampler, uv + vec2(0.0, +2.0) / InSize).r
     );
 
     vec3 positionLeft = getPositionWorldSpace(uv + vec2(-1.0, 0.0) / InSize, horizontal.x);

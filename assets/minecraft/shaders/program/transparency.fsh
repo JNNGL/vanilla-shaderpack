@@ -1,4 +1,4 @@
-#version 150
+#version 330
 
 uniform sampler2D DiffuseSampler;
 uniform sampler2D DiffuseDepthSampler;
@@ -50,9 +50,15 @@ vec3 blend( vec3 dst, vec4 src ) {
     return ( dst * ( 1.0 - src.a ) ) + src.rgb;
 }
 
+float unpackDepth(vec4 color) {
+    uvec4 depthData = uvec4(color * 255.0);
+    uint bits = (depthData.r << 24) | (depthData.g << 16) | (depthData.b << 8) | depthData.a;
+    return uintBitsToFloat(bits);
+}
+
 void main() {
     color_layers[0] = vec4( texture( DiffuseSampler, texCoord ).rgb, 1.0 );
-    depth_layers[0] = texture( DiffuseDepthSampler, texCoord ).r;
+    depth_layers[0] = unpackDepth(texture( DiffuseDepthSampler, texCoord ));
     active_layers = 1;
 
     try_insert( texture( TranslucentSampler, texCoord ), texture( TranslucentDepthSampler, texCoord ).r );

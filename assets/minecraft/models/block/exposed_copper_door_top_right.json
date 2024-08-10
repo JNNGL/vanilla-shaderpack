@@ -1,1 +1,0 @@
-{"parent": "minecraft:block/door_top_right", "textures": {"bottom": "minecraft:block/exposed_copper_door_bottom", "top": "minecraft:block/exposed_copper_door_top", "shadow_bottom": "shadow/shadowmask0", "shadow_top": "shadow/shadowmask76"}}

@@ -1,0 +1,14 @@
+{
+    "blend": {
+        "func": "add",
+        "srcrgb": "one",
+        "dstrgb": "zero"
+    },
+    "vertex": "apply_shadows",
+    "fragment": "apply_shadows",
+    "samplers": [
+        { "name": "DiffuseSampler" },
+        { "name": "ShadowSampler" }
+    ],
+    "uniforms": []
+}

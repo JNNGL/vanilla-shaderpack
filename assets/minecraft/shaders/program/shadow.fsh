@@ -50,17 +50,10 @@ mat4 lookAtTransformationMatrix(vec3 eye, vec3 center, vec3 up) {
     return result;
 }
 
-float unpackDepthClipSpace(uint bits) {
-    float sgn = (bits & (1u << 23u)) > 0u ? -1.0 : 1.0;
-    bits = (bits & 0x007FFFFFu) | 0x3F800000u;
-    float depth12 = uintBitsToFloat(bits);
-    return (depth12 - 1.0) * sgn;
-}
-
-float unpackDepthClipSpaceRGB8(vec3 rgb) {
-    uvec3 data = uvec3(round(rgb * 255.0));
-    uint bits = (data.r << 16) | (data.g << 8) | data.b;
-    return unpackDepthClipSpace(bits);
+float unpackDepth(vec4 color) {
+    uvec4 depthData = uvec4(color * 255.0);
+    uint bits = (depthData.r << 24) | (depthData.g << 16) | (depthData.b << 8) | depthData.a;
+    return uintBitsToFloat(bits);
 }
 
 vec3 random(float v) {
@@ -88,7 +81,7 @@ vec3 projectShadowMap(mat4 lightProj, vec3 position, vec3 normal) {
     vec3 projLightSpace = lightSpace.xyz * 0.5 + 0.5;
 
     if (clamp(projLightSpace, 0.0, 1.0) == projLightSpace) {
-        float closestDepth = unpackDepthClipSpaceRGB8(texture(ShadowMapSampler, projLightSpace.xy).rgb) * 0.5 + 0.5;
+        float closestDepth = unpackDepth(texture(ShadowMapSampler, projLightSpace.xy));
         // return vec3(projLightSpace.z, closestDepth, bias);
         return vec3(projLightSpace.z, closestDepth, 0.00135);
     }
@@ -104,7 +97,7 @@ bool checkOcclusion(vec3 projection, vec3 lightDir, vec3 normal) {
 float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, vec3 normal) {
     // float filterSize = length(fragPos) * 0.07;
     // filterSize = 1.0 + filterSize;
-    float filterSize = 1.0;
+    float filterSize = 1.7;
 
     vec3 tangent = normalize(cross(lightDir, normal)) * filterSize * 1.2;
     vec3 bitangent = normalize(cross(tangent, normal)) * filterSize * 2.0;
@@ -150,19 +143,22 @@ float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, ve
 }
 
 void main() {
-    uvec4 depthData = uvec4(texture(DiffuseDepthSampler, texCoord) * 255.0);
-    uint bits = (depthData.r << 24) | (depthData.g << 16) | (depthData.b << 8) | depthData.a;
-    float depth = uintBitsToFloat(bits);
-    
-    fragColor = texture(DiffuseSampler, texCoord);
+    if (int(gl_FragCoord.y) == 0) {
+        fragColor = texture(DiffuseSampler, texCoord);
+        return;
+    }
 
+    float depth = texture(DiffuseDepthSampler, texCoord).r;
+    
+    fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    
     vec3 fragPos = getWorldSpacePosition(texCoord, depth);
     vec3 normal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
     
     vec3 lightDir = normalize(shadowEye);
 
     //mat4 proj = orthographicProjectionMatrix(-128.0, 128.0, -128.0, 128.0, 0.05, 100.0);
-    mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 128.0);
+    mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 64.0);
     mat4 view = lookAtTransformationMatrix(shadowEye, vec3(0.0), vec3(0.0, 1.0, 0.0));
     mat4 lightProj = proj * view;
 
@@ -177,5 +173,5 @@ void main() {
         shadow = estimateShadowContribution(lightProj, lightDir, fragPos - offset, normal);
     }
 
-    fragColor.rgb *= 0.5 + (1.0 -shadow) * 0.5;
+    fragColor = vec4(vec3(shadow), 1.0);
 }

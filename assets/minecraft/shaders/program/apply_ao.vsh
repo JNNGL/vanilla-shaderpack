@@ -1,6 +1,6 @@
 #version 150
 
-uniform sampler2D DiffuseSampler;
+uniform sampler2D DataSampler;
 
 out vec2 texCoord;
 flat out mat4 invProj;
@@ -35,14 +35,14 @@ void main() {
     gl_Position = outPos;
 
     for (int i = 0; i < 16; i++) {
-        vec4 color = texelFetch(DiffuseSampler, ivec2(i, 0), 0);
+        vec4 color = texelFetch(DataSampler, ivec2(i, 0), 0);
         invProj[i / 4][i % 4] = decodeFloat(color.rgb);
     }
 
     invProj = inverse(invProj);
 
-    fogStart = decodeFloat1024(texelFetch(DiffuseSampler, ivec2(25, 0), 0).rgb);
-    fogEnd = decodeFloat1024(texelFetch(DiffuseSampler, ivec2(26, 0), 0).rgb);
+    fogStart = decodeFloat1024(texelFetch(DataSampler, ivec2(25, 0), 0).rgb);
+    fogEnd = decodeFloat1024(texelFetch(DataSampler, ivec2(26, 0), 0).rgb);
 
     texCoord = outPos.xy * 0.5 + 0.5;
 }

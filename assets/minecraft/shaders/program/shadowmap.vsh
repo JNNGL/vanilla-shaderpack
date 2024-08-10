@@ -4,8 +4,9 @@ uniform sampler2D DiffuseSampler;
 uniform sampler2D PreviousDataSampler;
 
 out vec2 texCoord;
-flat out int part;
+flat out int shadowMapFrame;
 flat out vec3 offset;
+flat out vec3 blockOffset;
 flat out mat4 lightProjMat;
 flat out mat4 invLightProjMat;
 
@@ -67,7 +68,7 @@ void main() {
     vec4 outPos = corners[gl_VertexID];
     gl_Position = outPos;
 
-    part = decodeInt(texelFetch(DiffuseSampler, ivec2(30, 0), 0).rgb);
+    shadowMapFrame = decodeInt(texelFetch(DiffuseSampler, ivec2(30, 0), 0).rgb);
 
     vec3 position, prevPosition;
 
@@ -93,9 +94,10 @@ void main() {
     }
 
     offset = mod(floor(position) - floor(prevPosition) + 8.0, 16.0) - 8.0;
+    blockOffset = fract(position);
 
     // mat4 proj = orthographicProjectionMatrix(-128.0, 128.0, -128.0, 128.0, 0.05, 100.0);
-    mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 128.0);
+    mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 64.0);
     mat4 view = lookAtTransformationMatrix(shadowEye, vec3(0.0), vec3(0.0, 1.0, 0.0));
     mat4 prevView = lookAtTransformationMatrix(prevShadowEye, vec3(0.0), vec3(0.0, 1.0, 0.0));
     lightProjMat = proj * view;

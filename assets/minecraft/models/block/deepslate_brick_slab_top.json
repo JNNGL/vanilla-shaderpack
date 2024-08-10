@@ -1,1 +1,0 @@
-{"parent": "minecraft:block/slab_top", "textures": {"bottom": "minecraft:block/deepslate_bricks", "side": "minecraft:block/deepslate_bricks", "top": "minecraft:block/deepslate_bricks", "shadow_bottom": "shadow/shadowmask0", "shadow_side": "shadow/shadowmask0", "shadow_top": "shadow/shadowmask0"}}

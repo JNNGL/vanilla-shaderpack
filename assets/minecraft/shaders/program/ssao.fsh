@@ -42,13 +42,19 @@ const vec3 sampleVectors[] = vec3[](
     vec3(0.035294175, -0.0039215684, 0.0627451), vec3(0.019607902, -0.082352936, 0.06666667)
 );
 
+float unpackDepth(vec4 color) {
+    uvec4 depthData = uvec4(color * 255.0);
+    uint bits = (depthData.r << 24) | (depthData.g << 16) | (depthData.b << 8) | depthData.a;
+    return uintBitsToFloat(bits);
+}
+
 void main() {
     if (int(floor(gl_FragCoord.y)) == 0) {
         fragColor = texelFetch(DiffuseSampler, ivec2(gl_FragCoord.xy), 0);
         return;
     }
 
-    float depth = texture(DiffuseDepthSampler, texCoord).r;
+    float depth = unpackDepth(texture(DiffuseDepthSampler, texCoord));
     if (depth == 1.0) {
         fragColor = vec4(1.0);
         return;
@@ -78,7 +84,7 @@ void main() {
         offset = offset / offset.w * 0.5 + 0.5;
         offset.y = max(offset.y, markerCutoff);
 
-        float z = texture(DiffuseDepthSampler, offset.xy).r;
+        float z = unpackDepth(texture(DiffuseDepthSampler, offset.xy));
         if (z == 1.0) {
             continue;
         }

@@ -43,7 +43,7 @@ void main() {
         modelView[i / 3][i % 3] = decodeFloat(color.rgb);
     }
 
-    time = round(texelFetch(FrameSampler, ivec2(30, 0), 0).r * 255.0);
+    time = round(texelFetch(FrameSampler, ivec2(64, 0), 0).r * 255.0);
 
     texCoord = outPos.xy * 0.5 + 0.5;
 }

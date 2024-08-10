@@ -1,4 +1,4 @@
-#version 150
+#version 330
 
 uniform sampler2D DiffuseSampler;
 uniform sampler2D DiffuseDepthSampler;
@@ -21,17 +21,22 @@ float ao_fog(float ao, float vertexDistance) {
     return mix(1.0, ao, fogValue * fogValue);
 }
 
-
 vec3 getPosition(vec2 uv, float z) {
     vec4 position_s = vec4(uv, z, 1.0) * 2.0 - 1.0;
     vec4 position_v = invProj * position_s;
     return position_v.xyz / position_v.w;
 }
 
+float unpackDepth(vec4 color) {
+    uvec4 depthData = uvec4(color * 255.0);
+    uint bits = (depthData.r << 24) | (depthData.g << 16) | (depthData.b << 8) | depthData.a;
+    return uintBitsToFloat(bits);
+}
+
 void main() {
     fragColor = texture(DiffuseSampler, texCoord);
 
-    float depth = texture(DiffuseDepthSampler, texCoord).r;
+    float depth = unpackDepth(texture(DiffuseDepthSampler, texCoord));
     if (depth == 1.0) {
         return;
     }

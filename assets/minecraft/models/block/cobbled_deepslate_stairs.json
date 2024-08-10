@@ -1,1 +1,0 @@
-{"parent": "minecraft:block/stairs", "textures": {"bottom": "minecraft:block/cobbled_deepslate", "side": "minecraft:block/cobbled_deepslate", "top": "minecraft:block/cobbled_deepslate", "shadow_bottom": "shadow/shadowmask0", "shadow_side": "shadow/shadowmask0", "shadow_top": "shadow/shadowmask0"}}

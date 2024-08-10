@@ -1,1 +1,0 @@
-{"parent": "minecraft:block/slab", "textures": {"bottom": "minecraft:block/spruce_planks", "side": "minecraft:block/spruce_planks", "top": "minecraft:block/spruce_planks", "shadow_bottom": "shadow/shadowmask0", "shadow_side": "shadow/shadowmask0", "shadow_top": "shadow/shadowmask0"}}

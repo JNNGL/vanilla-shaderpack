@@ -6,28 +6,27 @@
         "particles",
         "clouds",
         "weather",
-        "normals",
+
         "swap",
-        "ao",
-        "prevAo",
-        "temporal",
-        "main",
         "prevDepth",
+        "normals",
         "prevNormals",
+
+        "shadowmapDepth",
+        "shadowmapDepthCache",
+
+        "shadow",
+        "shadowTemporal",
+        "prevShadow",
+
         "final",
-        "depthBuffer",
-        "shadowmap",
-        "shadowmapCache",
-        "main",
-        "mainDepth",
-        "prevMain",
-        "prevMainDepth"
+        "prevFinal"
     ],
     "passes": [
         {
             "name": "shadowmap",
             "intarget": "minecraft:main",
-            "outtarget": "shadowmap",
+            "outtarget": "shadowmapDepth",
             "auxtargets": [
                 {
                     "name": "DiffuseDepthSampler",
@@ -35,55 +34,20 @@
                 },
                 {
                     "name": "ShadowCacheSampler",
-                    "id": "shadowmapCache"
+                    "id": "shadowmapDepthCache"
                 },
                 {
                     "name": "PreviousDataSampler",
-                    "id": "prevAo"
+                    "id": "shadowmapDepthCache"
                 }
             ]
         },
         {
             "name": "copy",
-            "intarget": "shadowmap",
-            "outtarget": "shadowmapCache"
+            "intarget": "shadowmapDepth",
+            "outtarget": "shadowmapDepthCache"
         },
-        {
-            "name": "hide_shadowmap",
-            "intarget": "minecraft:main",
-            "outtarget": "main",
-            "auxtargets": [
-                {
-                    "name": "PreviousDiffuseSampler",
-                    "id": "prevMain"
-                }
-            ]
-        },
-        {
-            "name": "copy",
-            "intarget": "main",
-            "outtarget": "prevMain"
-        },
-        {
-            "name": "hide_shadowmap_depth",
-            "intarget": "minecraft:main",
-            "outtarget": "mainDepth",
-            "auxtargets": [
-                {
-                    "name": "DiffuseDepthSampler",
-                    "id": "minecraft:main:depth"
-                },
-                {
-                    "name": "PreviousDepthSampler",
-                    "id": "prevMainDepth"
-                }
-            ]
-        },
-        {
-            "name": "copy",
-            "intarget": "mainDepth",
-            "outtarget": "prevMainDepth"
-        },
+
         {
             "name": "normals",
             "intarget": "minecraft:main",
@@ -91,31 +55,23 @@
             "auxtargets": [
                 {
                     "name": "DiffuseDepthSampler",
-                    "id": "mainDepth"
+                    "id": "minecraft:main:depth"
                 }
             ]
         },
-        {
-            "name": "copy",
-            "intarget": "minecraft:main",
-            "outtarget": "prevAo"
-        },
+        
         {
             "name": "shadow",
-            "intarget": "main",
-            "outtarget": "swap",
+            "intarget": "minecraft:main",
+            "outtarget": "shadow",
             "auxtargets": [
                 {
-                    "name": "DataSampler",
-                    "id": "minecraft:main"
-                },
-                {
                     "name": "DiffuseDepthSampler",
-                    "id": "mainDepth"
+                    "id": "minecraft:main:depth"
                 },
                 {
                     "name": "ShadowMapSampler",
-                    "id": "shadowmap"
+                    "id": "shadowmapDepth"
                 },
                 {
                     "name": "NormalSampler",
@@ -127,71 +83,25 @@
                     "width": 1,
                     "height": 1,
                     "bilinear": false
-                }
-            ]
-        },
-        {
-            "name": "blit",
-            "intarget": "main",
-            "use_linear_filter": false,
-            "outtarget": "minecraft:main"
-        }
-    ],
-    "passes_": [
-        {
-            "name": "shadowmap",
-            "intarget": "minecraft:main",
-            "outtarget": "shadowmap"
-        },
-        {
-            "name": "normals",
-            "intarget": "minecraft:main",
-            "outtarget": "normals",
-            "auxtargets": [
-                {
-                    "name": "DiffuseDepthSampler",
-                    "id": "minecraft:main:depth"
-                }
-            ]
-        },
-        {
-            "name": "ssao",
-            "intarget": "minecraft:main",
-            "outtarget": "ao",
-            "auxtargets": [
-                {
-                    "name": "DiffuseDepthSampler",
-                    "id": "minecraft:main:depth"
                 },
                 {
-                    "name": "NormalSampler",
-                    "id": "normals"
-                },
-                {
-                    "name": "FrameSampler",
-                    "id": "prevAo"
-                },
-                {
-                    "name": "NoiseSampler",
-                    "id": "blue_noise",
-                    "width": 1,
-                    "height": 1,
-                    "bilinear": false
+                    "name": "DataSampler",
+                    "id": "minecraft:main"
                 }
             ]
         },
         {
             "name": "temporal",
-            "intarget": "ao",
-            "outtarget": "temporal",
+            "intarget": "shadow",
+            "outtarget": "shadowTemporal",
             "auxtargets": [
-                {
-                    "name": "PreviousDiffuseSampler",
-                    "id": "prevAo"
-                },
                 {
                     "name": "DiffuseDepthSampler",
                     "id": "minecraft:main:depth"
+                },
+                {
+                    "name": "PreviousDiffuseSampler",
+                    "id": "prevShadow"
                 },
                 {
                     "name": "PreviousDepthSampler",
@@ -207,28 +117,58 @@
                 }
             ]
         },
+
         {
-            "name": "apply_ao",
+            "name": "apply_shadows",
             "intarget": "minecraft:main",
-            "outtarget": "main",
+            "outtarget": "swap",
             "auxtargets": [
                 {
-                    "name": "DiffuseDepthSampler",
-                    "id": "minecraft:main:depth"
+                    "name": "ShadowSampler",
+                    "id": "shadowTemporal"
+                }
+            ]
+        },
+
+        {
+            "name": "composite",
+            "intarget": "swap",
+            "outtarget": "final",
+            "auxtargets": [
+                {
+                    "name": "DataSampler",
+                    "id": "minecraft:main"
                 },
                 {
-                    "name": "NormalSampler",
-                    "id": "normals"
-                },
-                {
-                    "name": "AmbientOcclusionSampler",
-                    "id": "temporal"
+                    "name": "FallbackSampler",
+                    "id": "prevFinal"
                 }
             ]
         },
         {
-            "name": "blit",
+            "name": "copy",
+            "intarget": "final",
+            "outtarget": "prevFinal"
+        },
+
+        {
+            "name": "composite",
             "intarget": "normals",
+            "outtarget": "swap",
+            "auxtargets": [
+                {
+                    "name": "DataSampler",
+                    "id": "minecraft:main"
+                },
+                {
+                    "name": "FallbackSampler",
+                    "id": "prevNormals"
+                }
+            ]
+        },
+        {
+            "name": "copy",
+            "intarget": "swap",
             "outtarget": "prevNormals"
         },
         {
@@ -243,115 +183,15 @@
             ]
         },
         {
-            "name": "transparency",
-            "intarget": "main",
-            "outtarget": "final",
-            "auxtargets": [
-                {
-                    "name": "DiffuseDepthSampler",
-                    "id": "minecraft:main:depth"
-                },
-                {
-                    "name": "TranslucentSampler",
-                    "id": "translucent"
-                },
-                {
-                    "name": "TranslucentDepthSampler",
-                    "id": "translucent:depth"
-                },
-                {
-                    "name": "ItemEntitySampler",
-                    "id": "itemEntity"
-                },
-                {
-                    "name": "ItemEntityDepthSampler",
-                    "id": "itemEntity:depth"
-                },
-                {
-                    "name": "ParticlesSampler",
-                    "id": "particles"
-                },
-                {
-                    "name": "ParticlesDepthSampler",
-                    "id": "particles:depth"
-                },
-                {
-                    "name": "CloudsSampler",
-                    "id": "clouds"
-                },
-                {
-                    "name": "CloudsDepthSampler",
-                    "id": "clouds:depth"
-                },
-                {
-                    "name": "WeatherSampler",
-                    "id": "weather"
-                },
-                {
-                    "name": "WeatherDepthSampler",
-                    "id": "weather:depth"
-                }
-            ]
+            "name": "copy",
+            "intarget": "shadowTemporal",
+            "outtarget": "prevShadow"
         },
+
         {
-            "name": "depth_buffer",
-            "intarget": "minecraft:main",
-            "outtarget": "depthBuffer",
-            "auxtargets": [
-                {
-                    "name": "DepthSampler0",
-                    "id": "minecraft:main:depth"
-                },
-                {
-                    "name": "DepthSampler1",
-                    "id": "translucent:depth"
-                },
-                {
-                    "name": "DepthSampler2",
-                    "id": "itemEntity:depth"
-                },
-                {
-                    "name": "DepthSampler3",
-                    "id": "particles:depth"
-                },
-                {
-                    "name": "DepthSampler4",
-                    "id": "clouds:depth"
-                },
-                {
-                    "name": "DepthSampler5",
-                    "id": "weather:depth"
-                }
-            ]
-        },
-        {
-            "name": "motion_blur",
+            "name": "copy",
             "intarget": "final",
-            "outtarget": "swap",
-            "auxtargets": [
-                {
-                    "name": "DataSampler",
-                    "id": "minecraft:main"
-                },
-                {
-                    "name": "DiffuseDepthSampler",
-                    "id": "depthBuffer"
-                },
-                {
-                    "name": "PreviousDataSampler",
-                    "id": "prevAo"
-                }
-            ]
-        },
-        {
-            "name": "blit",
-            "intarget": "swap",
             "outtarget": "minecraft:main"
-        },
-        {
-            "name": "blit",
-            "intarget": "temporal",
-            "outtarget": "prevAo"
         }
     ]
 }

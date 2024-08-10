@@ -1,1 +1,0 @@
-{"parent": "minecraft:block/cube_column", "textures": {"end": "minecraft:block/pearlescent_froglight_top", "side": "minecraft:block/pearlescent_froglight_side", "shadow_end": "shadow/shadowmask0", "shadow_side": "shadow/shadowmask0"}}

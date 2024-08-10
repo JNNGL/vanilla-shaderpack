@@ -13,6 +13,7 @@ flat in mat4 invViewProjMat;
 flat in mat4 prevViewProjMat;
 flat in vec3 position;
 flat in vec3 prevPosition;
+flat in int shadowMapFrame;
 in vec2 texCoord;
 in vec4 near;
 in vec4 far;
@@ -25,9 +26,20 @@ vec3 getPositionWorldSpace(vec2 uv, float z) {
     return positionWorld.xyz / positionWorld.w;
 }
 
+float unpackDepth(vec4 color) {
+    uvec4 depthData = uvec4(color * 255.0);
+    uint bits = (depthData.r << 24) | (depthData.g << 16) | (depthData.b << 8) | depthData.a;
+    return uintBitsToFloat(bits);
+}
+
 void main() {
-    if (ivec2(gl_FragCoord.xy) == ivec2(30, 0)) {
-        int x = int(texelFetch(PreviousDiffuseSampler, ivec2(30, 0), 0).r * 255.0 + 1.0) % 4;
+    if (shadowMapFrame > 0) {
+        fragColor = texture(PreviousDiffuseSampler, texCoord);
+        return;
+    }
+
+    if (ivec2(gl_FragCoord.xy) == ivec2(64, 0)) {
+        int x = int(texelFetch(PreviousDiffuseSampler, ivec2(64, 0), 0).r * 255.0 + 1.0) % 4;
         fragColor = vec4(float(x) / 255.0, 0.0, 0.0, 1.0);
         return;
     }
@@ -66,7 +78,7 @@ void main() {
     uint prevDepthBits = prevDepthData.r << 24 | prevDepthData.g << 16 | prevDepthData.b << 8 | prevDepthData.a;
     float prevDepth = uintBitsToFloat(prevDepthBits);
     if (abs(screenSpace.z - prevDepth) > 0.001 * screenSpace.z) {
-        return;
+        // return;
     }
     
     vec2 uv = screenSpace.xy * OutSize - 0.5;
@@ -76,6 +88,6 @@ void main() {
         mix(texelFetch(PreviousDiffuseSampler, coord, 0).rgb, texelFetch(PreviousDiffuseSampler, coord + ivec2(1, 0), 0).rgb, frac.x), 
         mix(texelFetch(PreviousDiffuseSampler, coord + ivec2(0, 1), 0).rgb, texelFetch(PreviousDiffuseSampler, coord + ivec2(1, 1), 0).rgb, frac.x), 
         frac.y);
-    vec3 mixedSample = mix(previousSample, color, 0.25);
+    vec3 mixedSample = mix(previousSample, color, 0.2);
     fragColor = vec4(mixedSample.rgb, 1.0);
 }

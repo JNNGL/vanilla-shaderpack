@@ -1,1 +1,0 @@
-{"parent": "minecraft:block/template_four_candles", "textures": {"all": "minecraft:block/candle", "particle": "minecraft:block/candle", "shadow_all": "shadow/shadowmask34"}}

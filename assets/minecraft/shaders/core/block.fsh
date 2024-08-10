@@ -17,8 +17,6 @@ in vec4 vertexColor;
 in vec2 texCoord0;
 in vec4 normal;
 flat in int dataQuad;
-flat in int shadowQuad;
-flat in int shadowMapPart;
 in vec4 glPos;
 
 out vec4 fragColor;
@@ -62,10 +60,6 @@ vec3 packDepthClipSpaceRGB8(float depth) {
 const ivec2 shadowOffsets[] = ivec2[](ivec2(0, 0), ivec2(1, 1), ivec2(1, 0), ivec2(0, 1));
 
 void main() {
-    if (shadowQuad > 0 && (ivec2(gl_FragCoord.xy + shadowOffsets[shadowMapPart]) % 2) != ivec2(0, 0)) {
-        discard;
-    }
-
     if (dataQuad > 0) {
         vec2 pixel = floor(gl_FragCoord.xy);
         if (pixel.y >= 1.0 || pixel.x >= 34.0) {
@@ -93,7 +87,7 @@ void main() {
             int index = int(pixel.x) - 27;
             fragColor = encodeFloat(mod(ChunkOffset[index], 16.0) / 16.0);
         } else if (pixel.x == 30) {
-            fragColor = encodeInt(getShadowMapPart(GameTime));
+            fragColor = encodeInt(isShadowMapFrame(GameTime) ? 1 : 0);
         } else if (pixel.x <= 33) {
             int index = int(pixel.x) - 31;
             fragColor = encodeFloat1024(getShadowEyeLocation(GameTime)[index]);
@@ -111,7 +105,7 @@ void main() {
     color *= vertexColor * ColorModulator;
     fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
     
-    if (shadowQuad > 0) {
-        fragColor = vec4(packDepthClipSpaceRGB8(glPos.z / glPos.w), 1.0);
-    }
+    // if (shadowQuad > 0) {
+    //     fragColor = vec4(packDepthClipSpaceRGB8(glPos.z / glPos.w), 1.0);
+    // }
 }

@@ -1,1 +1,0 @@
-{"parent": "minecraft:block/stairs", "textures": {"bottom": "minecraft:block/diorite", "side": "minecraft:block/diorite", "top": "minecraft:block/diorite", "shadow_bottom": "shadow/shadowmask0", "shadow_side": "shadow/shadowmask0", "shadow_top": "shadow/shadowmask0"}}

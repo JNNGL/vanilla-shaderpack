@@ -29,8 +29,8 @@ mat4 lookAtTransformationMatrix(vec3 eye, vec3 center, vec3 up) {
     return result;
 }
 
-int getShadowMapPart(float time) {
-    return int(round(time * 514229)) % 4;
+bool isShadowMapFrame(float time) {
+    return (int(round(time * 514229)) % 3) == 0;
 }
 
 mat3 rotationZMatrix(float theta) {
@@ -46,5 +46,5 @@ mat3 rotationZMatrix(float theta) {
 vec3 getShadowEyeLocation(float time) {
     // mat3 rotation = rotationZMatrix(-radians(mod(degrees(time * 50), 180)));
     // return rotation * vec3(128.0, 0.0, 15.0);
-    return vec3(10, 20, 5);
+    return vec3(10, 8.6, 5);
 }

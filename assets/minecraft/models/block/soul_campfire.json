@@ -1,1 +1,0 @@
-{"parent": "minecraft:block/template_campfire", "textures": {"fire": "minecraft:block/soul_campfire_fire", "lit_log": "minecraft:block/soul_campfire_log_lit", "shadow_fire": "shadow/shadowmask49", "shadow_lit_log": "shadow/shadowmask50"}}

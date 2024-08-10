@@ -24,36 +24,32 @@ out vec4 vertexColor;
 out vec2 texCoord0;
 out vec4 normal;
 flat out int dataQuad;
-flat out int shadowQuad;
-flat out int shadowMapPart;
 out vec4 glPos;
 
 void main() {
     ivec4 col = ivec4(round(texture(Sampler0, UV0) * 255.0));
     vec3 pos = Position + ChunkOffset;
-    shadowQuad = col == ivec4(0, 0, 0, 1) || col == ivec4(0, 0, 0, 200) ? 1 : 0;
     dataQuad = col.rgb == ivec3(76, 195, 86) ? 1 : 0;
-    shadowMapPart = getShadowMapPart(GameTime);
 
     gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);
     glPos = gl_Position;
 
-    if (shadowQuad > 0) {
-        if (ChunkOffset == vec3(0.0)) {
-            gl_Position = vec4(-10.0);
-            return;
-        }
+    if (isShadowMapFrame(GameTime)) {
+        // if (ChunkOffset == vec3(0.0)) {
+        //     gl_Position = vec4(-10.0);
+        //     return;
+        // }
 
         // mat4 proj = orthographicProjectionMatrix(-128.0, 128.0, -128.0, 128.0, 0.05, 100.0);
-        mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 128.0);
+        mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 64.0);
         mat4 view = lookAtTransformationMatrix(getShadowEyeLocation(GameTime), vec3(0.0), vec3(0.0, 1.0, 0.0));
 
-        pos -= fract(ChunkOffset);
+        // pos -= fract(ChunkOffset);
         gl_Position = proj * view * vec4(pos, 1.0);
         // float distortionFactor = length(gl_Position.xy) + 0.1;
         // gl_Position.xy /= distortionFactor;
         glPos = gl_Position;
-        gl_Position.z = -0.5 + gl_Position.z * 0.5;
+        // gl_Position.z = -0.5 + gl_Position.z * 0.5;
     }
 
     vertexDistance = fog_distance(pos, FogShape);

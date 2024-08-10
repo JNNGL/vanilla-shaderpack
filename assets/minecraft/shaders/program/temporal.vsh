@@ -7,6 +7,7 @@ flat out mat4 invViewProjMat;
 flat out mat4 prevViewProjMat;
 flat out vec3 position;
 flat out vec3 prevPosition;
+flat out int shadowMapFrame;
 out vec2 texCoord;
 
 int decodeInt(vec3 ivec) {
@@ -73,6 +74,8 @@ void main() {
         vec4 color = texelFetch(PreviousDiffuseSampler, ivec2(27 + i, 0), 0);
         prevPosition[i] = decodeFloat(color.rgb) * 16.0;
     }
+
+    shadowMapFrame = decodeInt(texelFetch(DiffuseSampler, ivec2(30, 0), 0).rgb);
 
     texCoord = outPos.xy * 0.5 + 0.5;
 }
