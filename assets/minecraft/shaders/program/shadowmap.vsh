@@ -1,4 +1,4 @@
-#version 150
+#version 330
 
 uniform sampler2D DiffuseSampler;
 uniform sampler2D PreviousDataSampler;
@@ -57,6 +57,12 @@ mat4 lookAtTransformationMatrix(vec3 eye, vec3 center, vec3 up) {
     return result;
 }
 
+float unpackFloat(vec4 color) {
+    uvec4 data = uvec4(color * 255.0);
+    uint bits = (data.r << 24) | (data.g << 16) | (data.b << 8) | data.a;
+    return uintBitsToFloat(bits);
+}
+
 const vec4[] corners = vec4[](
     vec4(-1, -1, 0, 1),
     vec4(1, -1, 0, 1),
@@ -93,11 +99,16 @@ void main() {
         prevShadowEye[i] = decodeFloat1024(color.rgb);
     }
 
-    offset = mod(floor(position) - floor(prevPosition) + 8.0, 16.0) - 8.0;
-    blockOffset = fract(position);
+    vec3 prevOffset;
+    for (int i = 0; i < 3; i++) {
+        vec4 color = texelFetch(PreviousDataSampler, ivec2(64 + i, 0), 0);
+        prevOffset[i] = unpackFloat(color);
+    }
+
+    offset = prevOffset + mod(floor(position) - floor(prevPosition) + 8.0, 16.0) - 8.0;
 
     // mat4 proj = orthographicProjectionMatrix(-128.0, 128.0, -128.0, 128.0, 0.05, 100.0);
-    mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 64.0);
+    mat4 proj = orthographicProjectionMatrix(-128.0, 128.0, -128.0, 128.0, 0.05, 64.0);
     mat4 view = lookAtTransformationMatrix(shadowEye, vec3(0.0), vec3(0.0, 1.0, 0.0));
     mat4 prevView = lookAtTransformationMatrix(prevShadowEye, vec3(0.0), vec3(0.0, 1.0, 0.0));
     lightProjMat = proj * view;

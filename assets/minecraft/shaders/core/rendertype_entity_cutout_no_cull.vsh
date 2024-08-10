@@ -32,13 +32,8 @@ void main() {
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
 
     if (isShadowMapFrame(GameTime)) {
-        // mat4 proj = orthographicProjectionMatrix(-128.0, 128.0, -128.0, 128.0, 0.05, 100.0);
-        mat4 proj = orthographicProjectionMatrix(-10.0, 10.0, -10.0, 10.0, 0.05, 64.0);
-        mat4 view = lookAtTransformationMatrix(getShadowEyeLocation(GameTime), vec3(0.0), vec3(0.0, 1.0, 0.0));
-
-        gl_Position = proj * view * vec4(Position, 1.0);
-        // float distortionFactor = length(gl_Position.xy) + 0.1;
-        // gl_Position.xy /= distortionFactor;
+        gl_Position = vec4(-10.0);
+        return;
     }
 
     vertexDistance = fog_distance(Position, FogShape);

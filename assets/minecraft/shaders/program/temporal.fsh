@@ -88,6 +88,11 @@ void main() {
         mix(texelFetch(PreviousDiffuseSampler, coord, 0).rgb, texelFetch(PreviousDiffuseSampler, coord + ivec2(1, 0), 0).rgb, frac.x), 
         mix(texelFetch(PreviousDiffuseSampler, coord + ivec2(0, 1), 0).rgb, texelFetch(PreviousDiffuseSampler, coord + ivec2(1, 1), 0).rgb, frac.x), 
         frac.y);
+
+    // if (abs(previousSample.r - fragColor.r) > 0.1) {
+        // return;
+    // }
+
     vec3 mixedSample = mix(previousSample, color, 0.2);
     fragColor = vec4(mixedSample.rgb, 1.0);
 }

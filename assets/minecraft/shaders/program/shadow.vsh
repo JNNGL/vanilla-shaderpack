@@ -1,6 +1,7 @@
-#version 150
+#version 330
 
 uniform sampler2D DataSampler;
+uniform sampler2D ShadowMapSampler;
 
 uniform vec2 InSize;
 
@@ -23,6 +24,12 @@ float decodeFloat(vec3 ivec) {
 float decodeFloat1024(vec3 ivec) {
     int v = decodeInt(ivec);
     return float(v) / 1024.0;
+}
+
+float unpackFloat(vec4 color) {
+    uvec4 data = uvec4(color * 255.0);
+    uint bits = (data.r << 24) | (data.g << 16) | (data.b << 8) | data.a;
+    return uintBitsToFloat(bits);
 }
 
 const vec4[] corners = vec4[](
@@ -59,8 +66,14 @@ void main() {
         shadowEye[i] = decodeFloat1024(color.rgb);
     }
 
+    vec3 captureOffset;
+    for (int i = 0; i < 3; i++) {
+        vec4 color = texelFetch(ShadowMapSampler, ivec2(64 + i, 0), 0);
+        captureOffset[i] = unpackFloat(color);
+    }
+
     invViewProj = inverse(projection * modelView);
-    offset = fract(offset);
+    offset = captureOffset + fract(offset);
 
     texCoord = outPos.xy * 0.5 + 0.5;
 }

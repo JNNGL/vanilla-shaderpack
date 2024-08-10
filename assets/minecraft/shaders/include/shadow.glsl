@@ -30,7 +30,7 @@ mat4 lookAtTransformationMatrix(vec3 eye, vec3 center, vec3 up) {
 }
 
 bool isShadowMapFrame(float time) {
-    return (int(round(time * 514229)) % 3) == 0;
+    return (int(round(time * 514229)) % 15) == 0;
 }
 
 mat3 rotationZMatrix(float theta) {
