@@ -2,13 +2,19 @@
 
 uniform sampler2D DataSampler;
 uniform sampler2D ShadowMapSampler;
+uniform sampler2D FrameSampler;
 
 uniform vec2 InSize;
 
 out vec2 texCoord;
+flat out mat4 invProjection;
+flat out mat4 projection;
+flat out mat3 viewMat;
+flat out mat4 viewProj;
 flat out mat4 invViewProj;
 flat out vec3 offset;
 flat out vec3 shadowEye;
+flat out float time;
 
 int decodeInt(vec3 ivec) {
     ivec *= 255.0;
@@ -43,7 +49,7 @@ void main() {
     vec4 outPos = corners[gl_VertexID];
     gl_Position = outPos;
 
-    mat4 projection;
+    // int shadowMapFrame = decodeInt(texelFetch(DataSampler, ivec2(30, 0), 0).rgb);
     mat4 modelView = mat4(1.0);
 
     for (int i = 0; i < 16; i++) {
@@ -72,8 +78,13 @@ void main() {
         captureOffset[i] = unpackFloat(color);
     }
 
-    invViewProj = inverse(projection * modelView);
+    invProjection = inverse(projection);
+    viewMat = mat3(modelView);
+    viewProj = projection * modelView;
+    invViewProj = inverse(viewProj);
     offset = captureOffset + fract(offset);
+
+    time = round(texelFetch(FrameSampler, ivec2(64, 0), 0).r * 255.0);
 
     texCoord = outPos.xy * 0.5 + 0.5;
 }

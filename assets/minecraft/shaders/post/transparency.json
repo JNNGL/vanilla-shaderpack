@@ -87,6 +87,10 @@
                 {
                     "name": "DataSampler",
                     "id": "minecraft:main"
+                },
+                {
+                    "name": "FrameSampler",
+                    "id": "prevShadow"
                 }
             ]
         },
@@ -124,8 +128,20 @@
             "outtarget": "swap",
             "auxtargets": [
                 {
+                    "name": "DiffuseDepthSampler",
+                    "id": "minecraft:main:depth"
+                },
+                {
                     "name": "ShadowSampler",
                     "id": "shadowTemporal"
+                },
+                {
+                    "name": "NormalSampler",
+                    "id": "normals"
+                },
+                {
+                    "name": "DataSampler",
+                    "id": "minecraft:main"
                 }
             ]
         },

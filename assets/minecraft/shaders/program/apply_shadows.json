@@ -8,7 +8,10 @@
     "fragment": "apply_shadows",
     "samplers": [
         { "name": "DiffuseSampler" },
-        { "name": "ShadowSampler" }
+        { "name": "DiffuseDepthSampler" },
+        { "name": "ShadowSampler" },
+        { "name": "NormalSampler" },
+        { "name": "DataSampler" }
     ],
     "uniforms": []
 }

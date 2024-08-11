@@ -6,10 +6,17 @@ uniform sampler2D ShadowMapSampler;
 uniform sampler2D NormalSampler;
 uniform sampler2D NoiseSampler;
 
+uniform vec2 InSize;
+
 in vec2 texCoord;
+flat in mat4 invProjection;
+flat in mat4 projection;
+flat in mat3 viewMat;
+flat in mat4 viewProj;
 flat in mat4 invViewProj;
 flat in vec3 offset;
 flat in vec3 shadowEye;
+flat in float time;
 
 out vec4 fragColor;
 
@@ -17,6 +24,12 @@ vec3 getWorldSpacePosition(in vec2 uv, in float z) {
     vec4 positionClip = vec4(uv, z, 1.0) * 2.0 - 1.0;
     vec4 positionWorld = invViewProj * positionClip;
     return positionWorld.xyz / positionWorld.w;
+}
+
+vec3 getPositionViewSpace(vec2 uv, float z) {
+    vec4 positionClip = vec4(uv, z, 1.0) * 2.0 - 1.0;
+    vec4 positionView = invProjection * positionClip;
+    return positionView.xyz / positionView.w;
 }
 
 mat4 orthographicProjectionMatrix(float left, float right, float bottom, float top, float near, float far) {
@@ -108,7 +121,8 @@ float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, ve
     float occluderDistance = 0.0;
 
     for (int i = 0; i < 6; i++) {
-        vec2 offset = randomPointOnDisk(-i - 1);
+        float seed = (-i - 1) * 5 - time;
+        vec2 offset = randomPointOnDisk(seed);
         vec3 jitter = offset.x * tangent + offset.y * bitangent * 1.5;
 
         vec3 projection = projectShadowMap(lightProj, fragPos + jitter * 0.05, normal);
@@ -129,7 +143,8 @@ float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, ve
     float penumbra = clamp(0.005 + 0.5 * (receiverDistance - occluderDistance) / occluderDistance, 0.0, 0.05);
 
     for (int i = 0; i < 16; i++) {
-        vec2 diskPoint = randomPointOnDisk(i);
+        float seed = i * 5 + time;
+        vec2 diskPoint = randomPointOnDisk(seed);
         vec3 jitter = (tangent * diskPoint.x + bitangent * diskPoint.y) * penumbra + bitangent * diskPoint.y * 0.03;
 
         if (checkOcclusion(projectShadowMap(lightProj, fragPos + jitter, normal), lightDir, normal)) {
@@ -142,6 +157,57 @@ float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, ve
     return contribution / totalWeight;
 }
 
+float estimateAmbientOcclusion(vec3 fragPos, vec3 normal) {
+    const vec3 sampleVectors[] = vec3[](
+        vec3(0.20784318, -0.23137254, 0.3019608), vec3(0.427451, 0.27843142, 0.60784316), 
+        vec3(-0.16862744, 0.28627455, 0.18431373), vec3(0.3803922, 0.082352996, 0.27058825), 
+        vec3(-0.29411763, 0.07450986, 0.043137256), vec3(-0.035294116, -0.18431371, 0.12156863), 
+        vec3(0.13725495, 0.30196083, 0.16862746), vec3(-0.0039215684, -0.0039215684, 0.003921569),
+        vec3(-0.27843136, 0.27058828, 0.007843138), vec3(-0.4588235, 0.12941182, 0.02745098), 
+        vec3(-0.19215685, -0.0745098, 0.4), vec3(-0.019607842, 0.035294175, 0.003921569),
+        vec3(0.06666672, 0.19215691, 0.4862745), vec3(0.019607902, 0.09803927, 0.38039216), 
+        vec3(0.035294175, -0.0039215684, 0.0627451), vec3(0.019607902, -0.082352936, 0.06666667)
+    );
+
+    fragPos = viewMat * fragPos;
+    normal = viewMat * normal;
+
+    vec3 rnd = random(time);
+    vec3 rndVec = vec3(rnd.xy * 2.0 - 1.0, 0.0);
+    vec3 tangent = normalize(rndVec - normal);
+    vec3 bitangent = cross(normal, tangent);
+    mat3 tbn = mat3(tangent, bitangent, normal);
+
+    const int samples = 16;
+
+    float markerCutoff = 1.5 / InSize.y;
+
+    float occlusion = 0.0;
+    for (int i = 0; i < samples; i++) {
+        vec3 sample = sampleVectors[i];
+
+        vec3 pos = tbn * sample;
+        pos = fragPos + pos;
+
+        vec4 offset = projection * vec4(pos, 1.0);
+        offset = offset / offset.w * 0.5 + 0.5;
+        offset.y = max(offset.y, markerCutoff);
+
+        float z = texture(DiffuseDepthSampler, offset.xy).r;
+        if (z == 1.0) {
+            continue;
+        }
+
+        float currentDepth = getPositionViewSpace(offset.xy, z).z;
+
+        float dist = smoothstep(0.0, 1.0, 0.5 / abs(fragPos.z - currentDepth));
+        occlusion += (currentDepth >= pos.z + 0.05 ? 1.0 : 0.0) * dist;
+    }
+
+    occlusion = 1.0 - (occlusion / float(samples));
+    return occlusion;
+}
+
 void main() {
     if (int(gl_FragCoord.y) == 0) {
         fragColor = texture(DiffuseSampler, texCoord);
@@ -150,7 +216,7 @@ void main() {
 
     float depth = texture(DiffuseDepthSampler, texCoord).r;
     
-    fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    fragColor = vec4(0.0, 1.0, 1.0, 1.0);
     
     vec3 fragPos = getWorldSpacePosition(texCoord, depth);
     vec3 normal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
@@ -167,11 +233,19 @@ void main() {
     }
 
     float shadow = 0.0;
+    float occlusionDistance = 10.0;
     if (dot(lightDir, normal) < -0.01) {
         shadow = 1.0;
+        
+        vec3 projection = projectShadowMap(lightProj, fragPos, normal);
+        if (projection.y <= projection.x) {
+            occlusionDistance = (projection.x - projection.y) / projection.y;
+        }
     } else {
         shadow = estimateShadowContribution(lightProj, lightDir, fragPos - offset, normal);
     }
 
-    fragColor = vec4(vec3(shadow), 1.0);
+    float ambient = estimateAmbientOcclusion(fragPos, normal);
+
+    fragColor = vec4(shadow, ambient, 0.0, 1.0);
 }

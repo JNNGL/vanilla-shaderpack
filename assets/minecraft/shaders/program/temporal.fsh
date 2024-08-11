@@ -39,7 +39,7 @@ void main() {
     }
 
     if (ivec2(gl_FragCoord.xy) == ivec2(64, 0)) {
-        int x = int(texelFetch(PreviousDiffuseSampler, ivec2(64, 0), 0).r * 255.0 + 1.0) % 4;
+        int x = int(texelFetch(PreviousDiffuseSampler, ivec2(64, 0), 0).r * 255.0 + 1.0) % 5;
         fragColor = vec4(float(x) / 255.0, 0.0, 0.0, 1.0);
         return;
     }

@@ -102,8 +102,9 @@ void main() {
     }
 #endif
 
-    color *= vertexColor * ColorModulator;
-    fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
+    fragColor = color;
+    // color *= vertexColor * ColorModulator;
+    // fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
     
     // if (shadowQuad > 0) {
     //     fragColor = vec4(packDepthClipSpaceRGB8(glPos.z / glPos.w), 1.0);
