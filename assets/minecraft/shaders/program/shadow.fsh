@@ -184,7 +184,7 @@ float estimateAmbientOcclusion(vec3 fragPos, vec3 normal) {
 
     float occlusion = 0.0;
     for (int i = 0; i < samples; i++) {
-        vec3 sample = sampleVectors[i];
+        vec3 sample = sampleVectors[i] * 2.5;
 
         vec3 pos = tbn * sample;
         pos = fragPos + pos;
@@ -200,7 +200,7 @@ float estimateAmbientOcclusion(vec3 fragPos, vec3 normal) {
 
         float currentDepth = getPositionViewSpace(offset.xy, z).z;
 
-        float dist = smoothstep(0.0, 1.0, 0.5 / abs(fragPos.z - currentDepth));
+        float dist = smoothstep(0.0, 1.0, 1.0 / abs(fragPos.z - currentDepth));
         occlusion += (currentDepth >= pos.z + 0.05 ? 1.0 : 0.0) * dist;
     }
 

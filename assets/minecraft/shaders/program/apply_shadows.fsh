@@ -78,7 +78,7 @@ void main() {
 
     vec3 color = pow(texture(DiffuseSampler, texCoord).rgb, vec3(2.2));
 
-    vec3 ambient = vec3(0.10435, 0.14235, 0.19934) * 1.7 * shadow.g;
+    vec3 ambient = vec3(0.10435, 0.14235, 0.19934) * 1.7 * pow(shadow.g, 2.0);
     vec3 directional = vec3(0.9, 0.55, 0.4) * 1.9 * (1.0 - shadow.r) * max(0.0, NdotL);
     vec3 subsurface = (1.0 - shadow.b) * vec3(0.9, 0.55, 0.4) * 0.8;
 
