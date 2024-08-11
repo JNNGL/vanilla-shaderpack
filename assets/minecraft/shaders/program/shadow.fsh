@@ -104,7 +104,7 @@ vec3 projectShadowMap(mat4 lightProj, vec3 position, vec3 normal) {
 
 bool checkOcclusion(vec3 projection, vec3 lightDir, vec3 normal) {
     float NdotL = dot(normal, lightDir);
-    return projection.x - projection.z / (abs(NdotL) * 0.5) > projection.y;   
+    return projection.x - projection.z / (abs(NdotL) * 0.3) > projection.y;   
 }
 
 float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, vec3 normal) {
@@ -245,8 +245,8 @@ void main() {
 
         for (int i = 0; i < 10; i++) {
             vec3 jitter = tbn * vec3(random(i * 5 + time).xy * 2.0 - 1.0, 0.0);
-            vec3 projection = projectShadowMap(lightProj, fragPos - offset + jitter * 0.05, normal);
-            if (projection.y <= projection.x) {
+            vec3 projection = projectShadowMap(lightProj, fragPos - offset + jitter * 0.1, normal);
+            if (projection.y < projection.x) {
                 float currentDistance = (projection.x - projection.y) / projection.x;
                 occlusionDistance = min(occlusionDistance, currentDistance);
             }

@@ -24,14 +24,37 @@ out vec4 vertexColor;
 out vec2 texCoord0;
 out vec4 normal;
 flat out int dataQuad;
+out vec3 fragPos;
 out vec4 glPos;
+
+#define PI 3.14159
 
 void main() {
     ivec4 col = ivec4(round(texture(Sampler0, UV0) * 255.0));
     vec3 pos = Position + ChunkOffset;
     dataQuad = col.rgb == ivec3(76, 195, 86) ? 1 : 0;
+    fragPos = pos;
 
-    gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);
+    vec3 worldPos = pos;
+
+    int alpha = int(textureLod(Sampler0, UV0, -4).a * 255.0);
+    if (alpha == 251 || alpha == 4) {
+        float animation = GameTime * PI;
+        float magnitude = sin(animation * 136 + Position.z * PI / 4.0 + Position.y * PI / 4.0) * 0.04 + 0.04;
+        float d0 = sin(animation * 636);
+        float d1 = sin(animation * 446);
+        float d2 = sin(animation * 570);
+        vec3 wave;
+        wave.x = sin(animation * 316 + d0 + d1 - Position.x * PI / 4.0 + Position.z * PI / 4.0 + Position.y * PI / 4.0) * magnitude;
+        wave.z = sin(animation * 1120 + d1 + d2 + Position.x * PI / 4.0 - Position.z * PI / 4.0 + Position.y * PI / 4.0) * magnitude;
+        wave.y = sin(animation * 70 + d2 + d0 + Position.z * PI / 4.0 + Position.y * PI / 4.0 - Position.y * PI / 4.0) * magnitude;
+        worldPos.x += 0.2 * (wave.x * 2.0 + wave.y * 1.0);
+        worldPos.z += 0.2 * (wave.z * 0.75);
+        worldPos.x += 0.01 * sin(sin(animation * 100) * 8.0 + (Position.x + Position.y) / 4.0 * PI);
+        worldPos.z += 0.01 * sin(sin(animation * 60) * 6.0 + 978.0 + (Position.z + Position.y) / 4.0 * PI);
+    }
+
+    gl_Position = ProjMat * ModelViewMat * vec4(worldPos, 1.0);
     glPos = gl_Position;
 
     if (isShadowMapFrame(GameTime)) {
@@ -52,7 +75,7 @@ void main() {
     }
 
     vertexDistance = fog_distance(pos, FogShape);
-    vertexColor = Color * minecraft_sample_lightmap(Sampler2, UV2);
+    vertexColor = Color;
     texCoord0 = UV0;
     normal = ProjMat * ModelViewMat * vec4(Normal, 0.0);
 
