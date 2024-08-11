@@ -58,36 +58,36 @@ void main() {
     vec4 shadow = texture(ShadowSampler, texCoord);
     float wSum = 1.0;
 
-    // vec3 centerNormal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
-    // for (int x = -1; x <= 1; x++) {
-    //     for (int y = -1; y <= 1; y++) {
-    //         if (x == 0 && y == 0) continue;
-    //         vec2 offset = vec2(float(x), float(y));
-    //         ivec2 coord = ivec2(gl_FragCoord.xy + offset);
-    //         vec3 normal = texelFetch(NormalSampler, coord, 0).rgb * 2.0 - 1.0;
-    //         vec4 sample = texelFetch(ShadowSampler, coord, 0);
-    //         if (dot(normal, centerNormal) < 0.8) continue;
-    //         shadow += sample;
-    //         wSum += 1.0;
-    //     }
-    // }
+    vec3 centerNormal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
+    for (int x = -1; x <= 1; x++) {
+        for (int y = -1; y <= 1; y++) {
+            if (x == 0 && y == 0) continue;
+            vec2 offset = vec2(float(x), float(y));
+            ivec2 coord = ivec2(gl_FragCoord.xy + offset);
+            vec3 normal = texelFetch(NormalSampler, coord, 0).rgb * 2.0 - 1.0;
+            vec4 sample = texelFetch(ShadowSampler, coord, 0);
+            if (dot(normal, centerNormal) < 0.8) continue;
+            shadow += sample;
+            wSum += 1.0;
+        }
+    }
 
     shadow /= wSum;
 
     float NdotL = dot(normal, lightDir);
 
-    vec3 color = pow(texture(DiffuseSampler, texCoord).rgb, vec3(2.0));
+    vec3 color = pow(texture(DiffuseSampler, texCoord).rgb, vec3(2.2));
 
     vec3 ambient = vec3(0.10435, 0.14235, 0.19934) * 1.25 * shadow.g;
     vec3 directional = vec3(0.9, 0.55, 0.4) * 1.9 * (1.0 - shadow.r) * max(0.0, NdotL);
+    vec3 subsurface = (1.0 - shadow.b) * vec3(0.9, 0.55, 0.4) * 0.8;
 
-    color *= (ambient + directional) * shadow.g;
+    color *= (ambient + directional + subsurface) * shadow.g;
 
     color = applyFog(color, length(fragPos), normalize(fragPos), lightDir);
 
-    // color = 1.0 - exp(-color * 2.0);
     color = acesFilm(color * 2.0);
-    color = pow(color, vec3(1.0 / 2.0));
+    color = pow(color, vec3(1.0 / 2.2));
 
     fragColor = vec4(color, 1.0);
 }

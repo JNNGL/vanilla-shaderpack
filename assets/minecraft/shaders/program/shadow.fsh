@@ -237,9 +237,19 @@ void main() {
     if (dot(lightDir, normal) < -0.01) {
         shadow = 1.0;
         
-        vec3 projection = projectShadowMap(lightProj, fragPos, normal);
-        if (projection.y <= projection.x) {
-            occlusionDistance = (projection.x - projection.y) / projection.y;
+        vec3 rnd = random(time);
+        vec3 rndVec = vec3(rnd.xy * 2.0 - 1.0, 0.0);
+        vec3 tangent = normalize(rndVec - normal);
+        vec3 bitangent = cross(normal, tangent);
+        mat3 tbn = mat3(tangent, bitangent, normal);
+
+        for (int i = 0; i < 10; i++) {
+            vec3 jitter = tbn * vec3(random(i * 5 + time).xy * 2.0 - 1.0, 0.0);
+            vec3 projection = projectShadowMap(lightProj, fragPos - offset + jitter * 0.05, normal);
+            if (projection.y <= projection.x) {
+                float currentDistance = (projection.x - projection.y) / projection.x;
+                occlusionDistance = min(occlusionDistance, currentDistance);
+            }
         }
     } else {
         shadow = estimateShadowContribution(lightProj, lightDir, fragPos - offset, normal);
@@ -247,5 +257,6 @@ void main() {
 
     float ambient = estimateAmbientOcclusion(fragPos, normal);
 
-    fragColor = vec4(shadow, ambient, 0.0, 1.0);
+    float subsurface = 1.0 - exp(-occlusionDistance * 90.0);
+    fragColor = vec4(shadow, ambient, subsurface, 1.0);
 }
