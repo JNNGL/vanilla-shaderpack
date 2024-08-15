@@ -49,8 +49,7 @@ void main() {
         return;
     }
 
-    vec3 color = texture(DiffuseSampler, texCoord).rgb;
-    fragColor = vec4(color, 1.0);
+    fragColor = texture(DiffuseSampler, texCoord);
 
     float depth = texture(DiffuseDepthSampler, texCoord).r;
     if (depth == 1.0) {
@@ -93,6 +92,6 @@ void main() {
         // return;
     // }
 
-    vec3 mixedSample = mix(previousSample, color, 0.2);
-    fragColor = vec4(mixedSample.rgb, 1.0);
+    vec3 mixedSample = mix(previousSample, fragColor.rgb, 0.2);
+    fragColor = vec4(mixedSample.rgb, fragColor.a);
 }

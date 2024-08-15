@@ -15,6 +15,7 @@ flat out mat4 invViewProj;
 flat out vec3 offset;
 flat out vec3 shadowEye;
 flat out float time;
+out vec4 near;
 
 int decodeInt(vec3 ivec) {
     ivec *= 255.0;
@@ -87,4 +88,6 @@ void main() {
     time = round(texelFetch(FrameSampler, ivec2(64, 0), 0).r * 255.0);
 
     texCoord = outPos.xy * 0.5 + 0.5;
+
+    near = invViewProj * vec4(texCoord, -1.0, 1.0);
 }
