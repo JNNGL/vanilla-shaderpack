@@ -17,6 +17,7 @@ in vec4 vertexColor;
 in vec2 texCoord0;
 in vec4 normal;
 flat in int dataQuad;
+flat in int shadow;
 in vec3 fragPos;
 in vec4 glPos;
 
@@ -103,7 +104,7 @@ void main() {
         return;
     }
 
-    vec4 color = texture(Sampler0, texCoord0);
+    vec4 color = shadow > 0 ? texture(Sampler0, texCoord0, -4) : texture(Sampler0, texCoord0);
 #ifdef DISCARD
     if (color.a < 0.1) {
         discard;

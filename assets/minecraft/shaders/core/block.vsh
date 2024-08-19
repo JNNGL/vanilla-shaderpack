@@ -24,6 +24,7 @@ out vec4 vertexColor;
 out vec2 texCoord0;
 out vec4 normal;
 flat out int dataQuad;
+flat out int shadow;
 out vec3 fragPos;
 out vec4 glPos;
 
@@ -57,6 +58,8 @@ void main() {
     gl_Position = ProjMat * ModelViewMat * vec4(worldPos, 1.0);
     glPos = gl_Position;
 
+    shadow = 0;
+
     if (isShadowMapFrame(GameTime)) {
         if (ChunkOffset == vec3(0.0)) {
             gl_Position = vec4(-10.0);
@@ -72,6 +75,8 @@ void main() {
         float distortionFactor = length(gl_Position.xy) + 0.1;
         gl_Position.xy /= distortionFactor;
         glPos = gl_Position;
+        
+        shadow = 1;
     }
 
     vertexDistance = fog_distance(pos, FogShape);

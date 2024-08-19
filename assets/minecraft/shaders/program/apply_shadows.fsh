@@ -48,8 +48,8 @@ void main() {
     if (dot(normal, normal) < 0.01) {
         vec3 color = texture(DiffuseSampler, texCoord).rgb;
         color = pow(color, vec3(2.2));
-        color = acesInverse(color);
-        color *= pow(color.r / color.b, 1.1) * 80.0;
+        color /= length(color);
+        color *= 1.28;
         color += shadow.a * 7.0 * vec3(1.1, 0.65, 0.4) * 0.5;
         color = acesFilm(color);
         color = pow(color, vec3(1.0 / 2.2));
@@ -59,20 +59,20 @@ void main() {
 
     float wSum = 1.0;
 
-    vec3 centerNormal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
-    for (int x = -1; x <= 1; x++) {
-        for (int y = -1; y <= 1; y++) {
-            if (x == 0 && y == 0) continue;
-            vec2 offset = vec2(float(x), float(y)) * 2.0;
-            ivec2 coord = ivec2(gl_FragCoord.xy + offset);
-            if (coord.y <= 1) continue;
-            vec3 normal = texelFetch(NormalSampler, coord, 0).rgb * 2.0 - 1.0;
-            vec4 sample = texelFetch(ShadowSampler, coord, 0);
-            if (dot(normal, centerNormal) < 0.8) continue;
-            shadow.rgb += sample.rgb;
-            wSum += 1.0;
-        }
-    }
+    // vec3 centerNormal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
+    // for (int x = -1; x <= 1; x++) {
+    //     for (int y = -1; y <= 1; y++) {
+    //         if (x == 0 && y == 0) continue;
+    //         vec2 offset = vec2(float(x), float(y)) * 2.0;
+    //         ivec2 coord = ivec2(gl_FragCoord.xy + offset);
+    //         if (coord.y <= 1) continue;
+    //         vec3 normal = texelFetch(NormalSampler, coord, 0).rgb * 2.0 - 1.0;
+    //         vec4 sample = texelFetch(ShadowSampler, coord, 0);
+    //         if (dot(normal, centerNormal) < 0.8) continue;
+    //         shadow.rgb += sample.rgb;
+    //         wSum += 1.0;
+    //     }
+    // }
 
     shadow.rgb /= wSum;
 
@@ -80,11 +80,11 @@ void main() {
 
     vec3 color = pow(texture(DiffuseSampler, texCoord).rgb, vec3(2.2));
 
-    vec3 ambient = vec3(0.10435, 0.14235, 0.19934) * 1.7 * shadow.g;
-    vec3 directional = vec3(0.9, 0.55, 0.4) * 1.9 * (1.0 - shadow.r) * max(0.0, NdotL);
+    vec3 ambient = vec3(0.10435, 0.14235, 0.19934) * 1.4 * shadow.g * abs(NdotL * 0.5 + 1.0);
+    vec3 directional = vec3(1.1, 0.55, 0.4) * 1.6 * (1.0 - shadow.r) * max(0.0, (NdotL * 0.5 + 0.5) * 1.5 - 0.5);
     vec3 subsurface = shadow.b * vec3(0.9, 0.55, 0.4) * sqrt(color);
 
-    color *= (ambient + directional + subsurface);
+    color *= (ambient + directional + subsurface) * shadow.g;
 
     color += shadow.a * vec3(1.1, 0.65, 0.4) * 0.5;
 

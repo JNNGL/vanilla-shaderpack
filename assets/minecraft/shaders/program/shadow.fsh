@@ -117,7 +117,7 @@ float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, ve
     filterSize = 1.0 + filterSize;
     // float filterSize = 1.7;
 
-    vec3 tangent = normalize(cross(lightDir, normal)) * filterSize * 1.2;
+    vec3 tangent = normalize(cross(lightDir, normal)) * filterSize * 1.0;
     vec3 bitangent = normalize(cross(tangent, normal)) * filterSize * 2.0;
 
     float contribution = 0.0;
@@ -130,7 +130,7 @@ float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, ve
         vec2 offset = randomPointOnDisk(seed);
         vec3 jitter = offset.x * tangent + offset.y * bitangent * 1.5;
 
-        vec3 projection = projectShadowMap(lightProj, fragPos + jitter * 0.05, normal);
+        vec3 projection = projectShadowMap(lightProj, fragPos + jitter * 0.1, normal);
         if (checkOcclusion(projection, lightDir, normal)) {
             occluderDistance += projection.y;
             contribution += 1.0;
@@ -145,9 +145,13 @@ float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, ve
 
     occluderDistance /= contribution;
     float receiverDistance = (lightProj * vec4(fragPos, 1.0)).z * 0.5 + 0.5;
-    float penumbra = clamp(0.005 + 0.5 * (receiverDistance - occluderDistance) / occluderDistance, 0.0, 0.05);
+    float penumbra = clamp(0.02 + 1.5 * ((receiverDistance - occluderDistance) / occluderDistance), 0.0, 0.1);
 
-    for (int i = 0; i < 16; i++) {
+    float contributionWeight = pow(penumbra * 10.0, 2.0);
+    contribution *= contributionWeight;
+    totalWeight *= contributionWeight;
+
+    for (int i = 0; i < 8; i++) {
         float seed = i * 5 + time;
         vec2 diskPoint = randomPointOnDisk(seed);
         vec3 jitter = (tangent * diskPoint.x + bitangent * diskPoint.y) * penumbra + bitangent * diskPoint.y * 0.03;
@@ -162,136 +166,55 @@ float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, ve
     return contribution / totalWeight;
 }
 
-const float aoRadius = 0.5;
-const float aoRadiusSq = aoRadius * aoRadius;
-const float nInvRadiusSq = - 1.0 / aoRadiusSq;
-const float angleBias = 6.0;
-const float tanAngleBias = tan(radians(angleBias));
-const int numRays = 6;
-const int numSamples = 4;
-const float maxRadiusPixels = 50.0;
-
-float tanToSin(float x) {
-    return x * inversesqrt(x * x + 1.0);
-}
-
-float invLength(vec2 v) {
-    return inversesqrt(dot(v, v));
-}
-
-float tangent(vec3 t) {
-    return t.z * invLength(t.xy);
-}
-
-float biasedTangent(vec3 t) {
-    return t.z * invLength(t.xy) + tanAngleBias;
-}
-
-float tangent(vec3 p, vec3 s) {
-    return -(p.z - s.z) * invLength(s.xy - p.xy);
-}
-
-float lengthSquared(vec3 v) {
-    return dot(v, v);
-}
-
-vec3 minDiff(vec3 p, vec3 pr, vec3 pl) {
-    vec3 v1 = pr - p;
-    vec3 v2 = p - pl;
-    return (lengthSquared(v1) < lengthSquared(v2)) ? v1 : v2;
-}
-
-vec2 snapOffset(vec2 uv) {
-    return round(uv * InSize) / InSize;
-}
-
-float falloff(float d2) {
-    return d2 * nInvRadiusSq + 1.0f;
-}
-
-vec2 rotateDirections(vec2 dir, vec2 cosSin) {
-    return vec2(dir.x * cosSin.x - dir.y * cosSin.y, dir.x * cosSin.y + dir.y * cosSin.x);
-}
-
-void computeSteps(inout vec2 stepSizeUv, inout float numSteps, float rayRadiusPix, float rand) {
-    numSteps = min(numSamples, rayRadiusPix);
-    float stepSizePix = rayRadiusPix / (numSteps + 1.0);
-    float maxNumSteps = maxRadiusPixels / stepSizePix;
-    if (maxNumSteps < numSteps) {
-        numSteps = floor(maxNumSteps + rand);
-        numSteps = max(numSteps, 1.0);
-        stepSizePix = maxRadiusPixels / numSteps;
-    }
-
-    stepSizeUv = stepSizePix / InSize;
-}
-
-float horizonOcclusion(vec2 deltaUV, vec3 p, float numSamples, 
-                       float randstep, vec3 dPdu, vec3 dPdv) {
-    float ao = 0;
-
-    vec2 uv = texCoord + snapOffset(randstep * deltaUV);
-    deltaUV = snapOffset(deltaUV);
-
-    vec3 tg = deltaUV.x * dPdu + deltaUV.y * dPdv;
-
-    float tanH = biasedTangent(tg);
-    float sinH = tanToSin(tanH);
-
-    for (float i = 1.0; i <= numSamples; ++i) {
-        uv += deltaUV;
-        vec3 s = getViewSpacePosition(uv);
-        float tanS = tangent(p, s);
-        float d2 = lengthSquared(s - p);
-
-        if (d2 < aoRadiusSq && tanS > tanH) {
-            float sinS = tanToSin(tanS);
-            ao += falloff(d2) * (sinS - sinH);
-
-            tanH = tanS;
-            sinH = sinS;
-        }
-    }
-    
-    return ao;
-}
-
 float estimateAmbientOcclusion(vec3 fragPos, vec3 normal) {
-    vec3 p = getViewSpacePosition(texCoord);
-    vec3 pr = getViewSpacePosition(texCoord + vec2(1, 0) / InSize);
-    vec3 pl = getViewSpacePosition(texCoord + vec2(-1, 0) / InSize);
-    vec3 pt = getViewSpacePosition(texCoord + vec2(0, 1) / InSize);
-    vec3 pb = getViewSpacePosition(texCoord + vec2(0, -1) / InSize);
+    const vec3 sampleVectors[] = vec3[](
+        vec3(0.20784318, -0.23137254, 0.3019608), vec3(0.427451, 0.27843142, 0.60784316), 
+        vec3(-0.16862744, 0.28627455, 0.18431373), vec3(0.3803922, 0.082352996, 0.27058825), 
+        vec3(-0.29411763, 0.07450986, 0.043137256), vec3(-0.035294116, -0.18431371, 0.12156863), 
+        vec3(0.13725495, 0.30196083, 0.16862746), vec3(-0.0039215684, -0.0039215684, 0.003921569),
+        vec3(-0.27843136, 0.27058828, 0.007843138), vec3(-0.4588235, 0.12941182, 0.02745098), 
+        vec3(-0.19215685, -0.0745098, 0.4), vec3(-0.019607842, 0.035294175, 0.003921569),
+        vec3(0.06666672, 0.19215691, 0.4862745), vec3(0.019607902, 0.09803927, 0.38039216), 
+        vec3(0.035294175, -0.0039215684, 0.0627451), vec3(0.019607902, -0.082352936, 0.06666667)
+    );
 
-    vec3 dPdu = minDiff(p, pr, pl);
-    vec3 dPdv = minDiff(p, pt, pb);
+    fragPos = viewMat * fragPos;
+    normal = viewMat * normal;
 
-    vec3 random = random(time);
+    vec3 rnd = random(time);
+    vec3 rndVec = vec3(rnd.xy * 2.0 - 1.0, 0.0);
+    vec3 tangent = normalize(rndVec - normal);
+    vec3 bitangent = cross(normal, tangent);
+    mat3 tbn = mat3(tangent, bitangent, normal);
 
-    vec2 rayRadiusUV = 0.5 * aoRadius * vec2(projection[0][0], projection[1][1]) / -p.z;
-    float rayRadiusPix = rayRadiusUV.x * InSize.x;
+    const int samples = 16;
 
-    float ao = 1.0;
+    float markerCutoff = 1.5 / InSize.y;
 
-    if (rayRadiusPix > 1.0) {
-        ao = 0.0;
-        float numSteps;
-        vec2 stepSizeUV;
+    float occlusion = 0.0;
+    for (int i = 0; i < samples; i++) {
+        vec3 sample = sampleVectors[i] * 1.5;
 
-        computeSteps(stepSizeUV, numSteps, rayRadiusPix, random.z);
+        vec3 pos = tbn * sample;
+        pos = fragPos + pos;
 
-        float alpha = 2.0 * 3.14159 / numRays;
-        for (float d = 0; d < numRays; ++d) {
-            float theta = alpha * d;
-            vec2 dir = rotateDirections(vec2(cos(theta), sin(theta)), random.xy);
-            vec2 deltaUV = dir * stepSizeUV;
-            ao += horizonOcclusion(deltaUV, p, numSteps, random.z, dPdu, dPdv);
+        vec4 offset = projection * vec4(pos, 1.0);
+        offset = offset / offset.w * 0.5 + 0.5;
+        offset.y = max(offset.y, markerCutoff);
+
+        float z = texture(DiffuseDepthSampler, offset.xy).r;
+        if (z == 1.0) {
+            continue;
         }
 
-        ao = 1.0 - pow(ao / numRays, 1.0 / 3.0);
+        float currentDepth = getViewSpacePosition(offset.xy, z).z;
+
+        float dist = smoothstep(0.0, 1.0, 0.61 / abs(fragPos.z - currentDepth));
+        occlusion += (currentDepth >= pos.z + 0.05 ? 1.0 : 0.0) * dist;
     }
-    
-    return ao;
+
+    occlusion = 1.0 - (occlusion / float(samples));
+    return occlusion;
 }
 
 float henyeyGreenstein(float cosTheta, float g) {
@@ -302,7 +225,7 @@ float estimateVolumetricFogContribution(mat4 lightProj, vec3 fragPos, vec3 rayOr
     float rayLength = distance(fragPos, rayOrigin);
     vec3 rayDirection = (fragPos - rayOrigin) / rayLength;
 
-    const int NUM_STEPS = 16;
+    const int NUM_STEPS = 64;
     float rayStep = rayLength / NUM_STEPS;
     vec3 rayPos = rayOrigin + rayDirection * rayStep * random(0.0).x - offset;
 
@@ -377,7 +300,7 @@ void main() {
 
     float ambient = estimateAmbientOcclusion(fragPos, normal);
 
-    float sz = occlusionDistance * 70.0;
+    float sz = occlusionDistance * 400.0;
     float subsurface = 0.25 * (exp(-sz) + 3 * exp(-sz / 3));
     fragColor = vec4(shadow, ambient, subsurface, volumetric);
 }
