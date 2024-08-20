@@ -46,11 +46,17 @@ void main() {
     vec3 lightDir = normalize(shadowEye);
 
     if (dot(normal, normal) < 0.01) {
-        vec3 color = texture(DiffuseSampler, texCoord).rgb;
-        color = pow(color, vec3(2.2));
-        color /= length(color);
-        color *= 1.28;
-        color += shadow.a * 7.0 * vec3(1.1, 0.65, 0.4) * 0.5;
+        vec4 data = texture(DiffuseSampler, texCoord);
+        vec3 color = data.rgb;
+        // color = pow(color, vec3(2.2));
+        // color *= 1.28;
+        // color += shadow.a * vec3(1.45, 0.6, 0.4);
+        vec3 direction = normalize(fragPos);
+        float factor = max(0.0, (dot(direction, lightDir) * 0.5 + 0.5) - direction.y) * 0.7 + 0.3;
+        // factor = sqrt(factor);
+        // factor *= factor;
+        // if (int(round(data.a * 255.0)) == 252) factor = 0.7;
+        color = vec3(1.45, 0.63, 0.4) * shadow.a * 1.5 * factor + color * (1.0 - factor) * 1.2;
         color = acesFilm(color);
         color = pow(color, vec3(1.0 / 2.2));
         fragColor = vec4(color, 1.0);
@@ -75,18 +81,19 @@ void main() {
     // }
 
     shadow.rgb /= wSum;
+    shadow.a *= shadow.a;
 
     float NdotL = dot(normal, lightDir);
 
     vec3 color = pow(texture(DiffuseSampler, texCoord).rgb, vec3(2.2));
 
-    vec3 ambient = vec3(0.10435, 0.14235, 0.19934) * 1.4 * shadow.g * abs(NdotL * 0.5 + 1.0);
-    vec3 directional = vec3(1.1, 0.55, 0.4) * 1.6 * (1.0 - shadow.r) * max(0.0, (NdotL * 0.5 + 0.5) * 1.5 - 0.5);
-    vec3 subsurface = shadow.b * vec3(0.9, 0.55, 0.4) * sqrt(color);
+    vec3 ambient = vec3(0.10435, 0.14235, 0.19934) * shadow.g * (-max(-NdotL, 0.0) * 0.5 + 1.0);
+    vec3 directional = vec3(1.55, 0.53, 0.4) * 1.6 * (1.0 - shadow.r) * max(0.0, (NdotL * 0.5 + 0.5) * 1.5 - 0.5);
+    vec3 subsurface = shadow.b * vec3(1.45, 0.63, 0.4);
 
     color *= (ambient + directional + subsurface) * shadow.g;
 
-    color += shadow.a * vec3(1.1, 0.65, 0.4) * 0.5;
+    color += shadow.a * vec3(1.45, 0.63, 0.4) * 0.33;
 
     color = acesFilm(color * 2.0);
     color = pow(color, vec3(1.0 / 2.2));

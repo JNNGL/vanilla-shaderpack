@@ -193,7 +193,7 @@ float estimateAmbientOcclusion(vec3 fragPos, vec3 normal) {
 
     float occlusion = 0.0;
     for (int i = 0; i < samples; i++) {
-        vec3 sample = sampleVectors[i] * 1.5;
+        vec3 sample = sampleVectors[i] * 2.0;
 
         vec3 pos = tbn * sample;
         pos = fragPos + pos;
@@ -209,7 +209,7 @@ float estimateAmbientOcclusion(vec3 fragPos, vec3 normal) {
 
         float currentDepth = getViewSpacePosition(offset.xy, z).z;
 
-        float dist = smoothstep(0.0, 1.0, 0.61 / abs(fragPos.z - currentDepth));
+        float dist = smoothstep(0.0, 1.0, 1.0 / abs(fragPos.z - currentDepth));
         occlusion += (currentDepth >= pos.z + 0.05 ? 1.0 : 0.0) * dist;
     }
 
@@ -225,11 +225,11 @@ float estimateVolumetricFogContribution(mat4 lightProj, vec3 fragPos, vec3 rayOr
     float rayLength = distance(fragPos, rayOrigin);
     vec3 rayDirection = (fragPos - rayOrigin) / rayLength;
 
-    const int NUM_STEPS = 64;
+    const int NUM_STEPS = 16;
     float rayStep = rayLength / NUM_STEPS;
     vec3 rayPos = rayOrigin + rayDirection * rayStep * random(0.0).x - offset;
 
-    float phaseFunction = henyeyGreenstein(dot(rayDirection, lightDir), 0.5);
+    float phaseFunction = henyeyGreenstein(dot(rayDirection, lightDir), 0.3);
 
     float accum = 0.0;
     if (dot(normal, normal) < 0.01) {
@@ -269,6 +269,7 @@ void main() {
     mat4 lightProj = proj * view;
 
     float volumetric = estimateVolumetricFogContribution(lightProj, fragPos, near.xyz / near.w, normal, lightDir);
+    volumetric = sqrt(volumetric);
     fragColor = vec4(0.0, 1.0, 1.0, volumetric);
 
     if (depth == 1.0) {

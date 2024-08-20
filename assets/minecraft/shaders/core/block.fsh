@@ -112,6 +112,7 @@ void main() {
 #endif
 
     fragColor = color * unshadeBlock(vertexColor, normal) * ColorModulator;
+    fragColor.a = 1.0;
     // fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
     
     // if (shadowQuad > 0) {
