@@ -41,7 +41,7 @@ vec3 applyFog( in vec3  col,   // color of pixel
 void main() {
     vec3 fragPos = getPositionWorldSpace(texCoord, texture(DiffuseDepthSampler, texCoord).r);
 
-    vec4 shadow = texture(ShadowSampler, texCoord);
+    vec4 shadow = texelFetch(ShadowSampler, ivec2(gl_FragCoord.x, max(1.0, gl_FragCoord.y)), 0);
     vec3 normal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
     vec3 lightDir = normalize(shadowEye);
 
