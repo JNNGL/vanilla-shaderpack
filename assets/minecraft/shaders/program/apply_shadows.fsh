@@ -56,7 +56,7 @@ void main() {
         // factor = sqrt(factor);
         // factor *= factor;
         // if (int(round(data.a * 255.0)) == 252) factor = 0.7;
-        color = vec3(1.45, 0.63, 0.4) * shadow.a * 1.5 * factor + color * (1.0 - factor) * 1.2;
+        color = vec3(2.0, 0.63, 0.4) * shadow.a * 2.0 * factor + color * (1.0 - factor) * 1.2;
         color = acesFilm(color);
         color = pow(color, vec3(1.0 / 2.2));
         fragColor = vec4(color, 1.0);
@@ -87,15 +87,15 @@ void main() {
 
     vec3 color = pow(texture(DiffuseSampler, texCoord).rgb, vec3(2.2));
 
-    vec3 ambient = vec3(0.10435, 0.14235, 0.19934) * shadow.g * (-max(-NdotL, 0.0) * 0.5 + 1.0);
-    vec3 directional = vec3(1.55, 0.53, 0.4) * 1.6 * (1.0 - shadow.r) * max(0.0, (NdotL * 0.5 + 0.5) * 1.5 - 0.5);
-    vec3 subsurface = shadow.b * vec3(1.45, 0.63, 0.4);
+    vec3 ambient = vec3(0.10435, 0.14235, 0.19934) * 1.5 * shadow.g * (-max(-NdotL, 0.0) * 0.5 + 1.0);
+    vec3 directional = vec3(1.55, 0.53, 0.4) * 1.5 * (1.0 - shadow.r) * max(0.0, (NdotL * 0.5 + 0.5) * 1.5 - 0.5);
+    vec3 subsurface = shadow.b * vec3(1.55, 0.53, 0.4) * 0.8;
 
     color *= (ambient + directional + subsurface) * shadow.g;
 
-    color += shadow.a * vec3(1.45, 0.63, 0.4) * 0.33;
+    color += shadow.a * vec3(1.6, 0.63, 0.4);
 
-    color = acesFilm(color * 2.0);
+    color = acesFilm(color);
     color = pow(color, vec3(1.0 / 2.2));
 
     fragColor = vec4(color, 1.0);

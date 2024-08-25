@@ -229,7 +229,7 @@ float estimateVolumetricFogContribution(mat4 lightProj, vec3 fragPos, vec3 rayOr
     float rayStep = rayLength / NUM_STEPS;
     vec3 rayPos = rayOrigin + rayDirection * rayStep * random(0.0).x - offset;
 
-    float phaseFunction = henyeyGreenstein(dot(rayDirection, lightDir), 0.3);
+    float phaseFunction = henyeyGreenstein(dot(rayDirection, lightDir), 0.35);
 
     float accum = 0.0;
     if (dot(normal, normal) < 0.01) {
@@ -269,6 +269,7 @@ void main() {
     mat4 lightProj = proj * view;
 
     float volumetric = estimateVolumetricFogContribution(lightProj, fragPos, near.xyz / near.w, normal, lightDir);
+    volumetric *= 0.15;
     volumetric = sqrt(volumetric);
     fragColor = vec4(0.0, 1.0, 1.0, volumetric);
 
