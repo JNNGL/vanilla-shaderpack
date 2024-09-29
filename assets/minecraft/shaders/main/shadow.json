@@ -1,0 +1,16 @@
+{
+    "vertex": "minecraft:main/shadow",
+    "fragment": "minecraft:main/shadow",
+    "samplers": [
+        { "name": "DataSampler" },
+        { "name": "DepthSampler" },
+        { "name": "ShadowMapSampler" },
+        { "name": "NormalSampler" },
+        { "name": "NoiseSampler" },
+        { "name": "FrameSampler" }
+    ],
+    "uniforms": [
+        { "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+        { "name": "DataSize", "type": "float", "count": 2, "values": [ 1.0, 1.0 ] }
+    ]
+}

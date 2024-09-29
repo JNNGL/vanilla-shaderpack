@@ -1,46 +1,36 @@
-mat4 orthographicProjectionMatrix(float left, float right, float bottom, float top, float near, float far) {
-    return mat4(
-        2.0 / (right - left), 0.0, 0.0, 0.0,
-        0.0, 2.0 / (top - bottom), 0.0, 0.0,
-        0.0, 0.0, -2.0 / (far - near), 0.0,
-        -(right + left) / (right - left), -(top + bottom) / (top - bottom), -(far + near) / (far - near), 1.0
-    );
+#version 330
+
+#ifndef _SHADOW_GLSL
+#define _SHADOW_GLSL
+
+#extension GL_MC_moj_import : enable
+#moj_import <minecraft:matrices.glsl>
+
+float getDistortionFactor(vec4 clipSpace) {
+    return length(clipSpace.xy) + 0.1;
 }
 
-mat4 lookAtTransformationMatrix(vec3 eye, vec3 center, vec3 up) {
-    vec3 f = normalize(center - eye);
-    vec3 u = normalize(up);
-    vec3 s = normalize(cross(f, u));
-    u = cross(s, f);
+float getDistortionBias(float distortionFactor) {
+    float numerator = distortionFactor * distortionFactor;
+    return 1.5 / 1024.0 * numerator / 0.1;
+}
 
-    mat4 result = mat4(1.0);
-    result[0][0] = s.x;
-    result[1][0] = s.y;
-    result[2][0] = s.z;
-    result[0][1] = u.x;
-    result[1][1] = u.y;
-    result[2][1] = u.z;
-    result[0][2] = -f.x;
-    result[1][2] = -f.y;
-    result[2][2] = -f.z;
-    result[3][0] = -dot(s, eye);
-    result[3][1] = -dot(u, eye);
-    result[3][2] = dot(f, eye);
-    return result;
+vec4 applyDistortion(vec4 clipSpace, float distortionFactor) {
+    return vec4(clipSpace.xy / distortionFactor, clipSpace.zw);
+}
+
+vec4 distortShadow(vec4 clipSpace, out float bias) {
+    float distortionFactor = getDistortionFactor(clipSpace);
+    bias = getDistortionBias(distortionFactor);
+    return applyDistortion(clipSpace, distortionFactor);
+}
+
+vec4 distortShadow(vec4 clipSpace) {
+    return applyDistortion(clipSpace, getDistortionFactor(clipSpace));
 }
 
 bool isShadowMapFrame(float time) {
-    return (int(round(time * 514229)) % 15) == 0;
-}
-
-mat3 rotationZMatrix(float theta) {
-    float cosT = cos(theta);
-    float sinT = sin(theta);
-    return mat3(
-        cosT, -sinT, 0.0, 
-        sinT, cosT, 0.0,
-        0.0, 0.0, 1.0
-    );
+    return (int(round(time * 514229.0)) % 15) == 0;
 }
 
 vec3 getShadowEyeLocation(float time) {
@@ -48,6 +38,18 @@ vec3 getShadowEyeLocation(float time) {
     // return rotation * vec3(128.0, 0.0, 15.0);
     // return vec3(10, 8.6, 5);
     // return vec3(40.0, 34.0, 20.0);
-    return vec3(40.0, 15.0, 7.0);
+    // return vec3(40.0, 15.0, 7.0); ////// sunset
+    return vec3(30.0, 50.0, 40.0) * 0.5;
     // return vec3(40.0, 34.0, 0.0);
 }
+
+mat4 shadowProjectionMatrix() {
+    return orthographicProjectionMatrix(-128.0, 128.0, -128.0, 128.0, 0.05, 64.0);
+}
+
+mat4 shadowTransformationMatrix(float time) {
+    vec3 eye = getShadowEyeLocation(time);
+    return lookAtTransformationMatrix(eye, vec3(0.0), vec3(0.0, 1.0, 0.0));
+}
+
+#endif // _SHADOW_GLSL

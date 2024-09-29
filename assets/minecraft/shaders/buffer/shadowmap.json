@@ -1,0 +1,10 @@
+{
+    "vertex": "minecraft:buffer/shadowmap",
+    "fragment": "minecraft:buffer/shadowmap",
+    "samplers": [
+        { "name": "DataSampler" },
+        { "name": "DepthSampler" },
+        { "name": "PreviousSampler" }
+    ],
+    "uniforms": []
+}

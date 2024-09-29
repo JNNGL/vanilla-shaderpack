@@ -1,6 +1,8 @@
-#version 150
+#version 330
 
-#moj_import <fog.glsl>
+#extension GL_MC_moj_import : enable
+#moj_import <minecraft:fog.glsl>
+#moj_import <minecraft:constants.glsl>
 
 in vec3 Position;
 in vec4 Color;
@@ -15,7 +17,7 @@ out vec4 vertexColor;
 out vec2 texCoord0;
 
 void main() {
-    gl_Position = vec4(-10.0);
+    gl_Position = GLPOS_DISCARD;
 
     vertexDistance = fog_distance(Position, FogShape);
     vertexColor = Color;

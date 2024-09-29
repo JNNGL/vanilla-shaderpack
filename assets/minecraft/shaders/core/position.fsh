@@ -1,23 +1,22 @@
-#version 150
+#version 330
 
-#moj_import <fog.glsl>
+#extension GL_MC_moj_import : enable
+#moj_import <minecraft:fog.glsl>
 
 uniform vec4 ColorModulator;
 uniform float FogStart;
 uniform float FogEnd;
 uniform vec4 FogColor;
-uniform float GameTime;
 
 in float vertexDistance;
-in vec4 position;
 
 out vec4 fragColor;
 
 void main() {
-	vec4 color = ColorModulator;
+    vec4 color = ColorModulator;
 	if (color.a < 1.0) { 
 		discard;
     }
-	
-	fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
+
+    fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
 }
