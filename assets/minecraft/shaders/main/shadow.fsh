@@ -151,39 +151,6 @@ float estimateAmbientOcclusion(vec3 fragPos, vec3 normal) {
     return occlusion;
 }
 
-float henyeyGreenstein(float cosTheta, float g) {
-    return (1.0 - g * g) / (4.0 * PI * pow(1.0 + g * g - 2.0 * g * cosTheta, 1.5));
-}
-
-float estimateVolumetricFogContribution(mat4 lightProj, vec3 fragPos, vec3 rayOrigin, vec3 normal, vec3 lightDir) {
-    float rayLength = distance(fragPos, rayOrigin);
-    vec3 rayDirection = (fragPos - rayOrigin) / rayLength;
-
-    const int NUM_STEPS = 16;
-    float rayStep = rayLength / NUM_STEPS;
-    vec3 rayPos = rayOrigin + rayDirection * rayStep * random(NoiseSampler, gl_FragCoord.xy, 0.0).x - offset;
-
-    float phase = henyeyGreenstein(dot(rayDirection, lightDir), 0.7);
-
-    float accum = 0.0;
-    if (dot(normal, normal) < 0.01) {
-        accum = phase * NUM_STEPS;
-    } else {
-        for (int i = 0; i < NUM_STEPS; i++) {
-            vec3 projection = projectShadowMap(lightProj, rayPos, normal);
-            float t = checkOcclusion(projection, lightDir, normal) ? 0.0 : 1.0;
-            accum += phase * t;
-            rayPos += rayDirection * rayStep;
-        }
-    }
-    
-    float d = accum * rayStep * 0.2;
-    float powder = 1.0 - exp(-d * 2.0);
-    float beer = exp(-d);
-
-    return (1.0 - beer) * powder;
-}
-
 void main() {
     if (int(gl_FragCoord.y) == 0) {
         fragColor = texture(DataSampler, texCoord);
@@ -195,11 +162,7 @@ void main() {
     vec3 fragPos = unprojectScreenSpace(invViewProjMat, texCoord, depth);
     vec3 normal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
 
-    float volumetric = estimateVolumetricFogContribution(shadowProjMat, fragPos, near.xyz / near.w, normal, lightDir);
-    volumetric *= 0.15;
-    volumetric = sqrt(volumetric);
-
-    fragColor = vec4(0.0, 1.0, 1.0, volumetric);
+    fragColor = vec4(0.0, 1.0, 1.0, 1.0);
     if (depth == 1.0) {
         return;
     }
@@ -231,5 +194,5 @@ void main() {
 
     float sz = occlusionDistance * 256.0;
     float subsurface = 0.25 * (exp(-sz) + 3 * exp(-sz / 3));
-    fragColor = vec4(shadow, ambientOcclusion, subsurface, volumetric);
+    fragColor = vec4(shadow, ambientOcclusion, subsurface, 1.0);
 }

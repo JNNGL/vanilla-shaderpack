@@ -44,8 +44,6 @@ void main() {
     vec3 subsurface = shadow.b * sunColor * 0.5;
     color *= (ambient + directional + subsurface) * shadow.g;
 
-    // color += shadow.a * sunColor * 0.8;
-
     color = acesFitted(color);
     color = linearToSrgb(color);
 
