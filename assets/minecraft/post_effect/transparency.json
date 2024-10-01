@@ -15,9 +15,17 @@
 
         "final": {},
         "final_comp": {},
-        "final_prev": {"width": 1921, "height": 1080}
+        "final_prev": {"width": 1921, "height": 1080},
+
+        "transmittance": {"width": 256, "height": 128}
     },
     "passes": [
+        {
+            "program": "minecraft:atmosphere/transmittance",
+            "inputs": [],
+            "output": "transmittance"
+        },
+
         {
             "program": "minecraft:buffer/shadowmap",
             "inputs": [ { "sampler_name": "Data", "target": "minecraft:main" },
@@ -69,8 +77,12 @@
             "program": "minecraft:main/shade",
             "inputs": [ { "sampler_name": "In", "target": "minecraft:main" },
                         { "sampler_name": "Data", "target": "minecraft:main" },
+                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
                         { "sampler_name": "Shadow", "target": "shadow_prev" },
-                        { "sampler_name": "Normal", "target": "normals" } ],
+                        { "sampler_name": "Normal", "target": "normals" },
+                        { "sampler_name": "Transmittance", "target": "transmittance" },
+                        { "sampler_name": "ShadowMap", "target": "shadowmap_depth" },
+                        { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 } ],
             "output": "final"
         },
 
@@ -88,8 +100,8 @@
         },
 
         {
-            "program": "minecraft:util/copy",
-            "inputs": [ { "sampler_name": "In", "target": "final_comp" },
+            "program": "minecraft:post/fxaa",
+            "inputs": [ { "sampler_name": "In", "target": "final_comp", "bilinear": true },
                         { "sampler_name": "Mojank", "target": "final_prev" } ],
             "output": "minecraft:main"
         }

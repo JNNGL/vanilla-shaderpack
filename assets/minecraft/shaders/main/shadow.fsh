@@ -181,9 +181,9 @@ void main() {
         for (int i = 0; i < 10; i++) {
             vec3 jitter = tbn * vec3(random(NoiseSampler, gl_FragCoord.xy, i * 5 + timeSeed).xy * 2.0 - 1.0, 0.0);
             vec3 projection = projectShadowMap(shadowProjMat, fragPos - offset + jitter * 0.1, normal);
-            if (projection.y < projection.x) {
+            if (projection.y >= 0.05 && projection.x >= 0.05 && projection.y < projection.x + 0.05) {
                 float currentDistance = (projection.x - projection.y) / projection.x;
-                occlusionDistance = min(occlusionDistance, currentDistance);
+                occlusionDistance = max(0.0, min(occlusionDistance, currentDistance));
             }
         }
     } else {

@@ -1,0 +1,6 @@
+{
+    "vertex": "minecraft:atmosphere/transmittance",
+    "fragment": "minecraft:atmosphere/transmittance",
+    "samplers": [],
+    "uniforms": []
+}
