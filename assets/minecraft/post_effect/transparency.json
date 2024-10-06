@@ -6,8 +6,8 @@
         "normals": {},
         "prev_normals": {},
 
-        "shadowmap_depth": {"width": 1920, "height": 1079},
-        "shadowmap_depth_cache": {"width": 1920, "height": 1079},
+        "shadowmap_depth": {},
+        "shadowmap_depth_cache": {"width": 1922, "height": 1080},
 
         "shadow": {},
         "shadow_temp": {},
@@ -34,7 +34,7 @@
             "output": "shadowmap_depth"
         },
         {
-            "program": "minecraft:util/copy",
+            "program": "minecraft:workaround/copy_over_frame",
             "inputs": [ { "sampler_name": "In", "target": "shadowmap_depth" } ],
             "output": "shadowmap_depth_cache"
         },

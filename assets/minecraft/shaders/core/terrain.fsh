@@ -22,6 +22,7 @@ in vec2 texCoord0;
 in vec4 normal;
 flat in int dataQuad;
 flat in int shadow;
+flat in float skyFactor;
 in vec3 fragPos;
 in vec4 glPos;
 
@@ -35,6 +36,10 @@ vec4 unshadeBlock(vec4 color, vec3 normal) {
 }
 
 void main() {
+    if (discardSunData(gl_FragCoord.xy)) {
+        discard;
+    }
+
     vec3 normal = normalize(cross(dFdx(fragPos), dFdy(fragPos)));
     
     if (dataQuad > 0) {
@@ -43,7 +48,7 @@ void main() {
             discard;
         }
 
-        fragColor = writeDataMarker(pixel, ProjMat, FogStart, FogEnd, ModelOffset, GameTime, shadow > 0, mat3(ModelViewMat));
+        fragColor = writeDataMarker(pixel, ProjMat, FogStart, FogEnd, ModelOffset, GameTime, shadow > 0, mat3(ModelViewMat), skyFactor);
         return;
     }
 

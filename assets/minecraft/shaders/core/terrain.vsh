@@ -6,6 +6,7 @@
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:shadow.glsl>
 #moj_import <minecraft:waving.glsl>
+#moj_import <minecraft:lightmap.glsl>
 
 in vec3 Position;
 in vec4 Color;
@@ -28,6 +29,7 @@ out vec2 texCoord0;
 out vec4 normal;
 flat out int dataQuad;
 flat out int shadow;
+flat out float skyFactor;
 out vec3 fragPos;
 out vec4 glPos;
 
@@ -48,6 +50,7 @@ void main() {
     glPos = gl_Position;
 
     shadow = 0;
+    skyFactor = getSkyFactor(Sampler2);
 
     if (isShadowMapFrame(GameTime)) {
         if (ModelOffset == vec3(0.0)) {
@@ -56,7 +59,7 @@ void main() {
         }
 
         mat4 proj = shadowProjectionMatrix();
-        mat4 view = shadowTransformationMatrix(GameTime);
+        mat4 view = shadowTransformationMatrix(skyFactor, GameTime);
 
         pos -= fract(ModelOffset);
         gl_Position = proj * view * vec4(pos, 1.0);

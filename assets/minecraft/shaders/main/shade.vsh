@@ -22,10 +22,11 @@ void main() {
     gl_Position = screenquad[gl_VertexID];
     texCoord = sqTexCoord(gl_Position);
 
-    float time = decodeGameTime(DataSampler);
-    vec3 shadowEye = getShadowEyeLocation(time);
+    float time = decodeShadowTime(ShadowMapSampler);
+    float skyFactor = decodeShadowSkyFactor(ShadowMapSampler);
     mat4 shadowProj = shadowProjectionMatrix();
-    mat4 shadowView = shadowTransformationMatrix(time);
+    mat4 shadowView = shadowTransformationMatrix(skyFactor, time);
+    vec3 shadowEye = getShadowEyeLocation(skyFactor, time);
 
     vec3 chunkOffset = decodeChunkOffset(DataSampler);
     vec3 captureOffset = decodeShadowOffset(ShadowMapSampler);

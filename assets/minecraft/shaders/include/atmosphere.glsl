@@ -9,6 +9,7 @@
 #moj_import <minecraft:encodings.glsl>
 #moj_import <minecraft:random.glsl>
 #moj_import <minecraft:shadow.glsl>
+#moj_import <minecraft:bilinear.glsl>
 
 const float cameraHeight = 2000;
 
@@ -50,32 +51,13 @@ float distanceToEarth(vec3 position, vec3 direction) {
     return t.x < 0.0 ? t.y : t.x;
 }
 
-vec3 fetchLUT(sampler2D lut, ivec2 coord, ivec2 size) {
-    return unpackR11G11B10LfromF8x4(texelFetch(lut, clamp(coord, ivec2(0, 0), size - 1), 0));
-}
-
-vec3 bilinearSampleLUT(sampler2D lut, vec2 uv) {
-    ivec2 texSize = textureSize(lut, 0).xy;
-    uv *= texSize;
-    uv -= 0.5;
-
-    ivec2 coord = ivec2(floor(uv));
-    vec2 frac = fract(uv);
-
-    return mix(
-        mix(fetchLUT(lut, coord + ivec2(0, 0), texSize), fetchLUT(lut, coord + ivec2(1, 0), texSize), frac.x),
-        mix(fetchLUT(lut, coord + ivec2(0, 1), texSize), fetchLUT(lut, coord + ivec2(1, 1), texSize), frac.x),
-        frac.y
-    );
-}
-
 vec3 sampleTransmittanceLUT(sampler2D lut, vec3 position, vec3 sunDirection) {
     float height = length(position);
     vec3 direction = position / height;
     float cosTheta = dot(direction, sunDirection);
     float x = cosTheta * 0.5 + 0.5;
     float y = (height - earthRadius) / (atmosphereRadius - earthRadius);
-    return bilinearSampleLUT(lut, clamp(vec2(x, y), 0.0, 1.0));
+    return textureBilinearR11G11B10L(lut, clamp(vec2(x, y), 0.0, 1.0));
 }
 
 vec3 computeTransmittanceToBoundary(vec3 position, vec3 direction, float travelDistance) {

@@ -48,4 +48,23 @@ vec3 randomCosineWeightedPointOnHemisphere(sampler2D noiseSampler, vec2 fragCoor
     return t * p.x + cross(t, n) * p.y + n * p.z;
 }
 
+uint hash(uint x) {
+    x += (x << 10u);
+    x ^= (x >> 6u);
+    x += (x << 3u);
+    x ^= (x >> 11u);
+    x += (x << 15u);
+    return x;
+}
+
+float constructFloat01(uint bits) {
+    bits &= 0x007FFFFFu;
+    bits |= 0x3F800000u;
+    return uintBitsToFloat(bits) - 1.0;
+}
+
+float random01(float x) {
+    return constructFloat01(hash(floatBitsToUint(x)));
+}
+
 #endif // _RANDOM_GLSL
