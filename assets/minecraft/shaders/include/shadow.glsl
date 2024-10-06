@@ -39,14 +39,14 @@ vec3 getShadowEyeLocation(float time) {
     // return vec3(10, 8.6, 5);
     // return vec3(40.0, 34.0, 20.0);
     // return vec3(40.0, 15.0, 7.0); ////// sunset
-    return vec3(30.0, 30.0, 40.0) * 0.5;
+    return vec3(30.0, 8.0, 40.0) * 2.5;
     
     // return vec3(300.0, 500.0, 400.0) * 0.5;
     // return vec3(40.0, 34.0, 0.0);
 }
 
 mat4 shadowProjectionMatrix() {
-    return orthographicProjectionMatrix(-128.0, 128.0, -128.0, 128.0, 0.05, 64.0);
+    return orthographicProjectionMatrix(-128.0, 128.0, -128.0, 128.0, 0.05, 128.0);
 }
 
 mat4 shadowTransformationMatrix(float time) {
