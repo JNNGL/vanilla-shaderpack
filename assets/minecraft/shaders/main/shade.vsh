@@ -13,14 +13,19 @@ uniform mat4 ModelViewMat;
 
 out vec2 texCoord;
 flat out vec3 lightDir;
+flat out vec3 sunDirection;
 flat out mat4 invProjViewMat;
 flat out mat4 shadowProjMat;
 flat out vec3 offset;
+flat out vec2 planes;
+flat out int shouldUpdate;
 out vec4 near;
 
 void main() {
     gl_Position = screenquad[gl_VertexID];
     texCoord = sqTexCoord(gl_Position);
+
+    shouldUpdate = decodeIsShadowMap(DataSampler) ? 0 : 1;
 
     float time = decodeShadowTime(ShadowMapSampler);
     float skyFactor = decodeShadowSkyFactor(ShadowMapSampler);
@@ -35,7 +40,9 @@ void main() {
 
     invProjViewMat = inverse(projection * ModelViewMat);
     lightDir = normalize(shadowEye);
+    sunDirection = decodeSunDirection(DataSampler);
     shadowProjMat = shadowProj * shadowView;
     offset = captureOffset + fract(chunkOffset);
     near = getPointOnNearPlane(invProjViewMat, gl_Position.xy);
+    planes = getPlanes(invProjViewMat);
 }

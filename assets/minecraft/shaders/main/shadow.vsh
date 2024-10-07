@@ -20,11 +20,14 @@ flat out vec3 offset;
 flat out mat4 shadowProjMat;
 flat out vec3 lightDir;
 flat out float timeSeed;
+flat out int shouldUpdate;
 out vec4 near;
 
 void main() {
     gl_Position = screenquad[gl_VertexID];
     texCoord = sqTexCoord(gl_Position);
+
+    shouldUpdate = decodeIsShadowMap(DataSampler) ? 0 : 1;
 
     vec3 chunkOffset = decodeChunkOffset(DataSampler);
     vec3 captureOffset = decodeShadowOffset(ShadowMapSampler);

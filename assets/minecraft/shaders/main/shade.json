@@ -7,7 +7,8 @@
         { "name": "DepthSampler" },
         { "name": "ShadowSampler" },
         { "name": "NormalSampler" },
-        { "name": "TransmittanceSampler" },
+        { "name": "SkySampler" },
+        { "name": "AerialPerspectiveSampler"},
         { "name": "ShadowMapSampler" },
         { "name": "NoiseSampler" }
     ],

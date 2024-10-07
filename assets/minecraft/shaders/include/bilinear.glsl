@@ -36,6 +36,25 @@ vec3 textureBilinearR11G11B10L(sampler2D samp, vec2 texSize, vec2 texCoord) {
 
 _BL_OVERLOAD(vec3, textureBilinearR11G11B10L)
 
+vec3 textureBilinearR11G11B10Lpow2(sampler2D samp, vec2 texSize, vec2 texCoord) {
+    vec2 p = texCoord * texSize - 0.5;
+    ivec2 coord = ivec2(floor(p));
+    vec2 frac = p - coord;
+    
+    vec3 s0 = unpackR11G11B10LfromF8x4(texelFetch(samp, coord + ivec2(0, 0), 0));
+    vec3 s1 = unpackR11G11B10LfromF8x4(texelFetch(samp, coord + ivec2(1, 0), 0));
+    vec3 s2 = unpackR11G11B10LfromF8x4(texelFetch(samp, coord + ivec2(0, 1), 0));
+    vec3 s3 = unpackR11G11B10LfromF8x4(texelFetch(samp, coord + ivec2(1, 1), 0));
+
+    return mix(
+        mix(s0 * s0, s1 * s1, frac.x),
+        mix(s2 * s2, s3 * s3, frac.x),
+        frac.y
+    );
+}
+
+_BL_OVERLOAD(vec3, textureBilinearR11G11B10Lpow2)
+
 #undef _BL_OVERLOAD
 
 #endif // _BILINEAR_GLSL

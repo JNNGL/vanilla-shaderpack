@@ -17,13 +17,27 @@
         "final_comp": {},
         "final_prev": {"width": 1921, "height": 1080},
 
-        "transmittance": {"width": 256, "height": 128}
+        "transmittance": {"width": 256, "height": 128},
+        "sky_view": {"width": 200, "height": 200},
+        "aerial_perspective": {"width": 576, "height": 48}
     },
     "passes": [
         {
             "program": "minecraft:atmosphere/transmittance",
             "inputs": [],
             "output": "transmittance"
+        },
+        {
+            "program": "minecraft:atmosphere/sky_view",
+            "inputs": [ { "sampler_name": "Data", "target": "minecraft:main" },
+                        { "sampler_name": "Transmittance", "target": "transmittance" } ],
+            "output": "sky_view"
+        },
+        {
+            "program": "minecraft:atmosphere/aerial_perspective",
+            "inputs": [ { "sampler_name": "Data", "target": "minecraft:main" },
+                        { "sampler_name": "Transmittance", "target": "transmittance" } ],
+            "output": "aerial_perspective"
         },
 
         {
@@ -80,7 +94,8 @@
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
                         { "sampler_name": "Shadow", "target": "shadow_prev" },
                         { "sampler_name": "Normal", "target": "normals" },
-                        { "sampler_name": "Transmittance", "target": "transmittance" },
+                        { "sampler_name": "Sky", "target": "sky_view" },
+                        { "sampler_name": "AerialPerspective", "target": "aerial_perspective" },
                         { "sampler_name": "ShadowMap", "target": "shadowmap_depth" },
                         { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 } ],
             "output": "final"

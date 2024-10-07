@@ -1,0 +1,9 @@
+{
+    "vertex": "minecraft:atmosphere/sky_view",
+    "fragment": "minecraft:atmosphere/sky_view",
+    "samplers": [
+        { "name": "DataSampler" },
+        { "name": "TransmittanceSampler" }
+    ],
+    "uniforms": []
+}

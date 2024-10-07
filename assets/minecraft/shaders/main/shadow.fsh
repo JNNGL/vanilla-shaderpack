@@ -23,6 +23,7 @@ flat in vec3 offset;
 flat in mat4 shadowProjMat;
 flat in vec3 lightDir;
 flat in float timeSeed;
+flat in int shouldUpdate;
 in vec4 near;
 
 out vec4 fragColor;
@@ -152,6 +153,10 @@ float estimateAmbientOcclusion(vec3 fragPos, vec3 normal) {
 }
 
 void main() {
+    if (shouldUpdate == 0) {
+        return;
+    }
+
     if (int(gl_FragCoord.y) == 0) {
         fragColor = texture(DataSampler, texCoord);
         return;
@@ -190,7 +195,7 @@ void main() {
         shadow = estimateShadowContribution(shadowProjMat, lightDir, fragPos - offset, normal);
     }
 
-    float ambientOcclusion = estimateAmbientOcclusion(fragPos, normal);
+    float ambientOcclusion = 1.0;//estimateAmbientOcclusion(fragPos, normal);
 
     float sz = occlusionDistance * 256.0;
     float subsurface = 0.25 * (exp(-sz) + 3 * exp(-sz / 3));
