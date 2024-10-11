@@ -173,9 +173,9 @@ void main() {
     }
 
     float shadow = 0.0;
-    float occlusionDistance = 1024.0;
+    float subsurface = 1.0;
     if (dot(lightDir, normal) < -0.01) {
-        shadow = 1.0;
+        shadow = 0.0;
 
         vec3 rnd = random(NoiseSampler, gl_FragCoord.xy, timeSeed);
         vec3 rndVec = vec3(rnd.xy * 2.0 - 1.0, 0.0);
@@ -183,21 +183,23 @@ void main() {
         vec3 bitangent = cross(normal, tangent);
         mat3 tbn = mat3(tangent, bitangent, normal);
 
+        float occlusionDistance = 1024.0;
         for (int i = 0; i < 10; i++) {
             vec3 jitter = tbn * vec3(random(NoiseSampler, gl_FragCoord.xy, i * 5 + timeSeed).xy * 2.0 - 1.0, 0.0);
             vec3 projection = projectShadowMap(shadowProjMat, fragPos - offset + jitter * 0.1, normal);
-            if (projection.y >= 0.05 && projection.x >= 0.05 && projection.y < projection.x + 0.05) {
+            if (projection.y >= 0.005 && projection.x >= 0.005 && projection.y < projection.x + 0.005) {
                 float currentDistance = (projection.x - projection.y) / projection.x;
                 occlusionDistance = max(0.0, min(occlusionDistance, currentDistance));
             }
         }
+
+        float sz = occlusionDistance * 2048.0;
+        subsurface = 0.25 * (exp(-sz) + 3.0 * exp(-sz / 3.0));
     } else {
         shadow = estimateShadowContribution(shadowProjMat, lightDir, fragPos - offset, normal);
     }
 
-    float ambientOcclusion = 1.0;//estimateAmbientOcclusion(fragPos, normal);
+    float ambientOcclusion = estimateAmbientOcclusion(fragPos, normal);
 
-    float sz = occlusionDistance * 256.0;
-    float subsurface = 0.25 * (exp(-sz) + 3 * exp(-sz / 3));
     fragColor = vec4(shadow, ambientOcclusion, subsurface, 1.0);
 }

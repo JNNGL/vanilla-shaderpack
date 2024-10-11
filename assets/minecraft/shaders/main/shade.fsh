@@ -15,7 +15,10 @@ uniform sampler2D NormalSampler;
 uniform sampler2D SkySampler;
 uniform sampler2D ShadowMapSampler;
 uniform sampler2D AerialPerspectiveSampler;
+uniform sampler2D TransmittanceSampler;
 uniform sampler2D NoiseSampler;
+
+uniform mat4 ModelViewMat;
 
 in vec2 texCoord;
 flat in vec3 lightDir;
@@ -102,14 +105,21 @@ void main() {
     } else {
         float NdotL = dot(normal, sunDirection);
 
-        color = srgbToLinear(texture(InSampler, texCoord).rgb);
+        vec3 albedo = srgbToLinear(texture(InSampler, texCoord).rgb);
 
-        const float a = 1.0;
-        vec3 sunColor = vec3(255.0 / 255.0, 167.0 / 255.0, 125.0 / 255.0) * 3.5 * a;
-        vec3 ambient = vec3(0.1621, 0.1919, 0.2094) * 2.0 * a * shadow.g * (-max(-NdotL, 0.0) * 0.5 + 1.0);
-        vec3 directional = sunColor * (1.0 - shadow.r) * max(0.0, NdotL);
-        vec3 subsurface = shadow.b * sunColor * (abs(NdotL) + 0.5) * 0.25;
-        color *= (ambient + directional) * shadow.g;
+        vec3 transmittance = sampleTransmittanceLUT(TransmittanceSampler, vec3(0.0, earthRadius + cameraHeight, 0.0) + fragPos, sunDirection);
+        vec3 lightColor = transmittance;
+
+        vec3 diffuse = (albedo / PI); // Lambert
+        diffuse *= clamp(NdotL, 0.0, 1.0) * 5.0 * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);
+
+        float lightColorLength = length(lightColor);
+        vec3 ambientColor = pow(sampleSkyLUT(SkySampler, vec3(0.000001, 1.0, 0.0), sunDirection), vec3(1.0 / 3.0)) * 5.0;
+        vec3 ambient = albedo * pow(shadow.g, 1.5) * ambientColor * 0.5 * lightColorLength * (-max(-NdotL, 0.0) * 0.6 * lightColorLength + 1.0);
+
+        color = vec3(0.0);
+        color += diffuse * (1.0 - shadow.x);
+        color += ambient;
 
         float linearDepth = linearizeDepth(depth * 2.0 - 1.0, planes);
         vec3 screenSpace = vec3(texCoord, (linearDepth - planes.x) / (planes.y - planes.x));
