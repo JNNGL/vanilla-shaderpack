@@ -28,6 +28,8 @@ void main() {
     vec3 sunDirection = vec3(0.0, sin(sunAltitude), -cos(sunAltitude));
     
     float distanceToBoundary = distanceToAtmosphereBoundary(position, direction);
+    float distanceToGround = distanceToEarth(position, direction);
+    if (distanceToGround > 0.0) distanceToBoundary = distanceToGround;
 
     vec3 luminance = raymarchAtmosphericScattering(TransmittanceSampler, position, direction, sunDirection, distanceToBoundary)[0];
     

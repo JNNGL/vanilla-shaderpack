@@ -111,7 +111,7 @@ void main() {
         vec3 lightColor = transmittance;
 
         vec3 diffuse = (albedo / PI); // Lambert
-        diffuse *= clamp(NdotL, 0.0, 1.0) * 5.0 * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);
+        diffuse *= clamp(NdotL, 0.0, 1.0) * 4.0 * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);
 
         float lightColorLength = length(lightColor);
         vec3 ambientColor = pow(sampleSkyLUT(SkySampler, vec3(0.000001, 1.0, 0.0), sunDirection), vec3(1.0 / 3.0)) * 5.0;
