@@ -6,6 +6,7 @@
 #moj_import <minecraft:projections.glsl>
 
 uniform sampler2D TransmittanceSampler;
+uniform sampler2D MultipleScatteringSampler;
 
 flat in vec3 lightDirection;
 flat in mat4 invProjViewMat;
@@ -35,7 +36,7 @@ void main() {
     float travelDistance = length(froxelOffset);
     vec3 direction = froxelOffset / travelDistance;
 
-    mat2x3 atmosphericScattering = raymarchAtmosphericScattering(TransmittanceSampler, position, direction, lightDirection, travelDistance * aerialPerspectiveScale);
+    mat2x3 atmosphericScattering = raymarchAtmosphericScattering(TransmittanceSampler, MultipleScatteringSampler, position, direction, lightDirection, travelDistance * aerialPerspectiveScale);
 
     vec3 value = atmosphericScattering[index];
     fragColor = packR11G11B10LtoF8x4(index == 0 ? sqrt(value) : value * value);

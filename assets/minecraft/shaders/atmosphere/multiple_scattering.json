@@ -1,0 +1,8 @@
+{
+    "vertex": "minecraft:atmosphere/multiple_scattering",
+    "fragment": "minecraft:atmosphere/multiple_scattering",
+    "samplers": [
+        { "name": "TransmittanceSampler" }
+    ],
+    "uniforms": []
+}

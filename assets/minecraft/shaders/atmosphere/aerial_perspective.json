@@ -3,7 +3,8 @@
     "fragment": "minecraft:atmosphere/aerial_perspective",
     "samplers": [
         { "name": "DataSampler" },
-        { "name": "TransmittanceSampler" }
+        { "name": "TransmittanceSampler" },
+        { "name": "MultipleScatteringSampler" }
     ],
     "uniforms": [
         { "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] }

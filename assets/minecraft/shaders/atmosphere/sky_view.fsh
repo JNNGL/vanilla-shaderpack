@@ -5,6 +5,7 @@
 #moj_import <minecraft:constants.glsl>
 
 uniform sampler2D TransmittanceSampler;
+uniform sampler2D MultipleScatteringSampler;
 
 in vec2 texCoord;
 flat in vec3 lightDirection;
@@ -29,9 +30,10 @@ void main() {
     
     float distanceToBoundary = distanceToAtmosphereBoundary(position, direction);
     float distanceToGround = distanceToEarth(position, direction);
-    if (distanceToGround > 0.0) distanceToBoundary = distanceToGround;
+    // if (distanceToGround > 0.0) distanceToBoundary = distanceToGround;
 
-    vec3 luminance = raymarchAtmosphericScattering(TransmittanceSampler, position, direction, sunDirection, distanceToBoundary)[0];
+    vec3 luminance = raymarchAtmosphericScattering(TransmittanceSampler, MultipleScatteringSampler, position, direction, sunDirection, distanceToBoundary)[0];
+    luminance = clamp(luminance, 0.0, 1.0);
     
     fragColor = packR11G11B10LtoF8x4(sqrt(luminance));
 }

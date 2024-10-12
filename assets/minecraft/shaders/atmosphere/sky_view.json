@@ -3,7 +3,8 @@
     "fragment": "minecraft:atmosphere/sky_view",
     "samplers": [
         { "name": "DataSampler" },
-        { "name": "TransmittanceSampler" }
+        { "name": "TransmittanceSampler" },
+        { "name": "MultipleScatteringSampler" }
     ],
     "uniforms": []
 }

@@ -62,7 +62,7 @@ vec3 projectShadowMap(mat4 lightProj, vec3 position, vec3 normal) {
 
 bool checkOcclusion(vec3 projection, vec3 lightDir, vec3 normal) {
     float NdotL = dot(normal, lightDir);
-    return projection.x - projection.z / (abs(NdotL) * 0.35) > projection.y;
+    return projection.x - projection.z > projection.y;
 }
 
 float estimateVL(mat4 lightProj, vec3 fragPos, vec3 rayDirection, vec3 rayOrigin, vec3 normal, vec3 lightDir) {
@@ -108,17 +108,22 @@ void main() {
         vec3 albedo = srgbToLinear(texture(InSampler, texCoord).rgb);
 
         vec3 transmittance = sampleTransmittanceLUT(TransmittanceSampler, vec3(0.0, earthRadius + cameraHeight, 0.0) + fragPos, sunDirection);
-        vec3 lightColor = transmittance;
+        vec3 lightColor = transmittance * 1.0;
 
         vec3 diffuse = (albedo / PI); // Lambert
         diffuse *= clamp(NdotL, 0.0, 1.0) * 4.0 * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);
 
         float lightColorLength = length(lightColor);
         vec3 ambientColor = pow(sampleSkyLUT(SkySampler, vec3(0.000001, 1.0, 0.0), sunDirection), vec3(1.0 / 3.0)) * 5.0;
-        vec3 ambient = albedo * pow(shadow.g, 1.5) * ambientColor * 0.5 * lightColorLength * (-max(-NdotL, 0.0) * 0.6 * lightColorLength + 1.0);
+        vec3 ambient = albedo * pow(shadow.g, 1.5) * ambientColor * 0.33 * (lightColorLength + 0.13) * (-clamp(-NdotL, 0.0, 0.6) * 0.6 * lightColorLength + 1.0);
+
+        // lame subsurface scattering "approximation"
+        float halfLambert = pow(NdotL * 0.25 + 0.75, 1.0);
+        vec3 subsurface = halfLambert * shadow.z * albedo * lightColor;
 
         color = vec3(0.0);
-        color += diffuse * (1.0 - shadow.x);
+        // color += subsurface * (1.0 - shadow.x);
+        color += mix(diffuse, subsurface, 0.6) * (1.0 - shadow.x);
         color += ambient;
 
         float linearDepth = linearizeDepth(depth * 2.0 - 1.0, planes);

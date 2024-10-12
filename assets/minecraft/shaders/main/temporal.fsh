@@ -49,7 +49,7 @@ void main() {
         return;
     }
 
-    vec3 previousSample = textureBilinear(PreviousSampler, InSize, screenSpace.xy).rgb;
-    vec3 mixedSample = mix(previousSample, fragColor.rgb, 0.2);
-    fragColor = vec4(mixedSample.rgb, fragColor.a);
+    vec4 previousSample = textureBilinear(PreviousSampler, InSize, screenSpace.xy);
+    vec4 mixedSample = mix(previousSample, fragColor, 0.2);
+    fragColor = vec4(mixedSample);
 }

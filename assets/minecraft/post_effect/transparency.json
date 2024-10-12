@@ -18,6 +18,7 @@
         "final_prev": {"width": 1921, "height": 1080},
 
         "transmittance": {"width": 256, "height": 128},
+        "multiple_scattering": {"width": 32, "height": 32},
         "sky_view": {"width": 200, "height": 200},
         "aerial_perspective": {"width": 576, "height": 48}
     },
@@ -28,15 +29,22 @@
             "output": "transmittance"
         },
         {
+            "program": "minecraft:atmosphere/multiple_scattering",
+            "inputs": [ { "sampler_name": "Transmittance", "target": "transmittance" } ],
+            "output": "multiple_scattering"
+        },
+        {
             "program": "minecraft:atmosphere/sky_view",
             "inputs": [ { "sampler_name": "Data", "target": "minecraft:main" },
-                        { "sampler_name": "Transmittance", "target": "transmittance" } ],
+                        { "sampler_name": "Transmittance", "target": "transmittance" },
+                        { "sampler_name": "MultipleScattering", "target": "multiple_scattering" } ],
             "output": "sky_view"
         },
         {
             "program": "minecraft:atmosphere/aerial_perspective",
             "inputs": [ { "sampler_name": "Data", "target": "minecraft:main" },
-                        { "sampler_name": "Transmittance", "target": "transmittance" } ],
+                        { "sampler_name": "Transmittance", "target": "transmittance" },
+                        { "sampler_name": "MultipleScattering", "target": "multiple_scattering" } ],
             "output": "aerial_perspective"
         },
 

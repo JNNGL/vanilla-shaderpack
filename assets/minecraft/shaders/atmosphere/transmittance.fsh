@@ -15,5 +15,7 @@ void main() {
 
     float travelDistance = distanceToAtmosphereBoundary(position, direction);
     vec3 transmittance = computeTransmittanceToBoundary(position, direction, travelDistance);
+    transmittance = clamp(transmittance, 0.0, 1.0);
+
     fragColor = packR11G11B10LtoF8x4(transmittance);
 }
