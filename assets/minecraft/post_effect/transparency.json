@@ -107,6 +107,11 @@
                         { "sampler_name": "Transmittance", "target": "transmittance" },
                         { "sampler_name": "ShadowMap", "target": "shadowmap_depth" },
                         { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 } ],
+            "output": "swap"
+        },
+        {
+            "program": "minecraft:post/tonemap",
+            "inputs": [ { "sampler_name": "In", "target": "swap" } ],
             "output": "final"
         },
 

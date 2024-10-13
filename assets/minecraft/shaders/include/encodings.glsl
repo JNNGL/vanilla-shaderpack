@@ -83,4 +83,17 @@ vec3 unpackR11G11B10LfromF8x4(vec4 v) {
     return vec3(float(r) / 2047.0, float(g) / 2047.0, float(b) / 1023.0);
 }
 
+#define RGBM_MAX_RANGE 30.0
+
+vec4 encodeRGBM(vec3 rgb) {
+    float maxRGB = max(rgb.x, max(rgb.y, rgb.z));
+    float m = maxRGB / RGBM_MAX_RANGE;
+    m = ceil(m * 255.0) / 255.0;
+    return vec4(rgb / (m * RGBM_MAX_RANGE), m);
+}
+
+vec3 decodeRGBM(vec4 rgbm) {
+    return rgbm.rgb * (rgbm.a * RGBM_MAX_RANGE);
+}
+
 #endif // _ENCODINGS_GLSL

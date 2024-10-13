@@ -2,7 +2,6 @@
 
 #extension GL_MC_moj_import : enable
 #moj_import <minecraft:atmosphere.glsl>
-#moj_import <minecraft:tonemapping/aces.glsl>
 #moj_import <minecraft:projections.glsl>
 #moj_import <minecraft:random.glsl>
 #moj_import <minecraft:shadow.glsl>
@@ -16,8 +15,6 @@ uniform sampler2D SkySampler;
 uniform sampler2D ShadowMapSampler;
 uniform sampler2D AerialPerspectiveSampler;
 uniform sampler2D TransmittanceSampler;
-uniform sampler2D TranslucentSampler;
-uniform sampler2D TranslucentDepthSampler;
 uniform sampler2D NoiseSampler;
 
 uniform mat4 ModelViewMat;
@@ -100,11 +97,9 @@ void main() {
     vec3 normal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
 
     vec3 direction = normalize(fragPos - pointOnNearPlane);
-
-    float translucentDepth = texture(TranslucentDepthSampler, texCoord).r;
     
     vec3 color;
-    if (translucentDepth == 1.0) {
+    if (depth == 1.0) {
         color = sampleSkyLUT(SkySampler, direction, sunDirection) * sunIntensity;
     } else {
         float NdotL = dot(normal, sunDirection);
@@ -160,8 +155,5 @@ void main() {
         color = color * aerial[1] + aerial[0] * sunIntensity * volumetricShadowing;
     }
 
-    color = acesFitted(color);
-    color = linearToSrgb(color);
-
-    fragColor = vec4(color, 1.0);
+    fragColor = encodeRGBM(color);
 }
