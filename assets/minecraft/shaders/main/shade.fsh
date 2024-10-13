@@ -16,6 +16,8 @@ uniform sampler2D SkySampler;
 uniform sampler2D ShadowMapSampler;
 uniform sampler2D AerialPerspectiveSampler;
 uniform sampler2D TransmittanceSampler;
+uniform sampler2D TranslucentSampler;
+uniform sampler2D TranslucentDepthSampler;
 uniform sampler2D NoiseSampler;
 
 uniform mat4 ModelViewMat;
@@ -98,9 +100,11 @@ void main() {
     vec3 normal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
 
     vec3 direction = normalize(fragPos - pointOnNearPlane);
+
+    float translucentDepth = texture(TranslucentDepthSampler, texCoord).r;
     
     vec3 color;
-    if (dot(normal, normal) < 0.01) {
+    if (translucentDepth == 1.0) {
         color = sampleSkyLUT(SkySampler, direction, sunDirection) * sunIntensity;
     } else {
         float NdotL = dot(normal, sunDirection);
@@ -108,7 +112,7 @@ void main() {
         vec3 albedo = srgbToLinear(texture(InSampler, texCoord).rgb);
 
         vec3 transmittance = sampleTransmittanceLUT(TransmittanceSampler, vec3(0.0, earthRadius + cameraHeight, 0.0) + fragPos, sunDirection);
-        vec3 lightColor = transmittance * 1.0;
+        vec3 lightColor = transmittance * 1.2;
 
         vec3 diffuse = (albedo / PI); // Lambert
         diffuse *= clamp(NdotL, 0.0, 1.0) * 4.0 * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);
@@ -122,7 +126,6 @@ void main() {
         vec3 subsurface = halfLambert * shadow.z * albedo * lightColor;
 
         color = vec3(0.0);
-        // color += subsurface * (1.0 - shadow.x);
         color += mix(diffuse, subsurface, 0.6) * (1.0 - shadow.x);
         color += ambient;
 

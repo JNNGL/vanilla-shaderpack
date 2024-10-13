@@ -16,21 +16,21 @@ const float sunIntensity = 20.0;
 const float atmosphereRadius = 6471.0e3;
 const float earthRadius = 6371.0e3;
 
-const vec3 rayleighScatteringBeta = vec3(5.8e-6, 13.5e-6, 33.1e-6);
+const vec3 rayleighScatteringBeta = vec3(6.605e-6, 12.344e-6, 29.412e-6);
 const vec4 rayleighDensityProfile = vec4(1.0, 1.0 / 8.0e3, 0.0, 0.0);
 
-const float mieScatteringBeta = 1.5e-5;
+const float mieScatteringBeta = 1.0e-5;
 const vec4 mieDensityProfile = vec4(1.0, 1.0 / 1.2e3, 0.0, 0.0);
 const float mieAbsorptionBase = 4.4e-6;
-const float mieAnisotropyFactor = 0.8;
+const float mieAnisotropyFactor = 0.85;
 
 const vec3 ozoneAbsorption = vec3(0.650e-6, 1.881e-6, 0.085e-6);
-const vec4 ozoneDensityProfile = vec4(0.0, 0.0, -1.0e-3 / 15.0, 8.0 / 3.0);
+const vec4 ozoneDensityProfile = vec4(0.0, 0.0, -1.5e-3 / 15.0, 8.0 / 3.0);
 
-const vec3 groundAlbedo = vec3(0.0);
+const vec3 groundAlbedo = vec3(0.1);
 
 const ivec3 aerialPerspectiveResolution = ivec3(24);
-const float aerialPerspectiveScale = 17.5;
+const float aerialPerspectiveScale = 20.0;
 
 float rayleighPhaseFunction(float cosTheta) {
     return 3.0 / (16.0 * PI) * (1.0 + cosTheta * cosTheta);
