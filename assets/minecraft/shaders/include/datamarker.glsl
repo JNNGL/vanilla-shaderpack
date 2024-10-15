@@ -143,8 +143,9 @@ float decodeSkyFactor(sampler2D dataSampler) {
 // 64-66 - shadow offset
 // 67 - time
 // 68 - sky factor
+// 69-71 - total offset
 
-bool overlayShadowMap(vec2 fragCoord, inout vec4 color, vec3 shadowOffset, float time, float skyFactor) {
+bool overlayShadowMap(vec2 fragCoord, inout vec4 color, vec3 shadowOffset, float time, float skyFactor, vec3 totalOffset) {
     if (int(fragCoord.y) == 0) {
         int index = int(fragCoord.x) - 64;
         if (index >= 0 && index < 3) {
@@ -157,6 +158,10 @@ bool overlayShadowMap(vec2 fragCoord, inout vec4 color, vec3 shadowOffset, float
         }
         if (index == 4) {
             color = packF32toF8x4(skyFactor);
+            return true;
+        }
+        if (index >= 5 && index < 8) {
+            color = packF32toF8x4(totalOffset[index - 5]);
             return true;
         }
     }
@@ -180,6 +185,17 @@ float decodeShadowTime(sampler2D dataSampler) {
 
 float decodeShadowSkyFactor(sampler2D dataSampler) {
     return unpackF32fromF8x4(texelFetch(dataSampler, ivec2(68, 0), 0));
+}
+
+vec3 decodeTotalOffset(sampler2D dataSampler) {
+    vec3 totalOffset;
+    
+    for (int i = 0; i < 3; i++) {
+        vec4 color = texelFetch(dataSampler, ivec2(69 + i, 0), 0);
+        totalOffset[i] = unpackF32fromF8x4(color);
+    }
+
+    return totalOffset;
 }
 
 

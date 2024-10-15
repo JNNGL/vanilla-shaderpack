@@ -13,6 +13,7 @@ flat out int shouldUpdate;
 flat out mat4 lightProjMat;
 flat out mat4 invLightProjMat;
 flat out vec3 offset;
+flat out vec3 totalOffset;
 flat out float gameTime;
 flat out float currentTime;
 flat out float skyFactor;
@@ -61,4 +62,9 @@ void main() {
     vec3 prevPosition = decodeChunkOffset(PreviousSampler);
     vec3 prevOffset = decodeShadowOffset(PreviousSampler);
     offset = prevOffset + mod(floor(position) - floor(prevPosition) + 8.0, 16.0) - 8.0;
+    totalOffset = decodeTotalOffset(PreviousSampler);
+    if (any(isnan(totalOffset)) || any(isinf(totalOffset)) || dot(totalOffset, totalOffset) > 100000.0) {
+        totalOffset = vec3(0.0);
+    }
+    totalOffset -= mod(position - prevPosition + 8.0, 16.0) - 8.0;
 }

@@ -8,6 +8,7 @@
 
 uniform sampler2D DataSampler;
 uniform sampler2D DepthSampler;
+uniform sampler2D TranslucentDepthSampler;
 uniform sampler2D ShadowMapSampler;
 uniform sampler2D NormalSampler;
 uniform sampler2D NoiseSampler;
@@ -24,6 +25,7 @@ flat in mat4 shadowProjMat;
 flat in vec3 lightDir;
 flat in float timeSeed;
 flat in int shouldUpdate;
+flat in vec2 planes;
 in vec4 near;
 
 out vec4 fragColor;
@@ -46,7 +48,7 @@ vec3 projectShadowMap(mat4 lightProj, vec3 position, vec3 normal) {
 
 bool checkOcclusion(vec3 projection, vec3 lightDir, vec3 normal) {
     float NdotL = dot(normal, lightDir);
-    return projection.x - projection.z / (abs(NdotL) * 0.35) > projection.y;
+    return projection.x - projection.z / (abs(NdotL) * 0.1) > projection.y;
 }
 
 float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, vec3 normal) {
@@ -152,6 +154,23 @@ float estimateAmbientOcclusion(vec3 fragPos, vec3 normal) {
     return occlusion;
 }
 
+float estimateVolumetricShadowing(mat4 lightProj, float rayLength, vec3 rayDirection, vec3 rayOrigin, vec3 normal, vec3 lightDir) {
+    const int NUM_STEPS = 16;
+
+    float rayStep = rayLength / NUM_STEPS;
+    vec3 rayPos = rayOrigin + rayDirection * rayStep * random(NoiseSampler, gl_FragCoord.xy, timeSeed).x - offset;
+    float accum = 0.0;
+
+    for (int i = 0; i < NUM_STEPS; i++) {
+        vec3 projection = projectShadowMap(lightProj, rayPos, normal);
+        accum += checkOcclusion(projection, lightDir, normal) ? 0.0 : 1.0;
+        rayPos += rayDirection * rayStep;
+    }
+    
+    accum /= float(NUM_STEPS);
+    return accum;
+}
+
 void main() {
     if (shouldUpdate == 0) {
         return;
@@ -163,11 +182,24 @@ void main() {
     }
 
     float depth = texture(DepthSampler, texCoord).r;
+    float translucentDepth = texture(TranslucentDepthSampler, texCoord).r;
 
     vec3 fragPos = unprojectScreenSpace(invViewProjMat, texCoord, depth);
     vec3 normal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
 
-    fragColor = vec4(0.0, 1.0, 1.0, 1.0);
+    vec3 rayOrigin = near.xyz / near.w;
+    vec3 rayDirection = normalize(fragPos - rayOrigin);
+
+    fragColor = vec4(0.0, 1.0, 1.0, 0.0);
+    if (translucentDepth == 1.0) {
+        return;
+    }
+
+    float nearestDepth = min(translucentDepth, depth);
+    float volumeDistance = linearizeDepth(nearestDepth * 2.0 - 1.0, planes) - planes.x;
+    float volumetricShadow = estimateVolumetricShadowing(shadowProjMat, volumeDistance, rayDirection, rayOrigin, normal, lightDir);
+    fragColor.a = volumetricShadow;
+    
     if (depth == 1.0) {
         return;
     }
@@ -201,5 +233,5 @@ void main() {
 
     float ambientOcclusion = estimateAmbientOcclusion(fragPos, normal);
 
-    fragColor = vec4(shadow, ambientOcclusion, subsurface, 1.0);
+    fragColor = vec4(shadow, ambientOcclusion, subsurface, volumetricShadow);
 }

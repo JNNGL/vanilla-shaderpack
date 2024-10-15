@@ -45,5 +45,6 @@ mat3 rotateAroundZMatrix(float theta) {
 }
 
 #define MAT3_ROTATE_X(alpha) mat3(1.0, 0.0, 0.0, 0.0, cos(alpha), sin(alpha), 0.0, -sin(alpha), cos(alpha))
+#define MAT3_ROTATE_Y(alpha) mat3(cos(alpha), 0.0, -sin(alpha), 0.0, 1.0, 0.0, sin(alpha), 0.0, cos(alpha))
 
 #endif // _MATRICES_GLSL

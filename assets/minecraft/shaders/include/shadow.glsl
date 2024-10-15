@@ -36,7 +36,8 @@ bool isShadowMapFrame(float time) {
 }
 
 const float sunPathRotationX = radians(30.0);
-const mat3 sunRotationMatrix = MAT3_ROTATE_X(sunPathRotationX);
+const float sunPathRotationY = radians(-10.0);
+const mat3 sunRotationMatrix = MAT3_ROTATE_Y(sunPathRotationY) * MAT3_ROTATE_X(sunPathRotationX);
 
 const vec3 shadowMapLocations[] = vec3[](
     sunRotationMatrix * vec3(1, 0, 0),

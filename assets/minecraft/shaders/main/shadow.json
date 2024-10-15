@@ -4,6 +4,7 @@
     "samplers": [
         { "name": "DataSampler" },
         { "name": "DepthSampler" },
+        { "name": "TranslucentDepthSampler" },
         { "name": "ShadowMapSampler" },
         { "name": "NormalSampler" },
         { "name": "NoiseSampler" },

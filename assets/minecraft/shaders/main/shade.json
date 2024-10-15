@@ -8,10 +8,7 @@
         { "name": "ShadowSampler" },
         { "name": "NormalSampler" },
         { "name": "SkySampler" },
-        { "name": "AerialPerspectiveSampler"},
-        { "name": "TransmittanceSampler" },
-        { "name": "ShadowMapSampler" },
-        { "name": "NoiseSampler" }
+        { "name": "TransmittanceSampler" }
     ],
     "uniforms": [
         { "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] }

@@ -73,6 +73,7 @@
             "program": "minecraft:main/shadow",
             "inputs": [ { "sampler_name": "Data", "target": "minecraft:main" },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
+                        { "sampler_name": "TranslucentDepth", "target": "translucent", "use_depth_buffer": true },
                         { "sampler_name": "ShadowMap", "target": "shadowmap_depth" },
                         { "sampler_name": "Normal", "target": "normals" },
                         { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 },
@@ -103,15 +104,26 @@
                         { "sampler_name": "Shadow", "target": "shadow_prev" },
                         { "sampler_name": "Normal", "target": "normals" },
                         { "sampler_name": "Sky", "target": "sky_view" },
-                        { "sampler_name": "AerialPerspective", "target": "aerial_perspective" },
-                        { "sampler_name": "Transmittance", "target": "transmittance" },
-                        { "sampler_name": "ShadowMap", "target": "shadowmap_depth" },
-                        { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 } ],
+                        { "sampler_name": "Transmittance", "target": "transmittance" } ],
             "output": "swap"
         },
         {
+            "program": "minecraft:main/shade1",
+            "inputs": [ { "sampler_name": "In", "target": "swap" },
+                        { "sampler_name": "Data", "target": "shadowmap_depth" },
+                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
+                        { "sampler_name": "Shadow", "target": "shadow_prev" },
+                        { "sampler_name": "Normal", "target": "normals" },
+                        { "sampler_name": "Sky", "target": "sky_view" },
+                        { "sampler_name": "Translucent", "target": "translucent" },
+                        { "sampler_name": "AerialPerspective", "target": "aerial_perspective" },
+                        { "sampler_name": "TranslucentDepth", "target": "translucent", "use_depth_buffer": true },
+                        { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 } ],
+            "output": "swap2"
+        },
+        {
             "program": "minecraft:post/tonemap",
-            "inputs": [ { "sampler_name": "In", "target": "swap" } ],
+            "inputs": [ { "sampler_name": "In", "target": "swap2" } ],
             "output": "final"
         },
 

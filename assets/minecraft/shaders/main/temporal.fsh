@@ -51,5 +51,6 @@ void main() {
 
     vec4 previousSample = textureBilinear(PreviousSampler, InSize, screenSpace.xy);
     vec4 mixedSample = mix(previousSample, fragColor, 0.2);
+    mixedSample.a = fragColor.a;
     fragColor = vec4(mixedSample);
 }

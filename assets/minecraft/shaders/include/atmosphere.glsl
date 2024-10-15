@@ -19,15 +19,15 @@ const float earthRadius = 6371.0e3;
 const vec3 rayleighScatteringBeta = vec3(6.605e-6, 12.344e-6, 29.412e-6);
 const vec4 rayleighDensityProfile = vec4(1.0, 1.0 / 8.0e3, 0.0, 0.0);
 
-const float mieScatteringBeta = 1.0e-5;
+const float mieScatteringBeta = 0.7e-5;
 const vec4 mieDensityProfile = vec4(1.0, 1.0 / 1.2e3, 0.0, 0.0);
 const float mieAbsorptionBase = 4.4e-6;
-const float mieAnisotropyFactor = 0.85;
+const float mieAnisotropyFactor = 0.8;
 
 const vec3 ozoneAbsorption = vec3(0.650e-6, 1.881e-6, 0.085e-6);
 const vec4 ozoneDensityProfile = vec4(0.0, 0.0, -1.5e-3 / 15.0, 8.0 / 3.0);
 
-const vec3 groundAlbedo = vec3(0.1);
+const vec3 groundAlbedo = vec3(0.05);
 
 const ivec3 aerialPerspectiveResolution = ivec3(24);
 const float aerialPerspectiveScale = 20.0;
@@ -240,6 +240,57 @@ vec3 sampleSkyLUT(sampler2D lut, vec3 direction, vec3 sunDirection) {
     vec2 scale = (texSize - 2.0) / texSize;
 
     return textureBilinearR11G11B10Lpow2(lut, uv * scale + 1.0 / texSize);
+}
+
+mat2x3 fetchAerialPerspectiveLUT(sampler2D lut, ivec2 coord) {
+    vec3 atmosphereLuminance = unpackR11G11B10LfromF8x4(texelFetch(lut, coord, 0));
+    vec3 atmosphereTransmittance = unpackR11G11B10LfromF8x4(texelFetch(lut, coord + ivec2(0, 1), 0));
+    atmosphereLuminance *= atmosphereLuminance;
+    atmosphereTransmittance = sqrt(atmosphereTransmittance);
+    return mat2x3(atmosphereLuminance, atmosphereTransmittance);
+}
+
+mat2x3 lerpAerialPerspectiveFroxels(mat2x3 a, mat2x3 b, float alpha) {
+    return mat2x3(mix(a[0], b[0], alpha), mix(a[1], b[1], alpha));
+}
+
+mat2x3 sampleAerialPerspectiveLUT(sampler2D lut, vec2 texCoord, float linearDepth, vec2 planes) {
+    vec3 screenSpace = vec3(texCoord, (linearDepth - planes.x) / (planes.y - planes.x));
+
+    vec3 froxelCoord = screenSpace * aerialPerspectiveResolution;
+    ivec3 froxel = ivec3(floor(froxelCoord));
+    vec3 fract = fract(froxelCoord);
+    froxel.z -= 1;
+
+    ivec2 fragCoord = ivec2(froxel.z * aerialPerspectiveResolution.x + froxel.x, froxel.y * 2);
+    ivec3 mask = ivec3(bvec3(
+        froxel.x >= 0 && froxel.x != aerialPerspectiveResolution.x - 1,
+        froxel.y >= 0 && froxel.y != aerialPerspectiveResolution.y - 1,
+        froxel.z != aerialPerspectiveResolution.z - 1));
+
+    mat2x3 z0 = mat2x3(vec3(0.0), vec3(1.0));
+    if (froxel.z >= 0) {
+        z0 = lerpAerialPerspectiveFroxels(
+            lerpAerialPerspectiveFroxels(
+                fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(0, 0)), 
+                fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(mask.x * 1, 0)), fract.x),
+            lerpAerialPerspectiveFroxels(
+                fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(0, mask.y * 2)), 
+                fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(mask.x * 1, mask.y * 2)), fract.x),
+            fract.y
+        );
+    }
+    mat2x3 z1 = lerpAerialPerspectiveFroxels(
+        lerpAerialPerspectiveFroxels(
+            fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(mask.z * aerialPerspectiveResolution.x, 0)),
+            fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(mask.z * aerialPerspectiveResolution.x + mask.x * 1, 0)), fract.x),
+        lerpAerialPerspectiveFroxels(
+            fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(mask.z * aerialPerspectiveResolution.x, mask.y * 2)), 
+            fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(mask.z * aerialPerspectiveResolution.x + mask.x * 1, mask.y * 2)), fract.x),
+        fract.y
+    );
+
+    return lerpAerialPerspectiveFroxels(z0, z1, fract.z);
 }
 
 #endif // _ATMOSPHERE_GLSL

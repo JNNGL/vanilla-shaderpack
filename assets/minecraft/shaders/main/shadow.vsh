@@ -21,6 +21,7 @@ flat out mat4 shadowProjMat;
 flat out vec3 lightDir;
 flat out float timeSeed;
 flat out int shouldUpdate;
+flat out vec2 planes;
 out vec4 near;
 
 void main() {
@@ -46,4 +47,5 @@ void main() {
     shadowProjMat = shadowProj * shadowView;
     lightDir = normalize(shadowEye);
     timeSeed = decodeTemporalFrame(FrameSampler) / 5.0;
+    planes = getPlanes(invViewProjMat);
 }
