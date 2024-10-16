@@ -5,6 +5,7 @@
 #moj_import <minecraft:encodings.glsl>
 #moj_import <minecraft:shadow.glsl>
 #moj_import <minecraft:random.glsl>
+#moj_import <settings:settings.glsl>
 
 uniform sampler2D DataSampler;
 uniform sampler2D DepthSampler;
@@ -62,7 +63,7 @@ float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, ve
 
     float occluderDistance = 0.0;
 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < SHADOW_SAMPLES; i++) {
         float seed = (-i - 1) * 5 - timeSeed;
         vec2 offset = randomPointOnDisk(NoiseSampler, gl_FragCoord.xy, seed);
         vec3 jitter = offset.x * tangent + offset.y * bitangent * 1.5;
@@ -88,7 +89,7 @@ float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, ve
     contribution *= contributionWeight;
     totalWeight *= contributionWeight;
 
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < PENUMBRA_SAMPLES; i++) {
         float seed = i * 5 + timeSeed;
         vec2 diskPoint = randomPointOnDisk(NoiseSampler, gl_FragCoord.xy, seed);
         vec3 jitter = (tangent * diskPoint.x + bitangent * diskPoint.y) * penumbra + bitangent * diskPoint.y * 0.03;
@@ -124,7 +125,7 @@ float estimateAmbientOcclusion(vec3 fragPos, vec3 normal) {
     vec3 bitangent = cross(normal, tangent);
     mat3 tbn = mat3(tangent, bitangent, normal);
 
-    const int samples = 16;
+    const int samples = SSAO_SAMPLES < 16 ? SSAO_SAMPLES : 16;
 
     float markerCutoff = 1.5 / DataSize.y;
 
@@ -155,19 +156,17 @@ float estimateAmbientOcclusion(vec3 fragPos, vec3 normal) {
 }
 
 float estimateVolumetricShadowing(mat4 lightProj, float rayLength, vec3 rayDirection, vec3 rayOrigin, vec3 normal, vec3 lightDir) {
-    const int NUM_STEPS = 16;
-
-    float rayStep = rayLength / NUM_STEPS;
+    float rayStep = rayLength / float(VOLUMETRIC_SHADOW_SAMPLES);
     vec3 rayPos = rayOrigin + rayDirection * rayStep * random(NoiseSampler, gl_FragCoord.xy, timeSeed).x - offset;
     float accum = 0.0;
 
-    for (int i = 0; i < NUM_STEPS; i++) {
+    for (int i = 0; i < VOLUMETRIC_SHADOW_SAMPLES; i++) {
         vec3 projection = projectShadowMap(lightProj, rayPos, normal);
         accum += checkOcclusion(projection, lightDir, normal) ? 0.0 : 1.0;
         rayPos += rayDirection * rayStep;
     }
     
-    accum /= float(NUM_STEPS);
+    accum /= float(VOLUMETRIC_SHADOW_SAMPLES);
     return accum;
 }
 
@@ -195,9 +194,14 @@ void main() {
         return;
     }
 
+#if (ENABLE_VOLUMETRIC_SHADOWS == yes)
     float nearestDepth = min(translucentDepth, depth);
     float volumeDistance = linearizeDepth(nearestDepth * 2.0 - 1.0, planes) - planes.x;
     float volumetricShadow = estimateVolumetricShadowing(shadowProjMat, volumeDistance, rayDirection, rayOrigin, normal, lightDir);
+#else
+    const float volumetricShadow = 1.0;
+#endif // ENABLE_VOLUMETRIC_SHADOWS
+
     fragColor.a = volumetricShadow;
     
     if (depth == 1.0) {
@@ -207,8 +211,7 @@ void main() {
     float shadow = 0.0;
     float subsurface = 1.0;
     if (dot(lightDir, normal) < -0.01) {
-        shadow = 0.0;
-
+#if (ENABLE_SUBSURFACE_SCATTERING == yes)
         vec3 rnd = random(NoiseSampler, gl_FragCoord.xy, timeSeed);
         vec3 rndVec = vec3(rnd.xy * 2.0 - 1.0, 0.0);
         vec3 tangent = normalize(rndVec - normal);
@@ -216,22 +219,29 @@ void main() {
         mat3 tbn = mat3(tangent, bitangent, normal);
 
         float occlusionDistance = 1024.0;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < SUBSURFACE_SCATTERING_SAMPLES; i++) {
             vec3 jitter = tbn * vec3(random(NoiseSampler, gl_FragCoord.xy, i * 5 + timeSeed).xy * 2.0 - 1.0, 0.0);
-            vec3 projection = projectShadowMap(shadowProjMat, fragPos - offset + jitter * 0.15, normal);
+            vec3 projection = projectShadowMap(shadowProjMat, fragPos - offset + jitter * SUBSURFACE_SAMPLE_RADIUS, normal);
             if (projection.y - 0.005 < projection.x) {
                 float currentDistance = (projection.x - projection.y) / projection.x;
                 occlusionDistance = max(0.0, min(occlusionDistance, currentDistance));
             }
         }
 
-        float sz = occlusionDistance * 768.0;
+        float sz = occlusionDistance * (768.0 * SUBSURFACE_DISTANCE_MULTIPLIER);
         subsurface = 0.25 * (exp(-sz) + 3.0 * exp(-sz / 3.0));
+#endif // ENABLE_SUBSURFACE_SCATTERING
     } else {
+#if (ENABLE_SHADOWS == yes)
         shadow = estimateShadowContribution(shadowProjMat, lightDir, fragPos - offset, normal);
+#endif // ENABLE_SHADOWS
     }
 
+#if (ENABLE_SSAO == yes)
     float ambientOcclusion = estimateAmbientOcclusion(fragPos, normal);
+#else
+    const float ambientOcclusion = 1.0;
+#endif // ENABLE_SSAO
 
     fragColor = vec4(shadow, ambientOcclusion, subsurface, volumetricShadow);
 }

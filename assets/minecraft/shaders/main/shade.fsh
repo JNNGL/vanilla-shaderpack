@@ -4,6 +4,7 @@
 #moj_import <minecraft:atmosphere.glsl>
 #moj_import <minecraft:projections.glsl>
 #moj_import <minecraft:srgb.glsl>
+#moj_import <settings:settings.glsl>
 
 uniform sampler2D InSampler;
 uniform sampler2D DepthSampler;
@@ -43,18 +44,22 @@ void main() {
         vec3 albedo = srgbToLinear(texture(InSampler, texCoord).rgb);
 
         vec3 transmittance = sampleTransmittanceLUT(TransmittanceSampler, vec3(0.0, earthRadius + cameraHeight, 0.0) + fragPos, sunDirection);
-        vec3 lightColor = transmittance * 1.2;
+        vec3 lightColor = transmittance * LIGHT_COLOR_MULTIPLIER;
 
         vec3 diffuse = (albedo / PI); // Lambert
         diffuse *= clamp(NdotL, 0.0, 1.0) * 4.0 * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);
 
         float lightColorLength = length(lightColor);
         vec3 ambientColor = pow(sampleSkyLUT(SkySampler, vec3(0.0001, 1.0, 0.0), sunDirection), vec3(1.0 / 3.0)) * 5.0;
-        vec3 ambient = albedo * pow(shadow.g, 1.5) * ambientColor * 0.33 * (lightColorLength + 0.13) * (-clamp(-NdotL, 0.0, 0.6) * 0.6 * lightColorLength + 1.0);
+        vec3 ambient = albedo * pow(shadow.g, 1.5) * ambientColor * 0.33 * (lightColorLength + 0.13) * (NdotL > 0.0 ? min(clamp(NdotL, 0.0, 0.6) * lightColorLength + 0.5, 1.0) : (-clamp(-NdotL, 0.0, 0.6) * 0.6 * lightColorLength + 1.0));
 
+#if (ENABLE_SUBSURFACE_SCATTERING == yes)
         // lame subsurface scattering "approximation"
         float halfLambert = pow(NdotL * 0.25 + 0.75, 1.0);
         vec3 subsurface = halfLambert * shadow.z * albedo * lightColor;
+#else
+        const vec3 subsurface = vec3(0.0);
+#endif // ENABLE_SUBSURFACE_SCATTERING
 
         color = vec3(0.0);
         color += mix(diffuse, subsurface, 0.6) * (1.0 - shadow.x);

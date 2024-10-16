@@ -1,6 +1,6 @@
 {
-    "vertex": "minecraft:workaround/copy_over_frame",
-    "fragment": "minecraft:workaround/copy_over_frame",
+    "vertex": "minecraft:util/copy_over_frame",
+    "fragment": "minecraft:util/copy_over_frame",
     "samplers": [
         { "name": "InSampler" }
     ],

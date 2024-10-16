@@ -4,6 +4,7 @@
 #moj_import <minecraft:projections.glsl>
 #moj_import <minecraft:datamarker.glsl>
 #moj_import <minecraft:bilinear.glsl>
+#moj_import <settings:settings.glsl>
 
 uniform sampler2D InSampler;
 uniform sampler2D DepthSampler;
@@ -26,7 +27,7 @@ void main() {
         return;
     }
 
-    if (overlayTemporal(gl_FragCoord.xy, fragColor, (frame + 1) % 5)) {
+    if (overlayTemporal(gl_FragCoord.xy, fragColor, (frame + TEMPORAL_MAX_ACCUMULATED_FRAMES) % 5)) {
         return;
     }
 
@@ -37,6 +38,7 @@ void main() {
 
     fragColor = texture(InSampler, texCoord);
 
+#if (ENABLE_TEMPORAL_REPROJECTION == yes)
     float depth = texture(DepthSampler, texCoord).r;
     if (depth == 1.0) {
         return;
@@ -45,12 +47,13 @@ void main() {
     vec3 worldSpace = unprojectScreenSpace(invProjViewMat, texCoord, depth);
     vec3 screenSpace = projectAndDivide(prevProjViewMat, worldSpace - viewOffset) * 0.5 + 0.5;
 
-    if (clamp(screenSpace.xy, 1.0 / InSize, 1.0 - 1.0 / InSize) != screenSpace.xy) {
+    if (clamp(screenSpace.xy, 1.5 / InSize, 1.0 - 1.0 / InSize) != screenSpace.xy) {
         return;
     }
 
     vec4 previousSample = textureBilinear(PreviousSampler, InSize, screenSpace.xy);
-    vec4 mixedSample = mix(previousSample, fragColor, 0.2);
+    vec4 mixedSample = mix(previousSample, fragColor, 1.0 / float(TEMPORAL_MAX_ACCUMULATED_FRAMES));
     mixedSample.a = fragColor.a;
     fragColor = vec4(mixedSample);
+#endif // ENABLE_TEMPORAL_REPROJECTION
 }

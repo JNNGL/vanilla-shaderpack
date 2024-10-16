@@ -56,7 +56,7 @@
             "output": "shadowmap_depth"
         },
         {
-            "program": "minecraft:workaround/copy_over_frame",
+            "program": "minecraft:util/copy_over_frame",
             "inputs": [ { "sampler_name": "In", "target": "shadowmap_depth" } ],
             "output": "shadowmap_depth_cache"
         },
@@ -91,7 +91,7 @@
         },
 
         {
-            "program": "minecraft:workaround/copy_over_frame",
+            "program": "minecraft:util/copy_over_frame",
             "inputs": [ { "sampler_name": "In", "target": "shadow_temp" } ],
             "output": "shadow_prev"
         },
@@ -135,7 +135,7 @@
             "output": "final_comp"
         },
         {
-            "program": "minecraft:workaround/copy_over_frame",
+            "program": "minecraft:util/copy_over_frame",
             "inputs": [ { "sampler_name": "In", "target": "final_comp" } ],
             "output": "final_prev"
         },

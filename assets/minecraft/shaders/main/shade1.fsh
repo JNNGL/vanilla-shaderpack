@@ -6,6 +6,7 @@
 #moj_import <minecraft:normals.glsl>
 #moj_import <minecraft:random.glsl>
 #moj_import <minecraft:ssrt.glsl>
+#moj_import <settings:settings.glsl>
 
 uniform sampler2D InSampler;
 uniform sampler2D DepthSampler;
@@ -59,6 +60,8 @@ void main() {
     float linearDepth = linearizeDepth(depth * 2.0 - 1.0, planes);
     float apLinearDepth = linearDepth;
 
+    vec3 translucentColor = texture(TranslucentSampler, texCoord).rgb;
+
     if (translucentDepth < depth) {
         vec3 ambientColor = pow(sampleSkyLUT(SkySampler, vec3(0.0001, 1.0, 0.0), sunDirection), vec3(1.0 / 3.0));
 
@@ -68,10 +71,12 @@ void main() {
 
         vec2 wavePosition = (viewSpacePos * mat3(ModelViewMat)).xz + totalOffset.xz;
 
-        if (waterNormal.y > 0.999) {
-            waterNormal = waveNormal(wavePosition, GameTime * 2000.0);
+#if (ENABLE_WATER_WAVES == yes)
+        if (translucentColor == vec3(0.0)) {
+            waterNormal = waveNormal(wavePosition, GameTime * 2000.0 * WATER_WAVE_SPEED);
             waterNormal = mix(waterNormal, vec3(0.0, 1.0, 0.0), 1.0 - dot(-direction, vec3(0.0, 1.0, 0.0)));
         }
+#endif // ENABLE_WATER_WAVES
 
         vec3 reflected = reflect(direction, waterNormal);
 
@@ -82,9 +87,10 @@ void main() {
         float linearDepthWater = linearizeDepth(translucentDepth * 2.0 - 1.0, planes);
         apLinearDepth = linearDepthWater;
 
+#if (ENABLE_WATER_SSR == yes)
         vec2 hitPixel;
         vec3 hitPoint;
-        bool hit = traceScreenSpaceRay(DepthSampler, projection, planes, InSize, viewSpacePos, viewDirection, 2.0, random(NoiseSampler, gl_FragCoord.xy, 0).x, 256.0, 1.0e6, hitPixel, hitPoint);
+        bool hit = traceScreenSpaceRay(DepthSampler, projection, planes, InSize, viewSpacePos, viewDirection, float(WATER_SSR_STRIDE), random(NoiseSampler, gl_FragCoord.xy, 0).x, float(WATER_SSR_STEPS), 1.0e6, hitPixel, hitPoint);
         float hitDepth = texelFetch(DepthSampler, ivec2(hitPixel), 0).r;
         if (hit && hitDepth != 1.0) {
             vec2 hitTexCoord = hitPixel / InSize;
@@ -100,24 +106,29 @@ void main() {
 
             reflection = mix(screenSpaceReflection, reflection, alpha);
         }
+#endif // ENABLE_WATER_SSR
 
-        const vec3 absorption = vec3(1.3, 0.45, 0.2) * 1.4;
-        // vec3 absorption = texture(TranslucentSampler, texCoord).zyx;
-        // absorption *= 2.0;
-        vec3 waterTransmittance = exp(-absorption * (linearDepth - linearDepthWater));
-        vec3 waterColor = ambientColor * vec3(0.01, 0.06, 0.05);
+        vec3 waterTransmittance = exp(-WATER_ABSORPTION * (linearDepth - linearDepthWater));
+        vec3 waterColor = ambientColor * WATER_COLOR;
 
         float fresnel = pow(1.0 - clamp(dot(waterNormal, -direction), 0.0, 1.0), 5.0);
-
-        float reflectance = mix(0.02, 0.8, fresnel);
+        float reflectance = mix(WATER_F0, WATER_F90, fresnel);
 
         color = color * waterTransmittance + waterColor * (1.0 - waterTransmittance);
         color = mix(color, reflection, reflectance);
     }
 
+#if (ENABLE_AERIAL_PERSPECTIVE == yes)
     mat2x3 aerial = sampleAerialPerspectiveLUT(AerialPerspectiveSampler, texCoord, apLinearDepth, planes);
 
-    color = color * aerial[1] + aerial[0] * sunIntensity * shadow.w;
+#if (ENABLE_VOLUMETRIC_SHADOWS == yes)
+    float volumetricShadowing = shadow.w;
+#else
+    const float volumetricShadowing = 1.0;
+#endif // ENABLE_VOLUMETRIC_SHADOWS
+
+    color = color * aerial[1] + aerial[0] * sunIntensity * volumetricShadowing;
+#endif // ENABLE_AERIAL_PERSPECTIVE
 
     fragColor = encodeRGBM(color);
 }

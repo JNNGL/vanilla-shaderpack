@@ -5,6 +5,7 @@
 
 #extension GL_MC_moj_import : enable
 #moj_import <projections.glsl>
+#moj_import <settings:settings.glsl>
 
 // based on https://atyuwen.github.io/posts/normal-reconstruction/
 vec3 reconstructNormal(sampler2D depthSampler, mat4 invProjView, vec2 uv, vec2 screenSize) {
@@ -47,10 +48,6 @@ vec3 reconstructNormal(sampler2D depthSampler, mat4 invProjView, vec2 uv, vec2 s
 
     return normalize(cross(horizontalDeriv, verticalDeriv));
 }
-
-#define DRAG_MULT 0.38
-#define WATER_DEPTH 2.0
-#define WAVE_ITERATIONS 24
 
 vec2 wavedx(vec2 position, vec2 direction, float frequency, float timeshift) {
     float x = dot(direction, position) * frequency + timeshift;
@@ -98,10 +95,10 @@ float wave(vec2 position, float time) {
     float value = 0.0;
     float totalWeight = 0.0;
     
-    for(int i = 0; i < WAVE_ITERATIONS; i++) {
+    for(int i = 0; i < WATER_WAVE_ITERATIONS; i++) {
         vec2 p = vec2(sin(i * 1232.399963), cos(i * 1232.399963));
         vec2 res = wavedx(position, p, frequency, time + wavePhaseShift);
-        position += p * res.y * weight * DRAG_MULT;
+        position += p * res.y * weight * 0.38;
         
         value += res.x * weight;
         totalWeight += weight;
@@ -115,11 +112,11 @@ float wave(vec2 position, float time) {
     value += snoise(position * 0.1) * 2.0;
     totalWeight += 3.0;
   
-    return value / totalWeight;
+    return (value / totalWeight) * WATER_WAVE_DEPTH;
 }
 
 vec3 waveNormal(vec2 pos, float time) {
-    pos *= 1.5;
+    pos *= WATER_WAVE_SCALE;
 
     vec2 e = vec2(0.1, 0);
     float h = wave(pos, time);

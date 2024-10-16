@@ -7,6 +7,7 @@
 #moj_import <minecraft:random.glsl>
 #moj_import <minecraft:matrices.glsl>
 #moj_import <minecraft:constants.glsl>
+#moj_import <settings:settings.glsl>
 
 float getDistortionFactor(vec4 clipSpace) {
     return length(clipSpace.xy) + 0.1;
@@ -32,11 +33,11 @@ vec4 distortShadow(vec4 clipSpace) {
 }
 
 bool isShadowMapFrame(float time) {
-    return (hash(floatBitsToUint(time + 13.0)) % 8u) == 0u;
+    return (hash(floatBitsToUint(time + 13.0)) % uint(SHADOW_MAP_PERIOD)) == 0u;
 }
 
-const float sunPathRotationX = radians(30.0);
-const float sunPathRotationY = radians(-10.0);
+const float sunPathRotationX = radians(SUN_PATH_ROTATION_X);
+const float sunPathRotationY = radians(SUN_PATH_ROTATION_Y);
 const mat3 sunRotationMatrix = MAT3_ROTATE_Y(sunPathRotationY) * MAT3_ROTATE_X(sunPathRotationX);
 
 const vec3 shadowMapLocations[] = vec3[](
@@ -94,7 +95,9 @@ vec3 getShadowEyeLocation(float skyFactor, float time) {
 }
 
 mat4 shadowProjectionMatrix() {
-    return orthographicProjectionMatrix(-256.0, 256.0, -256.0, 256.0, 0.05, 512.0);
+    return orthographicProjectionMatrix(SHADOW_VIEW_FRUSTUM_X[0], SHADOW_VIEW_FRUSTUM_X[1], 
+                                        SHADOW_VIEW_FRUSTUM_Y[0], SHADOW_VIEW_FRUSTUM_Y[1],
+                                        SHADOW_VIEW_FRUSTUM_Z[0], SHADOW_VIEW_FRUSTUM_Z[1]);
 }
 
 mat4 shadowTransformationMatrix(float skyFactor, float time) {

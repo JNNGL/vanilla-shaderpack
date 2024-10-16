@@ -8,29 +8,30 @@
 #moj_import <minecraft:intersectors.glsl>
 #moj_import <minecraft:encodings.glsl>
 #moj_import <minecraft:bilinear.glsl>
+#moj_import <settings:settings.glsl>
 
-const float cameraHeight = 1.0;
+const float cameraHeight = CAMERA_HEIGHT;
 
-const float sunIntensity = 20.0;
+const float sunIntensity = SUN_INTENSITY;
 
-const float atmosphereRadius = 6471.0e3;
-const float earthRadius = 6371.0e3;
+const float atmosphereRadius = ATMOSPHERE_RADIUS;
+const float earthRadius = EARTH_RADIUS;
 
-const vec3 rayleighScatteringBeta = vec3(6.605e-6, 12.344e-6, 29.412e-6);
-const vec4 rayleighDensityProfile = vec4(1.0, 1.0 / 8.0e3, 0.0, 0.0);
+const vec3 rayleighScatteringBeta = RAYLEIGH_SCATTERING_BETA;
+const vec4 rayleighDensityProfile = RAYLEIGH_DENSITY_PROFILE;
 
-const float mieScatteringBeta = 0.7e-5;
-const vec4 mieDensityProfile = vec4(1.0, 1.0 / 1.2e3, 0.0, 0.0);
-const float mieAbsorptionBase = 4.4e-6;
-const float mieAnisotropyFactor = 0.8;
+const float mieScatteringBeta = MIE_SCATTERING_BETA;
+const vec4 mieDensityProfile = MIE_DENSITY_PROFILE;
+const float mieAbsorptionBase = MIE_ABSORPTION_BASE;
+const float mieAnisotropyFactor = MIE_ANISOTROPY_FACTOR;
 
-const vec3 ozoneAbsorption = vec3(0.650e-6, 1.881e-6, 0.085e-6);
-const vec4 ozoneDensityProfile = vec4(0.0, 0.0, -1.5e-3 / 15.0, 8.0 / 3.0);
+const vec3 ozoneAbsorption = OZONE_ABSORPTION;
+const vec4 ozoneDensityProfile = OZONE_DENSITY_PROFILE;
 
-const vec3 groundAlbedo = vec3(0.05);
+const vec3 groundAlbedo = EARTH_ALBEDO;
 
 const ivec3 aerialPerspectiveResolution = ivec3(24);
-const float aerialPerspectiveScale = 20.0;
+const float aerialPerspectiveScale = AERIAL_PERSPECTIVE_SCALE;
 
 float rayleighPhaseFunction(float cosTheta) {
     return 3.0 / (16.0 * PI) * (1.0 + cosTheta * cosTheta);
@@ -44,7 +45,9 @@ float miePhaseFunction(float cosTheta) {
 }
 
 float atmosphereDensity(float height, vec4 densityProfile) {
-    return clamp(densityProfile.x * exp(-densityProfile.y * height) + densityProfile.z * height + densityProfile.w, 0.0, 1.0);
+    float densityExponential = densityProfile.x * exp(-densityProfile.y * height);
+    float densityLinear = densityProfile.w == 0.0 ? 0.0 : 1.0 - abs(height / 1000.0 + densityProfile.z) / densityProfile.w;
+    return clamp(densityExponential + densityLinear, 0.0, 1.0);
 }
 
 float distanceToAtmosphereBoundary(vec3 position, vec3 direction) {
@@ -78,7 +81,7 @@ vec3 sampleMultipleScatteringLUT(sampler2D lut, vec3 position, vec3 sunDirection
 }
 
 vec3 computeTransmittanceToBoundary(vec3 position, vec3 direction, float travelDistance) {
-    const int samples = 40;
+    const int samples = ATMOSPHERE_TRANSMITTANCE_SAMPLES;
 
     float rayleighOpticalLength = 0.0;
     float mieOpticalLength = 0.0;
@@ -101,7 +104,7 @@ vec3 computeTransmittanceToBoundary(vec3 position, vec3 direction, float travelD
 }
 
 mat2x3 raymarchAtmosphericScattering(sampler2D lut, sampler2D ms, vec3 position, vec3 direction, vec3 sunDirection, float travelDistance) {
-    const int samples = 20;
+    const int samples = ATMOSPHERE_RAYMARCH_SAMPLES;
 
     float cosTheta = dot(direction, sunDirection);
     float rayleighPhase = rayleighPhaseFunction(cosTheta);
@@ -143,8 +146,8 @@ vec3 computeMultipleScattering(sampler2D lut, vec3 position, vec3 sunDirection, 
     vec3 luminance = vec3(0.0);
     fms = vec3(0.0);
 
-    const int tpSamples = 8;
-    const int msSamples = 20;
+    const int tpSamples = ATMOSPHERE_MS_SAMPLES.x;
+    const int msSamples = ATMOSPHERE_MS_SAMPLES.y;
 
     float invSamples = 1.0 / float(tpSamples * tpSamples);
 
