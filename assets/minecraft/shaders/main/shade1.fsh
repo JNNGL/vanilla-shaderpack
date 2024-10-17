@@ -101,7 +101,8 @@ void main() {
             float alpha = max(falloff.x, falloff.y) - max(edgeFactor.x, edgeFactor.y);
             alpha = smoothstep(0.0, 1.0, clamp(alpha, 0.0, 1.0));
 
-            apLinearDepth += (1.0 - alpha) * distance(unprojectScreenSpace(invProjection, hitTexCoord, hitDepth), viewSpacePos) * 0.7;
+            float apOffset = (1.0 - alpha) * distance(unprojectScreenSpace(invProjection, hitTexCoord, hitDepth), viewSpacePos);
+            apLinearDepth += pow(apOffset, 1.0 / 1.3);
             apLinearDepth = clamp(apLinearDepth, planes.x, planes.y);
 
             reflection = mix(screenSpaceReflection, reflection, alpha);
