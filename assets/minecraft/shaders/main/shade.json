@@ -9,6 +9,7 @@
         { "name": "NormalSampler" },
         { "name": "SkySampler" },
         { "name": "TransmittanceSampler" },
+        { "name": "SpecularSampler" },
         { "name": "NoiseSampler" }
     ],
     "uniforms": [

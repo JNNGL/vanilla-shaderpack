@@ -5,6 +5,7 @@
 #moj_import <minecraft:projections.glsl>
 #moj_import <minecraft:srgb.glsl>
 #moj_import <minecraft:random.glsl>
+#moj_import <minecraft:ggx.glsl>
 #moj_import <settings:settings.glsl>
 
 uniform sampler2D InSampler;
@@ -13,6 +14,7 @@ uniform sampler2D ShadowSampler;
 uniform sampler2D NormalSampler;
 uniform sampler2D SkySampler;
 uniform sampler2D TransmittanceSampler;
+uniform sampler2D SpecularSampler;
 uniform sampler2D NoiseSampler;
 
 in vec2 texCoord;
@@ -56,16 +58,40 @@ void main() {
         vec3 ambientColor = pow(sampleSkyLUT(SkySampler, vec3(0.0001, 1.0, 0.0), sunDirection), vec3(1.0 / 3.0)) * 5.0;
         vec3 ambient = albedo * pow(shadow.g, 1.0) * ambientColor * 0.25 * (lightColorLength + 0.13) * (-sqrt(clamp(-NdotL, 0.0, 0.6)) * 0.2 * lightColorLength + 1.0);
 
+        vec4 specularData = texture(SpecularSampler, texCoord);
+        float subsurfaceFactor = specularData.b;
+
 #if (ENABLE_SUBSURFACE_SCATTERING == yes)
         // lame subsurface scattering "approximation"
         float halfLambert = pow(NdotL * 0.25 + 0.75, 1.0);
         vec3 subsurface = halfLambert * shadow.z * albedo * lightColor;
         
-        diffuse = mix(diffuse, subsurface, 0.6);
+        diffuse = mix(diffuse, subsurface, subsurfaceFactor);
 #endif // ENABLE_SUBSURFACE_SCATTERING
 
+        // TODO: Refactor this shit
+        float roughness = pow(1.0 - specularData.r, 2.0);
+        vec3 F0 = vec3(specularData.g);
+
+        vec3 N = normal;
+        vec3 L = sunDirection;
+        vec3 V = -direction;
+        vec3 H = normalize(V + L);
+        
+        float NDF = DistributionGGX(N, H, roughness);
+        float G = GeometrySmith(N, V, L, roughness);
+        vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
+
+        vec3 kS = F;
+        vec3 kD = 1.0 - kS; // FIXME: Take TIR into account.
+        
+        vec3 numerator = NDF * G * F;
+        float denominator = 4.0 * max(dot(N, V), 0.0) + 0.0001;
+
+        vec3 specular = min(radiance * numerator / denominator, PI); // FIXME
+
         color = vec3(0.0);
-        color += (diffuse) * (1.0 - shadow.x);
+        color += (diffuse * kD + specular) * (1.0 - shadow.x);
         color += ambient;
     }
 
