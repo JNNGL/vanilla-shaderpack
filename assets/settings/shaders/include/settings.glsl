@@ -35,7 +35,7 @@
 
 // ========<  LIGHTING  >======== //
 
-#define LIGHT_COLOR_MULTIPLIER 1.2
+#define LIGHT_COLOR_MULTIPLIER 1.0
 
 #define ENABLE_TEMPORAL_REPROJECTION yes
 #define TEMPORAL_MAX_ACCUMULATED_FRAMES 5
@@ -60,7 +60,7 @@
 // ========<  ATMOSPHERE  >======== //
 
 #define CAMERA_HEIGHT 1.0
-#define SUN_INTENSITY 13.0
+#define SUN_INTENSITY 10.0
 
 #define EARTH_RADIUS 6371.0e3
 #define ATMOSPHERE_RADIUS 6471.0e3

@@ -23,6 +23,8 @@ in vec4 normal;
 flat in int dataQuad;
 flat in int shadow;
 flat in float skyFactor;
+flat in int quadId;
+in vec2 lmCoord;
 in vec3 fragPos;
 in vec4 glPos;
 
@@ -54,13 +56,42 @@ void main() {
 
     vec4 color = shadow > 0 ? texture(Sampler0, texCoord0, 1) : texture(Sampler0, texCoord0);
 
+    vec3 p1 = dFdx(fragPos);
+    vec3 p2 = dFdy(fragPos);
+    vec2 t1 = dFdx(texCoord0);
+    vec2 t2 = dFdy(texCoord0);
+
 #ifdef ALPHA_CUTOUT
     if (color.a < ALPHA_CUTOUT) {
         discard;
     }
 #endif
 
-    fragColor = color * unshadeBlock(vertexColor, normal) * ColorModulator;
+    if (int(round(color.a * 255.0)) == 128) {
+        vec3 tangent = normalize(cross(p2, normal) * t1.x + cross(normal, p1) * t2.x);
+
+        fragColor = color;
+
+        ivec2 fragCoord = ivec2(gl_FragCoord.xy);
+        ivec2 local = fragCoord % 2;
+        if (local == ivec2(0, 0)) {
+            fragColor = vec4(vec2(lmCoord) / 255.0, encodeDirectionToF8(tangent), 1.0);
+        } else if (local == ivec2(1, 1)) {
+            fragColor = unshadeBlock(vertexColor, normal);
+        }
+
+        int subCoord = int(color.r * 255.0);
+        int subX = (subCoord >> 4) & 3;
+        int subY = subCoord & 1;
+        int quadAlpha = quadId % 16;
+        int alpha = (quadAlpha << 4) | (subX << 2) | (subY << 1);
+
+        fragColor.a = float(alpha) / 255.0;
+    } else {
+        fragColor = color * unshadeBlock(vertexColor, normal) * ColorModulator;
+        fragColor.a = 1.0;
+    }
+
     // fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
     
     // if (shadowQuad > 0) {

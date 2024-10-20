@@ -1,0 +1,9 @@
+{
+    "vertex": "minecraft:buffer/uvs",
+    "fragment": "minecraft:buffer/uvs",
+    "samplers": [
+        { "name": "InSampler" },
+        { "name": "DepthSampler" }
+    ],
+    "uniforms": []
+}

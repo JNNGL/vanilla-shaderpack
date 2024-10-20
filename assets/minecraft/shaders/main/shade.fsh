@@ -54,14 +54,14 @@ void main() {
 
         float lightColorLength = length(lightColor);
         vec3 ambientColor = pow(sampleSkyLUT(SkySampler, vec3(0.0001, 1.0, 0.0), sunDirection), vec3(1.0 / 3.0)) * 5.0;
-        vec3 ambient = albedo * pow(shadow.g, 1.5) * ambientColor * 0.25 * (lightColorLength + 0.13) * (NdotL > 0.0 ? min(clamp(NdotL, 0.0, 0.6) * lightColorLength + 0.5, 1.0) : (-clamp(-NdotL, 0.0, 0.6) * 0.6 * lightColorLength + 1.0));
+        vec3 ambient = albedo * pow(shadow.g, 1.0) * ambientColor * 0.25 * (lightColorLength + 0.13) * (-sqrt(clamp(-NdotL, 0.0, 0.6)) * 0.2 * lightColorLength + 1.0);
 
 #if (ENABLE_SUBSURFACE_SCATTERING == yes)
         // lame subsurface scattering "approximation"
         float halfLambert = pow(NdotL * 0.25 + 0.75, 1.0);
         vec3 subsurface = halfLambert * shadow.z * albedo * lightColor;
         
-        diffuse = mix(diffuse, subsurface, 0.0);
+        diffuse = mix(diffuse, subsurface, 0.6);
 #endif // ENABLE_SUBSURFACE_SCATTERING
 
         color = vec3(0.0);

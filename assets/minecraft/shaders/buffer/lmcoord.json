@@ -1,0 +1,9 @@
+{
+    "vertex": "minecraft:buffer/lmcoord",
+    "fragment": "minecraft:buffer/lmcoord",
+    "samplers": [
+        { "name": "InSampler" },
+        { "name": "DepthSampler" }
+    ],
+    "uniforms": []
+}

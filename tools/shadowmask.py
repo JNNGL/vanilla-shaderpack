@@ -5,8 +5,8 @@ from PIL import ImageChops
 import imagehash
 import copy
 
-dataPath = pathlib.Path("data")
-outputPath = pathlib.Path(".")
+dataPath = pathlib.Path("../data")
+outputPath = pathlib.Path("shadows")
 
 shadowMasks = {}
 shadowTextures = {}
@@ -142,5 +142,6 @@ def generateBlockModels():
     print(f"Patched {nPatched} block models.")
 
 
+outputPath.mkdir(parents=True, exist_ok=True)
 generateShadowTextures()
 generateBlockModels()

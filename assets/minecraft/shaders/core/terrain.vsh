@@ -30,6 +30,8 @@ out vec4 normal;
 flat out int dataQuad;
 flat out int shadow;
 flat out float skyFactor;
+flat out int quadId;
+out vec2 lmCoord;
 out vec3 fragPos;
 out vec4 glPos;
 
@@ -38,6 +40,9 @@ void main() {
     vec3 pos = Position + ModelOffset;
     dataQuad = col.rgb == ivec3(76, 195, 86) ? 1 : 0;
     fragPos = pos;
+
+    quadId = gl_VertexID / 8;
+    lmCoord = vec2(UV2);
 
     vec3 worldPos = pos;
 
@@ -75,7 +80,7 @@ void main() {
     normal = ProjMat * ModelViewMat * vec4(Normal, 0.0);
 
     if (dataQuad > 0) {
-        if (gl_VertexID >= 48 || ModelOffset == vec3(0.0)) {
+        if (ModelOffset == vec3(0.0)) {
             gl_Position = GLPOS_DISCARD;
             return;
         }

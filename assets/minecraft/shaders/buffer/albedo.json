@@ -1,0 +1,11 @@
+{
+    "vertex": "minecraft:buffer/albedo",
+    "fragment": "minecraft:buffer/albedo",
+    "samplers": [
+        { "name": "InSampler" },
+        { "name": "UvSampler" },
+        { "name": "AtlasSampler" },
+        { "name": "DepthSampler" }
+    ],
+    "uniforms": []
+}

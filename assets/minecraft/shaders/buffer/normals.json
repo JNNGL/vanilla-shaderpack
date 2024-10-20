@@ -3,6 +3,9 @@
     "fragment": "minecraft:buffer/normals",
     "samplers": [
         { "name": "DataSampler" },
+        { "name": "TangentSampler" },
+        { "name": "UvSampler" },
+        { "name": "AtlasSampler" },
         { "name": "DepthSampler" }
     ],
     "uniforms": [

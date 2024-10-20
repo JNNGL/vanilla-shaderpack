@@ -17,18 +17,6 @@
             }
         },
         {
-            "from": [ 16, 16, 16 ],
-            "to":   [ 0, 0, 0 ],
-            "faces": {
-                "up":    { "texture": "#down", "cullface": "down" },
-                "down":  { "texture": "#up", "cullface": "up" },
-                "south": { "texture": "#north", "cullface": "north" },
-                "north": { "texture": "#south", "cullface": "south" },
-                "east":  { "texture": "#west", "cullface": "west" },
-                "west":  { "texture": "#east", "cullface": "east" }
-            }
-        },
-        {
             "from": [ 8, 8, 8 ],
             "to":   [ 8, 8, 8 ],
             "faces": {

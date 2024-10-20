@@ -3,6 +3,11 @@
         "swap": {},
         "swap2": {},
 
+        "uvs": {},
+        "lmcoord": {},
+        "albedo": {},
+        "specular": {},
+
         "normals": {},
         "prev_normals": {},
 
@@ -61,9 +66,38 @@
             "output": "shadowmap_depth_cache"
         },
 
+        { 
+            "program": "minecraft:buffer/uvs",
+            "inputs": [ { "sampler_name": "In", "target": "minecraft:main" },
+                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true } ],
+            "output": "uvs"
+        },
+        { 
+            "program": "minecraft:buffer/lmcoord",
+            "inputs": [ { "sampler_name": "In", "target": "minecraft:main" },
+                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true } ],
+            "output": "lmcoord"
+        },
+        { 
+            "program": "minecraft:buffer/albedo",
+            "inputs": [ { "sampler_name": "In", "target": "minecraft:main" },
+                        { "sampler_name": "Uv", "target": "uvs"},
+                        { "sampler_name": "Atlas", "location": "atlas", "width": 1024, "height": 1024 },
+                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true } ],
+            "output": "albedo"
+        },
+        { 
+            "program": "minecraft:buffer/specular",
+            "inputs": [ { "sampler_name": "Uv", "target": "uvs"},
+                        { "sampler_name": "Atlas", "location": "atlas", "width": 1024, "height": 1024 } ],
+            "output": "specular"
+        },
         {
             "program": "minecraft:buffer/normals",
             "inputs": [ { "sampler_name": "Data", "target": "minecraft:main" },
+                        { "sampler_name": "Tangent", "target": "lmcoord" },
+                        { "sampler_name": "Uv", "target": "uvs"},
+                        { "sampler_name": "Atlas", "location": "atlas", "width": 1024, "height": 1024 },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
                         { "sampler_name": "Mojank", "target": "shadowmap_depth_cache" } ],
             "output": "normals"
@@ -98,7 +132,7 @@
 
         {
             "program": "minecraft:main/shade",
-            "inputs": [ { "sampler_name": "In", "target": "minecraft:main" },
+            "inputs": [ { "sampler_name": "In", "target": "albedo" },
                         { "sampler_name": "Data", "target": "minecraft:main" },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
                         { "sampler_name": "Shadow", "target": "shadow_prev" },

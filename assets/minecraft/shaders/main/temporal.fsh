@@ -27,7 +27,7 @@ void main() {
         return;
     }
 
-    if (overlayTemporal(gl_FragCoord.xy, fragColor, (frame + TEMPORAL_MAX_ACCUMULATED_FRAMES) % 5)) {
+    if (overlayTemporal(gl_FragCoord.xy, fragColor, (frame + ENABLE_TEMPORAL_REPROJECTION) % TEMPORAL_MAX_ACCUMULATED_FRAMES)) {
         return;
     }
 

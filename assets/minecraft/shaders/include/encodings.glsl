@@ -3,6 +3,9 @@
 #ifndef _ENCODINGS_GLSL
 #define _ENCODINGS_GLSL
 
+#extension GL_MC_moj_import : enable
+#moj_import <minecraft:constants.glsl>
+
 vec3 packSI24toF8x3(int i) {
     int sgn = int(i < 0);
     i = abs(i);
@@ -81,6 +84,52 @@ vec3 unpackR11G11B10LfromF8x4(vec4 v) {
     uint g = (bits >> 10u) & 0x7FFu;
     uint b = bits & 0x3FFu;
     return vec3(float(r) / 2047.0, float(g) / 2047.0, float(b) / 1023.0);
+}
+
+vec2 packRGB565toF8x2(vec3 rgb) {
+    uint bits = 0u;
+    bits |= (uint(rgb.r * 31.0) & 0x1Fu) << 11u;
+    bits |= (uint(rgb.g * 63.0) & 0x3Fu) << 5u;
+    bits |= (uint(rgb.b * 31.0) & 0x1Fu);
+    return vec2(bits >> 8u, bits & 0xFFu) / 255.0;
+}
+
+vec3 unpackRGB565fromF8x2(vec2 v) {
+    uvec2 data = uvec2(v * 255.0);
+    uint bits = (data.r << 8) | data.g;
+    uint r = bits >> 11u;
+    uint g = (bits >> 5u) & 0x3Fu;
+    uint b = bits & 0x1Fu;
+    return vec3(float(r) / 31.0, float(g) / 63.0, float(b) / 31.0);
+}
+
+int encodeDirectionToByte(vec3 direction) {
+    direction = clamp(direction, -1.0, 1.0);
+    float theta = acos(direction.y) / PI;
+    float phi = abs(direction.x) < 0.01 && abs(direction.z) < 0.01 ? 
+                0.0 : mix(PI / 2.0 - atan(direction.x, direction.z), 
+                          atan(direction.z, direction.x),
+                          float(abs(direction.x) < abs(direction.z)));
+    phi = (phi / PI) * 0.5 + 0.5;
+    ivec2 angles = ivec2(round(theta * 8.0), round(phi * 16.0));
+    return angles.y * 9 + angles.x;
+}
+
+vec3 decodeDirectionFromByte(int data) {
+    vec2 angles = vec2(data % 9, data / 9);
+    float theta = (angles.x / 8.0) * PI;
+    float phi = ((angles.y / 16.0) * 2.0 - 1.0) * PI;
+    
+    float sinTheta = sin(theta);
+    return normalize(vec3(sinTheta * cos(phi), cos(theta), sinTheta * sin(phi)));
+}
+
+float encodeDirectionToF8(vec3 direction) {
+    return float(encodeDirectionToByte(direction)) / 255.0;
+}
+
+vec3 decodeDirectionFromF8(float f) {
+    return decodeDirectionFromByte(int(f * 255.0));
 }
 
 #define RGBM_MAX_RANGE 30.0

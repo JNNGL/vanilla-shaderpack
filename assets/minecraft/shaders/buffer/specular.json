@@ -1,0 +1,9 @@
+{
+    "vertex": "minecraft:buffer/specular",
+    "fragment": "minecraft:buffer/specular",
+    "samplers": [
+        { "name": "UvSampler" },
+        { "name": "AtlasSampler" }
+    ],
+    "uniforms": []
+}
