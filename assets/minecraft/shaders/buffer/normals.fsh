@@ -25,7 +25,7 @@ void main() {
 
     if (tangentEncoded.a != 1.0 && uv.a != 1.0 && dot(normal, normal) > 0.0001) {
         vec3 tangent = decodeDirectionFromF8(tangentEncoded.z);
-        vec3 normalMapping = sampleCombinedAtlas(AtlasSampler, uv.rgb, ATLAS_NORMAL).xyz;
+        vec3 normalMapping = sampleCombinedAtlas(AtlasSampler, uv, ATLAS_NORMAL).xyz;
         normalMapping.xy = normalMapping.xy * 2.0 - 1.0;
         normalMapping.z = sqrt(1.0 - dot(normalMapping.xy, normalMapping.xy));
 

@@ -5,6 +5,8 @@
 #moj_import <minecraft:shadow.glsl>
 #moj_import <minecraft:datamarker.glsl>
 
+#extension GL_ARB_texture_query_lod : require
+
 uniform sampler2D Sampler0;
 
 uniform vec4 ColorModulator;
@@ -61,30 +63,38 @@ void main() {
     vec2 t1 = dFdx(texCoord0);
     vec2 t2 = dFdy(texCoord0);
 
+    int mipLevel = int(textureQueryLOD(Sampler0, texCoord0).x);
+
 #ifdef ALPHA_CUTOUT
     if (color.a < ALPHA_CUTOUT) {
         discard;
     }
 #endif
 
-    if (int(round(color.a * 255.0)) == 128) {
+    float lodAlpha = texelFetch(Sampler0, ivec2(texCoord0 * textureSize(Sampler0, 0)), 0).a;
+    int textureAlpha = int(round(color.a * 255.0));
+    if (textureAlpha >= 5 && textureAlpha <= 250 && lodAlpha < 1.0 && lodAlpha >= 5.0 / 255.0) {
+        color = textureLod(Sampler0, texCoord0, 0);
         vec3 tangent = normalize(cross(p2, normal) * t1.x + cross(normal, p1) * t2.x);
 
         fragColor = color;
+
+        int powMip = int(round(pow(2.0, mipLevel)));
+        int subX = (int(color.r * 255.0) / powMip) & 3;
+        int subY = (int(color.g * 255.0) / powMip) & 3;
+        int quadAlpha = quadId % 15;
+        int alpha = (quadAlpha << 4) | (subX << 2) | subY;
 
         ivec2 fragCoord = ivec2(gl_FragCoord.xy);
         ivec2 local = fragCoord % 2;
         if (local == ivec2(0, 0)) {
             fragColor = vec4(vec2(lmCoord) / 255.0, encodeDirectionToF8(tangent), 1.0);
         } else if (local == ivec2(1, 1)) {
-            fragColor = unshadeBlock(vertexColor, normal);
+            vec3 fragmentColor = unshadeBlock(vertexColor, normal).rgb;
+            fragColor.rgb = vec3(fragmentColor);
+        } else {
+            alpha = (quadAlpha << 4) | mipLevel;
         }
-
-        int subCoord = int(color.r * 255.0);
-        int subX = (subCoord >> 4) & 3;
-        int subY = subCoord & 1;
-        int quadAlpha = quadId % 16;
-        int alpha = (quadAlpha << 4) | (subX << 2) | (subY << 1);
 
         fragColor.a = float(alpha) / 255.0;
     } else {

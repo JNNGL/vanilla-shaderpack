@@ -20,7 +20,7 @@
 #define WATER_ABSORPTION vec3(1.82, 0.63, 0.28)
 #define WATER_COLOR vec3(0.01, 0.06, 0.05)
 #define WATER_F0 0.02
-#define WATER_F90 0.8
+#define WATER_F90 0.7
 
 #define ENABLE_WATER_WAVES yes
 #define WATER_WAVE_SPEED 1.0
@@ -29,7 +29,7 @@
 #define WATER_WAVE_SCALE 1.5
 
 #define ENABLE_WATER_SSR yes
-#define WATER_SSR_STRIDE 2
+#define WATER_SSR_STRIDE 4
 #define WATER_SSR_STEPS 256
 
 

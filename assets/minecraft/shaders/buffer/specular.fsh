@@ -17,5 +17,5 @@ void main() {
         return;
     }
 
-    fragColor = sampleCombinedAtlas(AtlasSampler, uv.xyz, ATLAS_SPECULAR);
+    fragColor = sampleCombinedAtlas(AtlasSampler, uv, ATLAS_SPECULAR);
 }
