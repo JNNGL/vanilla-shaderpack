@@ -2,7 +2,8 @@
     "vertex": "minecraft:post/tonemap",
     "fragment": "minecraft:post/tonemap",
     "samplers": [
-        { "name": "InSampler" }
+        { "name": "InSampler" },
+        { "name": "BloomSampler" }
     ],
     "uniforms": []
 }

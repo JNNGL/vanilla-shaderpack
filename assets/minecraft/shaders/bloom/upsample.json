@@ -1,0 +1,12 @@
+{
+    "vertex": "minecraft:bloom/upsample",
+    "fragment": "minecraft:bloom/upsample",
+    "samplers": [
+        { "name": "InSampler" },
+        { "name": "DownsampledSampler" }
+    ],
+    "uniforms": [
+        { "name": "OutSize", "type": "float", "count": 2, "values": [ 1.0, 1.0 ] },
+        { "name": "Iteration", "type": "float", "count": 1, "values": [ 1.0 ] }
+    ]
+}

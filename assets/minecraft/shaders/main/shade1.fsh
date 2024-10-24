@@ -6,6 +6,7 @@
 #moj_import <minecraft:normals.glsl>
 #moj_import <minecraft:random.glsl>
 #moj_import <minecraft:ssrt.glsl>
+#moj_import <minecraft:ggx.glsl>
 #moj_import <settings:settings.glsl>
 
 uniform sampler2D InSampler;
@@ -79,10 +80,31 @@ void main() {
 #endif // ENABLE_WATER_WAVES
 
         vec3 reflected = reflect(direction, waterNormal);
+        float fresnel = pow(1.0 - clamp(dot(waterNormal, -direction), 0.0, 1.0), 5.0);
+        float reflectance = mix(WATER_F0, WATER_F90, fresnel);
 
         vec3 viewDirection = mat3(ModelViewMat) * reflected;
 
         vec3 reflection = sampleSkyLUT(SkySampler, reflected, sunDirection) * sunIntensity;
+
+        float roughness = 0.4;
+
+        vec3 N = waterNormal;
+        vec3 L = sunDirection;
+        vec3 V = -direction;
+        vec3 H = normalize(V + L);
+        
+        float NDF = DistributionGGX(N, H, roughness);
+        float G = GeometrySmith(N, V, L, roughness);
+        vec3 F = vec3(reflectance);
+        
+        vec3 numerator = NDF * G * F;
+        float denominator = 4.0 * max(dot(N, V), 0.0) + 0.0001;
+
+        vec3 lightColor = sampleSkyLUT(SkySampler, sunDirection, sunDirection) * sunIntensity * LIGHT_COLOR_MULTIPLIER;
+        vec3 radiance = 4.0 * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);
+
+        reflection += radiance * numerator / denominator; // FIXME
 
         float linearDepthWater = linearizeDepth(translucentDepth * 2.0 - 1.0, planes);
         apLinearDepth = linearDepthWater;
@@ -111,9 +133,6 @@ void main() {
 
         vec3 waterTransmittance = exp(-WATER_ABSORPTION * (linearDepth - linearDepthWater));
         vec3 waterColor = ambientColor * WATER_COLOR;
-
-        float fresnel = pow(1.0 - clamp(dot(waterNormal, -direction), 0.0, 1.0), 5.0);
-        float reflectance = mix(WATER_F0, WATER_F90, fresnel);
 
         color = color * waterTransmittance + waterColor * (1.0 - waterTransmittance);
         color = mix(color, reflection, reflectance);

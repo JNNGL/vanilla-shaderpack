@@ -34,7 +34,7 @@ void main() {
     vec3 fragPos = unprojectScreenSpace(invProjViewMat, texCoord, depth);
 
     vec4 shadow = texelFetch(ShadowSampler, ivec2(gl_FragCoord.x, max(1.0, gl_FragCoord.y)), 0);
-    vec3 normal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
+    vec3 normal = normalize(texture(NormalSampler, texCoord).rgb * 2.0 - 1.0);
     
     vec3 pointOnNearPlane = near.xyz / near.w;
     vec3 direction = normalize(fragPos - pointOnNearPlane);
@@ -56,7 +56,7 @@ void main() {
 
         float lightColorLength = length(lightColor);
         vec3 ambientColor = pow(sampleSkyLUT(SkySampler, vec3(0.0001, 1.0, 0.0), sunDirection), vec3(1.0 / 3.0)) * 5.0;
-        vec3 ambient = albedo * pow(shadow.g, 1.0) * ambientColor * 0.25 * (lightColorLength + 0.13) * (-sqrt(clamp(-NdotL, 0.0, 0.6)) * 0.2 * lightColorLength + 1.0);
+        vec3 ambient = albedo * pow(shadow.g, 1.0) * ambientColor * 0.2 * (lightColorLength + 0.13) * (-sqrt(clamp(-NdotL, 0.0, 0.6)) * 0.2 * lightColorLength + 1.0);
 
         vec4 specularData = texture(SpecularSampler, texCoord);
         float subsurfaceFactor = specularData.b;
@@ -70,11 +70,12 @@ void main() {
 #endif // ENABLE_SUBSURFACE_SCATTERING
 
         // TODO: Refactor this shit
-        float roughness = pow(1.0 - specularData.r, 2.0);
+        float roughness = pow(1.0 - specularData.r, 1.3);
+
         vec3 F0 = vec3(specularData.g);
 
-        vec3 N = normal;
-        vec3 L = sunDirection;
+        vec3 N = normalize(round(normal * 16.0) / 16.0);
+        vec3 L = normalize(sunDirection);
         vec3 V = -direction;
         vec3 H = normalize(V + L);
         
@@ -88,11 +89,15 @@ void main() {
         vec3 numerator = NDF * G * F;
         float denominator = 4.0 * max(dot(N, V), 0.0) + 0.0001;
 
-        vec3 specular = min(radiance * numerator / denominator, PI); // FIXME
+        vec3 specular = radiance * numerator / denominator; // FIXME
 
         color = vec3(0.0);
         color += (diffuse * kD + specular) * (1.0 - shadow.x);
         color += ambient;
+
+        if (fract(specularData.a) != 0.0) {
+            color += pow(albedo, vec3(1.8)) * 17.0 * mix(0.0, 1.0, pow(specularData.a, 1.0 / 2.0)) * kD;
+        }
     }
 
     fragColor = encodeRGBM(color);
