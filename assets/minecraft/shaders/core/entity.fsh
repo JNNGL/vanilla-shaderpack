@@ -30,12 +30,9 @@ void main() {
         discard;
     }
 #endif
-    color *= vertexColor * ColorModulator;
+    color *= ColorModulator;
 #ifndef NO_OVERLAY
     color.rgb = mix(overlayColor.rgb, color.rgb, overlayColor.a);
 #endif
-#ifndef EMISSIVE
-    color *= lightMapColor;
-#endif
-    fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
+    fragColor = color;
 }

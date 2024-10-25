@@ -15,6 +15,7 @@ uniform sampler2D NormalSampler;
 uniform sampler2D SkySampler;
 uniform sampler2D TransmittanceSampler;
 uniform sampler2D SpecularSampler;
+uniform sampler2D LightmapSampler;
 uniform sampler2D NoiseSampler;
 
 in vec2 texCoord;
@@ -46,6 +47,7 @@ void main() {
         float NdotL = dot(normal, sunDirection);
 
         vec3 albedo = srgbToLinear(texture(InSampler, texCoord).rgb);
+        vec2 lightLevel = texture(LightmapSampler, texCoord).rg;
 
         vec3 transmittance = sampleTransmittanceLUT(TransmittanceSampler, vec3(0.0, earthRadius + cameraHeight, 0.0) + fragPos, sunDirection);
         vec3 lightColor = transmittance * LIGHT_COLOR_MULTIPLIER;
@@ -91,12 +93,22 @@ void main() {
 
         vec3 specular = radiance * numerator / denominator; // FIXME
 
+        const vec3 BLOCKLIGHT_COLOR = vec3(255.0, 212.0, 160.0) / 255.0;
+
+        vec3 absNormal = abs(normal) * vec3(0.6, 1.0, 0.8);
+        float ambientFactor = 0.6 + 0.1 * float(absNormal.x > absNormal.z);
+        if (absNormal.y > absNormal.x && absNormal.y > absNormal.z) ambientFactor += 0.2;
+
+        vec3 blockLight = BLOCKLIGHT_COLOR * BLOCKLIGHT_COLOR * 2.5 * albedo * mix(0.1, 1.0, shadow.g) * ambientFactor;
+
+        vec3 ambient0 = vec3(0.7, 0.8, 1.0) * 0.025 * albedo;
+
         color = vec3(0.0);
-        color += (diffuse * kD + specular) * (1.0 - shadow.x);
-        color += ambient;
+        color += mix(ambient0 * 0.5, ambient + (diffuse * kD + specular) * (1.0 - shadow.x), lightLevel.y * lightLevel.y);
+        color += mix(ambient0 * 0.5, blockLight, lightLevel.x * lightLevel.x);
 
         if (fract(specularData.a) != 0.0) {
-            color += pow(albedo, vec3(1.8)) * 17.0 * mix(0.0, 1.0, pow(specularData.a, 1.0 / 2.0)) * kD;
+            color += pow(albedo, vec3(1.8)) * 13.0 * mix(0.0, 1.0, pow(specularData.a, 1.0 / 2.0)) * kD;
         }
     }
 

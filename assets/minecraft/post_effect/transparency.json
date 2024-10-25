@@ -143,6 +143,7 @@
                         { "sampler_name": "Sky", "target": "sky_view" },
                         { "sampler_name": "Transmittance", "target": "transmittance" },
                         { "sampler_name": "Specular", "target": "specular" },
+                        { "sampler_name": "Lightmap", "target": "lmcoord" },
                         { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 } ],
             "output": "swap"
         },

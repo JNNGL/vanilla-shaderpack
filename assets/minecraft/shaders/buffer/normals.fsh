@@ -26,11 +26,13 @@ void main() {
     if (tangentEncoded.a != 1.0 && uv.a != 1.0 && dot(normal, normal) > 0.0001) {
         vec3 tangent = decodeDirectionFromF8(tangentEncoded.z);
         vec3 normalMapping = sampleCombinedAtlas(AtlasSampler, uv, ATLAS_NORMAL).xyz;
-        normalMapping.xy = normalMapping.xy * 2.0 - 1.0;
-        normalMapping.z = sqrt(1.0 - dot(normalMapping.xy, normalMapping.xy));
+        if (normalMapping != vec3(0.0)) {
+            normalMapping.xy = normalMapping.xy * 2.0 - 1.0;
+            normalMapping.z = sqrt(1.0 - dot(normalMapping.xy, normalMapping.xy));
 
-        mat3 tbn = mat3(tangent, cross(tangent, normal), normal);
-        normal = tbn * normalMapping;
+            mat3 tbn = mat3(tangent, cross(tangent, normal), normal);
+            normal = tbn * normalMapping;
+        }
     }
 
     fragColor = vec4(normal * 0.5 + 0.5, 1.0);
