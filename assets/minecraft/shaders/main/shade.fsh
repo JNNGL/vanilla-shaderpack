@@ -5,7 +5,8 @@
 #moj_import <minecraft:projections.glsl>
 #moj_import <minecraft:srgb.glsl>
 #moj_import <minecraft:random.glsl>
-#moj_import <minecraft:ggx.glsl>
+#moj_import <minecraft:brdf.glsl>
+#moj_import <minecraft:metals.glsl>
 #moj_import <settings:settings.glsl>
 
 uniform sampler2D InSampler;
@@ -49,19 +50,36 @@ void main() {
         vec3 albedo = srgbToLinear(texture(InSampler, texCoord).rgb);
         vec2 lightLevel = texture(LightmapSampler, texCoord).rg;
 
+        vec4 specularData = texture(SpecularSampler, texCoord);
+        float roughness = pow(1.0 - specularData.r, 1.3);
+        float subsurfaceFactor = specularData.b;
+
         vec3 transmittance = sampleTransmittanceLUT(TransmittanceSampler, vec3(0.0, earthRadius + cameraHeight, 0.0) + fragPos, sunDirection);
         vec3 lightColor = transmittance * LIGHT_COLOR_MULTIPLIER;
         vec3 radiance = 4.0 * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);
 
-        vec3 diffuse = (albedo / PI); // Lambert
+        vec3 N = normalize(round(normal * 16.0) / 16.0);
+        vec3 L = normalize(sunDirection);
+        vec3 V = -direction;
+        vec3 H = normalize(V + L);
+
+        vec3 F;
+
+        int metalId = int(round(specularData.g * 255.0));
+        if (metalId >= 230 && metalId <= 237) {
+            mat2x3 NK = HARDCODED_METALS[metalId - 230];
+            F = fresnelConductor(max(dot(H, V), 0.0), NK[0], NK[1]);
+        } else {
+            vec3 F0 = metalId > 237 ? albedo : vec3(specularData.g);
+            F = fresnelSchlick(max(dot(H, V), 0.0), F0);
+        }
+
+        vec3 diffuse = hammonDiffuse(albedo, N, V, L, H, F, roughness * roughness);
         diffuse *= clamp(NdotL, 0.0, 1.0) * radiance;
 
         float lightColorLength = length(lightColor);
         vec3 ambientColor = pow(sampleSkyLUT(SkySampler, vec3(0.0001, 1.0, 0.0), sunDirection), vec3(1.0 / 3.0)) * 5.0;
         vec3 ambient = albedo * pow(shadow.g, 1.0) * ambientColor * 0.2 * (lightColorLength + 0.13) * (-sqrt(clamp(-NdotL, 0.0, 0.6)) * 0.2 * lightColorLength + 1.0);
-
-        vec4 specularData = texture(SpecularSampler, texCoord);
-        float subsurfaceFactor = specularData.b;
 
 #if (ENABLE_SUBSURFACE_SCATTERING == yes)
         // lame subsurface scattering "approximation"
@@ -72,26 +90,15 @@ void main() {
 #endif // ENABLE_SUBSURFACE_SCATTERING
 
         // TODO: Refactor this shit
-        float roughness = pow(1.0 - specularData.r, 1.3);
-
-        vec3 F0 = vec3(specularData.g);
-
-        vec3 N = normalize(round(normal * 16.0) / 16.0);
-        vec3 L = normalize(sunDirection);
-        vec3 V = -direction;
-        vec3 H = normalize(V + L);
         
         float NDF = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);
-        vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
-
-        vec3 kS = F;
-        vec3 kD = 1.0 - kS; // FIXME: Take TIR into account.
         
         vec3 numerator = NDF * G * F;
         float denominator = 4.0 * max(dot(N, V), 0.0) + 0.0001;
 
-        vec3 specular = radiance * numerator / denominator; // FIXME
+        vec3 specular = radiance * numerator / denominator;
+        if (metalId >= 230) specular *= albedo;
 
         const vec3 BLOCKLIGHT_COLOR = vec3(255.0, 212.0, 160.0) / 255.0;
 
@@ -104,11 +111,12 @@ void main() {
         vec3 ambient0 = vec3(0.7, 0.8, 1.0) * 0.025 * albedo;
 
         color = vec3(0.0);
-        color += mix(ambient0 * 0.5, ambient + (diffuse * kD + specular) * (1.0 - shadow.x), lightLevel.y * lightLevel.y);
+        color += (diffuse + specular) * (1.0 - shadow.x) * mix(0.5, 1.0, lightLevel.y);
+        color += mix(ambient0 * 0.5, ambient, lightLevel.y * lightLevel.y);
         color += mix(ambient0 * 0.5, blockLight, lightLevel.x * lightLevel.x);
 
         if (fract(specularData.a) != 0.0) {
-            color += pow(albedo, vec3(1.8)) * 13.0 * mix(0.0, 1.0, pow(specularData.a, 1.0 / 2.0)) * kD;
+            color += pow(albedo, vec3(1.8)) * 13.0 * mix(0.0, 1.0, pow(specularData.a, 1.0 / 2.0));
         }
     }
 

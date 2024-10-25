@@ -6,7 +6,7 @@
 #moj_import <minecraft:normals.glsl>
 #moj_import <minecraft:random.glsl>
 #moj_import <minecraft:ssrt.glsl>
-#moj_import <minecraft:ggx.glsl>
+#moj_import <minecraft:brdf.glsl>
 #moj_import <settings:settings.glsl>
 
 uniform sampler2D InSampler;
