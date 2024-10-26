@@ -2,6 +2,9 @@
 
 #version 330
 
+#extension GL_MC_moj_import : enable
+#moj_import <settings:settings.glsl>
+
 uniform sampler2D InSampler;
 
 uniform vec2 InSize;
@@ -24,6 +27,9 @@ float rgb2luma(vec3 rgb){
 
 void main() {
     vec3 colorCenter = texture(InSampler, texCoord).rgb;
+    fragColor = vec4(colorCenter, 1.0);
+
+#if (ENABLE_FXAA == yes)
     float lumaCenter = rgb2luma(colorCenter);
 
     float lumaDown = rgb2luma(textureOffset(InSampler, texCoord, ivec2(0, -1)).rgb);
@@ -37,7 +43,6 @@ void main() {
     float lumaRange = lumaMax - lumaMin;
 
     if (lumaRange < max(EDGE_THRESHOLD_MIN, lumaMax * EDGE_THRESHOLD_MAX)) {
-        fragColor = vec4(colorCenter, 1.0);
         return;
     }
 
@@ -151,4 +156,5 @@ void main() {
 
     vec3 finalColor = texture(InSampler, finalUv).rgb;
     fragColor = vec4(finalColor, 1.0);
+#endif // ENABLE_FXAA
 }

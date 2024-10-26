@@ -1,7 +1,8 @@
 #ifndef _SETTINGS_GLSL
 #define _SETTINGS_GLSL
-#define yes 1
-#define no 0
+
+#extension GL_MC_moj_import : enable
+#moj_import <settings:definitions.glsl>
 
 // ========<  SHADOWS  >======== //
 
@@ -60,6 +61,7 @@
 // ========< POST-PROCESS >======== //
 
 #define BLOOM_STRENGTH 0.035
+#define ENABLE_FXAA yes
 
 
 // ========<  ATMOSPHERE  >======== //
