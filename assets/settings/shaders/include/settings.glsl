@@ -57,6 +57,11 @@
 #define PENUMBRA_SAMPLES 8
 
 
+// ========< POST-PROCESS >======== //
+
+#define BLOOM_STRENGTH 0.035
+
+
 // ========<  ATMOSPHERE  >======== //
 
 #define CAMERA_HEIGHT 1.0
