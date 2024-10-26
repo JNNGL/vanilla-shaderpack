@@ -22,5 +22,5 @@ void main() {
     vec3 luminance = computeMultipleScattering(TransmittanceSampler, position, sunDirection, fms);
 
     vec3 psi = luminance / (1.0 - fms);
-    fragColor = packR11G11B10LtoF8x4(psi * 5.0);
+    fragColor = encodeLogLuv(psi * 5.0);
 }

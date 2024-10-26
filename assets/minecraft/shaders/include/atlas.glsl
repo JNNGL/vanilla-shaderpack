@@ -32,7 +32,7 @@ vec4 sampleCombinedAtlas(sampler2D atlas, vec4 uv, const int atlasId) {
 
     if (mipLevel > 0 && mipLevel < 4) {
         vec2 mipCoord = texCoord / mipPower + mipOffset + 0.5;
-        return textureBilinear(atlas, vec2(texSize), mipCoord / vec2(texSize));
+        return texture(atlas, mipCoord / vec2(texSize));
     }
 
     return texelFetch(atlas, texCoord / mipPower + mipOffset, 0);

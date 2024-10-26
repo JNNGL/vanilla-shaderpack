@@ -14,19 +14,6 @@ flat in ivec2 outRes;
 
 out vec4 fragColor;
 
-vec3 bilinear(sampler2D s, vec2 tex) {
-    tex *= inRes;
-    tex -= 0.5;
-
-    ivec2 coord = ivec2(floor(tex));
-    vec2 frac = fract(tex);
-
-    return mix(
-        mix(decodeRGBM(texelFetch(s, coord + ivec2(0, 0), 0)), decodeRGBM(texelFetch(s, coord + ivec2(1, 0), 0)), frac.x),
-        mix(decodeRGBM(texelFetch(s, coord + ivec2(0, 1), 0)), decodeRGBM(texelFetch(s, coord + ivec2(1, 1), 0)), frac.x),
-        frac.y);
-}
-
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     if (any(greaterThanEqual(coord, outRes))) {
@@ -35,30 +22,31 @@ void main() {
     }
 
     vec2 texCoord = gl_FragCoord.xy / vec2(outRes);
+    texCoord *= vec2(inRes) / OutSize;
 
-    float x = 1.0 / inRes.x;
-    float y = 1.0 / inRes.y;
+    float x = 1.0 / OutSize.x;
+    float y = 1.0 / OutSize.y;
     
-    vec3 a = bilinear(InSampler, vec2(texCoord.x - x, texCoord.y + y));
-    vec3 b = bilinear(InSampler, vec2(texCoord.x,     texCoord.y + y));
-    vec3 c = bilinear(InSampler, vec2(texCoord.x + x, texCoord.y + y));
+    vec3 a = decodeLogLuv(texture(InSampler, vec2(texCoord.x - x, texCoord.y + y)));
+    vec3 b = decodeLogLuv(texture(InSampler, vec2(texCoord.x,     texCoord.y + y)));
+    vec3 c = decodeLogLuv(texture(InSampler, vec2(texCoord.x + x, texCoord.y + y)));
 
-    vec3 d = bilinear(InSampler, vec2(texCoord.x - x, texCoord.y));
-    vec3 e = bilinear(InSampler, vec2(texCoord.x,     texCoord.y));
-    vec3 f = bilinear(InSampler, vec2(texCoord.x + x, texCoord.y));
+    vec3 d = decodeLogLuv(texture(InSampler, vec2(texCoord.x - x, texCoord.y)));
+    vec3 e = decodeLogLuv(texture(InSampler, vec2(texCoord.x,     texCoord.y)));
+    vec3 f = decodeLogLuv(texture(InSampler, vec2(texCoord.x + x, texCoord.y)));
 
-    vec3 g = bilinear(InSampler, vec2(texCoord.x - x, texCoord.y - y));
-    vec3 h = bilinear(InSampler, vec2(texCoord.x,     texCoord.y - y));
-    vec3 i = bilinear(InSampler, vec2(texCoord.x + x, texCoord.y - y));
+    vec3 g = decodeLogLuv(texture(InSampler, vec2(texCoord.x - x, texCoord.y - y)));
+    vec3 h = decodeLogLuv(texture(InSampler, vec2(texCoord.x,     texCoord.y - y)));
+    vec3 i = decodeLogLuv(texture(InSampler, vec2(texCoord.x + x, texCoord.y - y)));
 
     vec3 color = e * 4.0;
-    color += (b + d + f + h)*2.0;
+    color += (b + d + f + h) * 2.0;
     color += (a + c + g + i);
     color *= 1.0 / 16.0;
 
     if (Iteration > 1.0) {
-        color += bilinear(DownsampledSampler, texCoord * (vec2(outRes) / vec2(inRes)));
+        color += decodeLogLuv(texture(DownsampledSampler, texCoord * (vec2(outRes) / vec2(inRes))));
     }
 
-    fragColor = encodeRGBM(color);
+    fragColor = encodeLogLuv(color.rgb);
 }

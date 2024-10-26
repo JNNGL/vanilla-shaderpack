@@ -11,6 +11,7 @@ uniform sampler2D DepthSampler;
 uniform sampler2D PreviousSampler;
 
 uniform vec2 InSize;
+uniform vec2 PreviousSize;
 
 flat in mat4 invProjViewMat;
 flat in mat4 prevProjViewMat;
@@ -51,7 +52,7 @@ void main() {
         return;
     }
 
-    vec4 previousSample = textureBilinear(PreviousSampler, InSize, screenSpace.xy);
+    vec4 previousSample = texture(PreviousSampler, screenSpace.xy * (InSize / PreviousSize));
     vec4 mixedSample = mix(previousSample, fragColor, 1.0 / float(TEMPORAL_MAX_ACCUMULATED_FRAMES));
     mixedSample.a = fragColor.a;
     fragColor = vec4(mixedSample);

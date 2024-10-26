@@ -27,8 +27,8 @@
         "sky_view": {"width": 200, "height": 200},
         "aerial_perspective": {"width": 576, "height": 48},
 
-        "a": {}, "b": {}, "c": {}, "d": {}, "e": {},
-        "d1": {}, "c1": {}, "b1": {}, "a1": {}, "bloom": {}
+        "a": {}, "b": {}, "c": {}, "d": {}, "e": {}, "f": {},
+        "e1": {}, "d1": {}, "c1": {}, "b1": {}, "a1": {}, "bloom": {}
     },
     "passes": [
         {
@@ -38,21 +38,21 @@
         },
         {
             "program": "minecraft:atmosphere/multiple_scattering",
-            "inputs": [ { "sampler_name": "Transmittance", "target": "transmittance" } ],
+            "inputs": [ { "sampler_name": "Transmittance", "target": "transmittance", "bilinear": true } ],
             "output": "multiple_scattering"
         },
         {
             "program": "minecraft:atmosphere/sky_view",
             "inputs": [ { "sampler_name": "Data", "target": "minecraft:main" },
-                        { "sampler_name": "Transmittance", "target": "transmittance" },
-                        { "sampler_name": "MultipleScattering", "target": "multiple_scattering" } ],
+                        { "sampler_name": "Transmittance", "target": "transmittance", "bilinear": true },
+                        { "sampler_name": "MultipleScattering", "target": "multiple_scattering", "bilinear": true } ],
             "output": "sky_view"
         },
         {
             "program": "minecraft:atmosphere/aerial_perspective",
             "inputs": [ { "sampler_name": "Data", "target": "minecraft:main" },
-                        { "sampler_name": "Transmittance", "target": "transmittance" },
-                        { "sampler_name": "MultipleScattering", "target": "multiple_scattering" } ],
+                        { "sampler_name": "Transmittance", "target": "transmittance", "bilinear": true },
+                        { "sampler_name": "MultipleScattering", "target": "multiple_scattering", "bilinear": true } ],
             "output": "aerial_perspective"
         },
 
@@ -85,14 +85,14 @@
             "program": "minecraft:buffer/albedo",
             "inputs": [ { "sampler_name": "In", "target": "minecraft:main" },
                         { "sampler_name": "Uv", "target": "uvs"},
-                        { "sampler_name": "Atlas", "location": "atlas", "width": 1024, "height": 1024 },
+                        { "sampler_name": "Atlas", "location": "atlas", "width": 1024, "height": 1024, "bilinear": true },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true } ],
             "output": "albedo"
         },
         { 
             "program": "minecraft:buffer/specular",
             "inputs": [ { "sampler_name": "Uv", "target": "uvs"},
-                        { "sampler_name": "Atlas", "location": "atlas", "width": 1024, "height": 1024 } ],
+                        { "sampler_name": "Atlas", "location": "atlas", "width": 1024, "height": 1024, "bilinear": true } ],
             "output": "specular"
         },
         {
@@ -100,7 +100,7 @@
             "inputs": [ { "sampler_name": "Data", "target": "minecraft:main" },
                         { "sampler_name": "Tangent", "target": "lmcoord" },
                         { "sampler_name": "Uv", "target": "uvs"},
-                        { "sampler_name": "Atlas", "location": "atlas", "width": 1024, "height": 1024 },
+                        { "sampler_name": "Atlas", "location": "atlas", "width": 1024, "height": 1024, "bilinear": true },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
                         { "sampler_name": "Mojank", "target": "shadowmap_depth_cache" } ],
             "output": "normals"
@@ -123,7 +123,7 @@
             "inputs": [ { "sampler_name": "In", "target": "shadow" },
                         { "sampler_name": "Data", "target": "minecraft:main" },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
-                        { "sampler_name": "Previous", "target": "shadow_prev" } ],
+                        { "sampler_name": "Previous", "target": "shadow_prev", "bilinear": true } ],
             "output": "shadow_temp"
         },
 
@@ -140,8 +140,8 @@
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
                         { "sampler_name": "Shadow", "target": "shadow_prev" },
                         { "sampler_name": "Normal", "target": "normals" },
-                        { "sampler_name": "Sky", "target": "sky_view" },
-                        { "sampler_name": "Transmittance", "target": "transmittance" },
+                        { "sampler_name": "Sky", "target": "sky_view", "bilinear": true },
+                        { "sampler_name": "Transmittance", "target": "transmittance", "bilinear": true },
                         { "sampler_name": "Specular", "target": "specular" },
                         { "sampler_name": "Lightmap", "target": "lmcoord" },
                         { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 } ],
@@ -154,9 +154,9 @@
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
                         { "sampler_name": "Shadow", "target": "shadow_prev" },
                         { "sampler_name": "Normal", "target": "normals" },
-                        { "sampler_name": "Sky", "target": "sky_view" },
+                        { "sampler_name": "Sky", "target": "sky_view", "bilinear": true },
                         { "sampler_name": "Translucent", "target": "translucent" },
-                        { "sampler_name": "AerialPerspective", "target": "aerial_perspective" },
+                        { "sampler_name": "AerialPerspective", "target": "aerial_perspective", "bilinear": true },
                         { "sampler_name": "TranslucentDepth", "target": "translucent", "use_depth_buffer": true },
                         { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 } ],
             "output": "swap2"
@@ -164,66 +164,79 @@
 
         {
             "program": "minecraft:bloom/downsample",
-            "inputs": [ { "sampler_name": "In", "target": "swap2" } ],
+            "inputs": [ { "sampler_name": "In", "target": "swap2", "bilinear": true } ],
             "uniforms": [ { "name": "Iteration", "values": [ 1.0 ] } ],
             "output": "a"
         },
         {
             "program": "minecraft:bloom/downsample",
-            "inputs": [ { "sampler_name": "In", "target": "a" } ],
+            "inputs": [ { "sampler_name": "In", "target": "a", "bilinear": true } ],
             "uniforms": [ { "name": "Iteration", "values": [ 2.0 ] } ],
             "output": "b"
         },
         {
             "program": "minecraft:bloom/downsample",
-            "inputs": [ { "sampler_name": "In", "target": "b" } ],
+            "inputs": [ { "sampler_name": "In", "target": "b", "bilinear": true } ],
             "uniforms": [ { "name": "Iteration", "values": [ 3.0 ] } ],
             "output": "c"
         },
         {
             "program": "minecraft:bloom/downsample",
-            "inputs": [ { "sampler_name": "In", "target": "c" } ],
+            "inputs": [ { "sampler_name": "In", "target": "c", "bilinear": true } ],
             "uniforms": [ { "name": "Iteration", "values": [ 4.0 ] } ],
             "output": "d"
         },
         {
             "program": "minecraft:bloom/downsample",
-            "inputs": [ { "sampler_name": "In", "target": "d" } ],
+            "inputs": [ { "sampler_name": "In", "target": "d", "bilinear": true } ],
             "uniforms": [ { "name": "Iteration", "values": [ 5.0 ] } ],
             "output": "e"
         },
         {
+            "program": "minecraft:bloom/downsample",
+            "inputs": [ { "sampler_name": "In", "target": "e", "bilinear": true } ],
+            "uniforms": [ { "name": "Iteration", "values": [ 6.0 ] } ],
+            "output": "f"
+        },
+        {
             "program": "minecraft:bloom/upsample",
-            "inputs": [ { "sampler_name": "In", "target": "e" },
-                        { "sampler_name": "Downsampled", "target": "d" } ],
+            "inputs": [ { "sampler_name": "In", "target": "f", "bilinear": true },
+                        { "sampler_name": "Downsampled", "target": "e", "bilinear": true } ],
+            "uniforms": [ { "name": "Iteration", "values": [ 6.0 ] } ],
+            "output": "e1"
+        },
+        {
+            "program": "minecraft:bloom/upsample",
+            "inputs": [ { "sampler_name": "In", "target": "e1", "bilinear": true },
+                        { "sampler_name": "Downsampled", "target": "d", "bilinear": true } ],
             "uniforms": [ { "name": "Iteration", "values": [ 5.0 ] } ],
             "output": "d1"
         },
         {
             "program": "minecraft:bloom/upsample",
-            "inputs": [ { "sampler_name": "In", "target": "d1" },
-                        { "sampler_name": "Downsampled", "target": "c" } ],
+            "inputs": [ { "sampler_name": "In", "target": "d1", "bilinear": true },
+                        { "sampler_name": "Downsampled", "target": "c", "bilinear": true } ],
             "uniforms": [ { "name": "Iteration", "values": [ 4.0 ] } ],
             "output": "c1"
         },
         {
             "program": "minecraft:bloom/upsample",
-            "inputs": [ { "sampler_name": "In", "target": "c1" },
-                        { "sampler_name": "Downsampled", "target": "b" } ],
+            "inputs": [ { "sampler_name": "In", "target": "c1", "bilinear": true },
+                        { "sampler_name": "Downsampled", "target": "b", "bilinear": true } ],
             "uniforms": [ { "name": "Iteration", "values": [ 3.0 ] } ],
             "output": "b1"
         },
         {
             "program": "minecraft:bloom/upsample",
-            "inputs": [ { "sampler_name": "In", "target": "b1" },
-                        { "sampler_name": "Downsampled", "target": "a" } ],
+            "inputs": [ { "sampler_name": "In", "target": "b1", "bilinear": true },
+                        { "sampler_name": "Downsampled", "target": "a", "bilinear": true } ],
             "uniforms": [ { "name": "Iteration", "values": [ 2.0 ] } ],
             "output": "a1"
         },
         {
             "program": "minecraft:bloom/upsample",
-            "inputs": [ { "sampler_name": "In", "target": "a1" },
-                        { "sampler_name": "Downsampled", "target": "swap2" } ],
+            "inputs": [ { "sampler_name": "In", "target": "a1", "bilinear": true },
+                        { "sampler_name": "Downsampled", "target": "swap2", "bilinear": true } ],
             "uniforms": [ { "name": "Iteration", "values": [ 1.0 ] } ],
             "output": "bloom"
         },
@@ -238,7 +251,7 @@
         {
             "program": "minecraft:post/composite",
             "inputs": [ { "sampler_name": "In", "target": "final" },
-                        { "sampler_name": "Data", "target": "minecraft:main"},
+                        { "sampler_name": "Data", "target": "minecraft:main" },
                         { "sampler_name": "Fallback", "target": "final_prev" } ],
             "output": "final_comp"
         },

@@ -35,5 +35,5 @@ void main() {
     vec3 luminance = raymarchAtmosphericScattering(TransmittanceSampler, MultipleScatteringSampler, position, direction, sunDirection, distanceToBoundary)[0];
     luminance = clamp(luminance, 0.0, 1.0);
     
-    fragColor = packR11G11B10LtoF8x4(sqrt(luminance));
+    fragColor = encodeLogLuv(luminance);
 }

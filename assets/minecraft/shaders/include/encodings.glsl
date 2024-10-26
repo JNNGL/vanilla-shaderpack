@@ -132,17 +132,62 @@ vec3 decodeDirectionFromF8(float f) {
     return decodeDirectionFromByte(int(f * 255.0));
 }
 
-#define RGBM_MAX_RANGE 30.0
+const mat3 LOGLUV_M = mat3(
+    0.2209, 0.1138, 0.0102,
+    0.3390, 0.6780, 0.1130,
+    0.4184, 0.7319, 0.2969
+);
 
-vec4 encodeRGBM(vec3 rgb) {
-    float maxRGB = max(rgb.x, max(rgb.y, rgb.z));
-    float m = maxRGB / RGBM_MAX_RANGE;
-    m = ceil(m * 255.0) / 255.0;
-    return vec4(rgb / (m * RGBM_MAX_RANGE), m);
+const mat3 LOGLUV_INV_M = mat3(
+    6.0013, -1.332, 0.3007,
+    -2.700, 3.1029, -1.088,
+    -1.7995, -5.7720, 5.6268
+);
+
+vec4 encodeLogLuv(vec3 rgb) {
+    vec4 result;
+    vec3 Xp_Y_XYZp = rgb * LOGLUV_M;
+    Xp_Y_XYZp = max(Xp_Y_XYZp, vec3(1.0e-6));
+    result.xy = Xp_Y_XYZp.xy / Xp_Y_XYZp.z;
+    float Le = 2.0 * log2(Xp_Y_XYZp.y) + 127.0;
+    result.w = fract(Le);
+    result.z = (Le - (floor(result.w * 255.0)) / 255.0) / 255.0;
+    return result;
 }
 
-vec3 decodeRGBM(vec4 rgbm) {
-    return rgbm.rgb * (rgbm.a * RGBM_MAX_RANGE);
+vec3 decodeLogLuv(vec4 logLuv) {
+    float Le = logLuv.z * 255.0 + logLuv.w;
+    vec3 Xp_Y_XYZp;
+    Xp_Y_XYZp.y = exp2((Le - 127.0) / 2.0);
+    Xp_Y_XYZp.z = Xp_Y_XYZp.y / logLuv.y;
+    Xp_Y_XYZp.x = logLuv.x * Xp_Y_XYZp.z;
+    vec3 rgb = Xp_Y_XYZp * LOGLUV_INV_M;
+    return max(rgb, 0.0);
+}
+
+const mat3 RGB2YCoCg = mat3(0.25, 0.5, -0.25, 0.5, 0.0, 0.5, 0.25, -0.5, -0.25);
+const mat3 YCoCg2RGB = mat3(1.0, 1.0, 1.0, 1.0, 0.0, -1.0, -1.0, 1.0, -1.0);
+
+vec3 rgb2YCoCg(vec3 rgb) {
+    return RGB2YCoCg * rgb;
+}
+
+vec3 YCoCg2rgb(vec3 ycocg) {
+    float t = ycocg.r - ycocg.b;
+    return vec3(t + ycocg.g, ycocg.r + ycocg.b, t - ycocg.g);
+}
+
+vec4 encodeY16CoCg8(vec3 rgb) {
+    vec3 YCoCg = rgb2YCoCg(rgb);
+
+    float Y = YCoCg.x * 255.0;
+    return vec4(vec2(floor(Y), int(Y * 256.0) & 0xFF) / 255.0, YCoCg.yz + 0.5);
+}
+
+vec3 decodeY16CoCg8(vec4 ycocg1688) {
+    float Y = ycocg1688.x + ycocg1688.y / 256.0;
+    vec3 YCoCg = vec3(Y, ycocg1688.zw - 0.5);
+    return YCoCg2rgb(YCoCg);
 }
 
 #endif // _ENCODINGS_GLSL

@@ -18,9 +18,9 @@ void main() {
     ivec2 fragCoord = ivec2(gl_FragCoord.xy);
 
     int x = fragCoord.x % aerialPerspectiveResolution.x;
-    int y = fragCoord.y / 2;
+    int y = fragCoord.y % aerialPerspectiveResolution.y;
     int z = fragCoord.x / aerialPerspectiveResolution.x + 1;
-    int index = fragCoord.y % 2;
+    int index = fragCoord.y / aerialPerspectiveResolution.y;
 
     vec3 screenSpace = vec3(x, y, z) / vec3(aerialPerspectiveResolution);
     float linearDepth = screenSpace.z * (planes.y - planes.x) + planes.x;
@@ -39,5 +39,5 @@ void main() {
     mat2x3 atmosphericScattering = raymarchAtmosphericScattering(TransmittanceSampler, MultipleScatteringSampler, position, direction, lightDirection, travelDistance * aerialPerspectiveScale);
 
     vec3 value = atmosphericScattering[index];
-    fragColor = packR11G11B10LtoF8x4(index == 0 ? sqrt(value) : value * value);
+    fragColor = encodeLogLuv(value);
 }

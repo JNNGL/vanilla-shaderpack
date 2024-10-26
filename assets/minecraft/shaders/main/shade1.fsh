@@ -53,7 +53,7 @@ void main() {
         return;
     }
 
-    vec3 color = decodeRGBM(texture(InSampler, texCoord));
+    vec3 color = decodeLogLuv(texture(InSampler, texCoord));
 
     vec4 shadow = texelFetch(ShadowSampler, ivec2(gl_FragCoord.x, max(1.0, gl_FragCoord.y)), 0);
     vec3 normal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
@@ -86,26 +86,7 @@ void main() {
         vec3 viewDirection = mat3(ModelViewMat) * reflected;
 
         vec3 reflection = sampleSkyLUT(SkySampler, reflected, sunDirection) * sunIntensity;
-
-        float roughness = 0.4;
-
-        vec3 N = waterNormal;
-        vec3 L = sunDirection;
-        vec3 V = -direction;
-        vec3 H = normalize(V + L);
         
-        float NDF = DistributionGGX(N, H, roughness);
-        float G = GeometrySmith(N, V, L, roughness);
-        vec3 F = vec3(reflectance);
-        
-        vec3 numerator = NDF * G * F;
-        float denominator = 4.0 * max(dot(N, V), 0.0) + 0.0001;
-
-        vec3 lightColor = sampleSkyLUT(SkySampler, sunDirection, sunDirection) * sunIntensity * LIGHT_COLOR_MULTIPLIER;
-        vec3 radiance = 4.0 * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);
-
-        reflection += radiance * numerator / denominator; // FIXME
-
         float linearDepthWater = linearizeDepth(translucentDepth * 2.0 - 1.0, planes);
         apLinearDepth = linearDepthWater;
 
@@ -116,7 +97,7 @@ void main() {
         float hitDepth = texelFetch(DepthSampler, ivec2(hitPixel), 0).r;
         if (hit && hitDepth != 1.0) {
             vec2 hitTexCoord = hitPixel / InSize;
-            vec3 screenSpaceReflection = decodeRGBM(texture(InSampler, hitTexCoord));
+            vec3 screenSpaceReflection = decodeLogLuv(texture(InSampler, hitTexCoord));
             
             vec2 falloff = max(vec2(0.0), abs(hitTexCoord * 2.0 - 1.0) - 0.9) * 10.0;
             vec2 edgeFactor = max(vec2(0.0), abs(texCoord * 2.0 - 1.0) - 0.9) * 10.0;
@@ -150,5 +131,5 @@ void main() {
     color = color * aerial[1] + aerial[0] * sunIntensity * volumetricShadowing;
 #endif // ENABLE_AERIAL_PERSPECTIVE
 
-    fragColor = encodeRGBM(color);
+    fragColor = encodeLogLuv(color);
 }

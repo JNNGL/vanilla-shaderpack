@@ -120,5 +120,5 @@ void main() {
         }
     }
 
-    fragColor = encodeRGBM(color);
+    fragColor = encodeLogLuv(color);
 }

@@ -7,7 +7,6 @@
 #moj_import <minecraft:constants.glsl>
 #moj_import <minecraft:intersectors.glsl>
 #moj_import <minecraft:encodings.glsl>
-#moj_import <minecraft:bilinear.glsl>
 #moj_import <settings:settings.glsl>
 
 const float cameraHeight = CAMERA_HEIGHT;
@@ -67,7 +66,7 @@ vec3 sampleTransmittanceLUT(sampler2D lut, vec3 position, vec3 sunDirection) {
     float x = cosTheta * 0.5 + 0.5;
     float y = (height - earthRadius) / (atmosphereRadius - earthRadius);
     vec2 texSize = textureSize(lut, 0);
-    return textureBilinearR11G11B10L(lut, clamp(vec2(x, y), 1.0 / texSize, 1.0 - 1.0 / texSize), texSize);
+    return decodeLogLuv(texture(lut, clamp(vec2(x, y), 1.0 / texSize, 1.0 - 1.0 / texSize)));
 }
 
 vec3 sampleMultipleScatteringLUT(sampler2D lut, vec3 position, vec3 sunDirection) {
@@ -77,7 +76,7 @@ vec3 sampleMultipleScatteringLUT(sampler2D lut, vec3 position, vec3 sunDirection
     float x = cosTheta * 0.5 + 0.5;
     float y = (height - earthRadius) / (atmosphereRadius - earthRadius);
     vec2 texSize = textureSize(lut, 0);
-    return textureBilinearR11G11B10L(lut, clamp(vec2(x, y), 1.0 / texSize, 1.0 - 1.0 / texSize), texSize) / 5.0;
+    return decodeLogLuv(texture(lut, clamp(vec2(x, y), 1.0 / texSize, 1.0 - 1.0 / texSize))) / 5.0;
 }
 
 vec3 computeTransmittanceToBoundary(vec3 position, vec3 direction, float travelDistance) {
@@ -242,14 +241,14 @@ vec3 sampleSkyLUT(sampler2D lut, vec3 direction, vec3 sunDirection) {
     vec2 texSize = textureSize(lut, 0);
     vec2 scale = (texSize - 2.0) / texSize;
 
-    return textureBilinearR11G11B10Lpow2(lut, uv * scale + 1.0 / texSize);
+    return decodeLogLuv(texture(lut, uv * scale + 1.0 / texSize));
 }
 
-mat2x3 fetchAerialPerspectiveLUT(sampler2D lut, ivec2 coord) {
-    vec3 atmosphereLuminance = unpackR11G11B10LfromF8x4(texelFetch(lut, coord, 0));
-    vec3 atmosphereTransmittance = unpackR11G11B10LfromF8x4(texelFetch(lut, coord + ivec2(0, 1), 0));
-    atmosphereLuminance *= atmosphereLuminance;
-    atmosphereTransmittance = sqrt(atmosphereTransmittance);
+mat2x3 fetchAerialPerspectiveLUT(sampler2D lut, vec2 coord, vec2 invTexSize) {
+    coord *= invTexSize;
+
+    vec3 atmosphereLuminance = decodeLogLuv(texture(lut, coord));
+    vec3 atmosphereTransmittance = decodeLogLuv(texture(lut, coord + vec2(0.0, 0.5)));
     return mat2x3(atmosphereLuminance, atmosphereTransmittance);
 }
 
@@ -258,42 +257,22 @@ mat2x3 lerpAerialPerspectiveFroxels(mat2x3 a, mat2x3 b, float alpha) {
 }
 
 mat2x3 sampleAerialPerspectiveLUT(sampler2D lut, vec2 texCoord, float linearDepth, vec2 planes) {
+    const vec2 invLutRes = 1.0 / vec2(aerialPerspectiveResolution.x * aerialPerspectiveResolution.z, aerialPerspectiveResolution.y * 2);
     vec3 screenSpace = vec3(texCoord, (linearDepth - planes.x) / (planes.y - planes.x));
 
     vec3 froxelCoord = screenSpace * aerialPerspectiveResolution;
-    ivec3 froxel = ivec3(floor(froxelCoord));
-    vec3 fract = fract(froxelCoord);
-    froxel.z -= 1;
+    
+    int froxelZ = int(floor(froxelCoord.z)) - 1;
+    int zMask = int(froxelZ != aerialPerspectiveResolution.z - 1);
 
-    ivec2 fragCoord = ivec2(froxel.z * aerialPerspectiveResolution.x + froxel.x, froxel.y * 2);
-    ivec3 mask = ivec3(bvec3(
-        froxel.x >= 0 && froxel.x != aerialPerspectiveResolution.x - 1,
-        froxel.y >= 0 && froxel.y != aerialPerspectiveResolution.y - 1,
-        froxel.z != aerialPerspectiveResolution.z - 1));
+    froxelCoord.xy = clamp(froxelCoord.xy, vec2(0.5), aerialPerspectiveResolution.xy - 0.5);
+    vec2 fragCoord = vec2(froxelZ * aerialPerspectiveResolution.x + froxelCoord.x, froxelCoord.y);
 
     mat2x3 z0 = mat2x3(vec3(0.0), vec3(1.0));
-    if (froxel.z >= 0) {
-        z0 = lerpAerialPerspectiveFroxels(
-            lerpAerialPerspectiveFroxels(
-                fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(0, 0)), 
-                fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(mask.x * 1, 0)), fract.x),
-            lerpAerialPerspectiveFroxels(
-                fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(0, mask.y * 2)), 
-                fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(mask.x * 1, mask.y * 2)), fract.x),
-            fract.y
-        );
-    }
-    mat2x3 z1 = lerpAerialPerspectiveFroxels(
-        lerpAerialPerspectiveFroxels(
-            fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(mask.z * aerialPerspectiveResolution.x, 0)),
-            fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(mask.z * aerialPerspectiveResolution.x + mask.x * 1, 0)), fract.x),
-        lerpAerialPerspectiveFroxels(
-            fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(mask.z * aerialPerspectiveResolution.x, mask.y * 2)), 
-            fetchAerialPerspectiveLUT(lut, fragCoord + ivec2(mask.z * aerialPerspectiveResolution.x + mask.x * 1, mask.y * 2)), fract.x),
-        fract.y
-    );
+    if (froxelZ >= 0) z0 = fetchAerialPerspectiveLUT(lut, fragCoord, invLutRes);
+    mat2x3 z1 = fetchAerialPerspectiveLUT(lut, fragCoord + vec2(zMask * aerialPerspectiveResolution.x, 0.0), invLutRes);
 
-    return lerpAerialPerspectiveFroxels(z0, z1, fract.z);
+    return lerpAerialPerspectiveFroxels(z0, z1, fract(froxelCoord.z));
 }
 
 #endif // _ATMOSPHERE_GLSL

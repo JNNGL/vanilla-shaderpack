@@ -13,10 +13,10 @@ in vec2 texCoord;
 out vec4 fragColor;
 
 void main() {
-    vec3 color = decodeRGBM(texture(InSampler, texCoord));
-    vec3 bloom = decodeRGBM(texture(BloomSampler, texCoord));
+    vec3 color = decodeLogLuv(texture(InSampler, texCoord));
+    vec3 bloom = decodeLogLuv(texture(BloomSampler, texCoord));
 
-    color = mix(color, bloom, 0.03);
+    color = mix(color, bloom, 0.04);
 
     color = acesFitted(color);
     color = linearToSrgb(color);
