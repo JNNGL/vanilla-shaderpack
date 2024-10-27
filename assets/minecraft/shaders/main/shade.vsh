@@ -11,6 +11,7 @@ uniform mat4 ModelViewMat;
 
 out vec2 texCoord;
 flat out vec3 sunDirection;
+flat out mat4 projViewMat;
 flat out mat4 invProjViewMat;
 flat out int shouldUpdate;
 out vec4 near;
@@ -23,7 +24,8 @@ void main() {
 
     mat4 projection = decodeProjectionMatrix(DataSampler);
 
-    invProjViewMat = inverse(projection * ModelViewMat);
+    projViewMat = projection * ModelViewMat;
+    invProjViewMat = inverse(projViewMat);
     sunDirection = decodeSunDirection(DataSampler);
     near = getPointOnNearPlane(invProjViewMat, gl_Position.xy);
 }

@@ -184,7 +184,7 @@ void main() {
     float translucentDepth = texture(TranslucentDepthSampler, texCoord).r;
 
     vec3 fragPos = unprojectScreenSpace(invViewProjMat, texCoord, depth);
-    vec3 normal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
+    vec3 normal = decodeDirectionFromF8x2(texture(NormalSampler, texCoord).rg);
 
     vec3 rayOrigin = near.xyz / near.w;
     vec3 rayDirection = normalize(fragPos - rayOrigin);

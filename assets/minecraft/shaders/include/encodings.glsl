@@ -103,7 +103,7 @@ vec3 unpackRGB565fromF8x2(vec2 v) {
     return vec3(float(r) / 31.0, float(g) / 63.0, float(b) / 31.0);
 }
 
-int encodeDirectionToByte(vec3 direction) {
+vec2 encodeDirectionToF8x2(vec3 direction) {
     direction = clamp(direction, -1.0, 1.0);
     float theta = acos(direction.y) / PI;
     float phi = abs(direction.x) < 0.01 && abs(direction.z) < 0.01 ? 
@@ -111,17 +111,26 @@ int encodeDirectionToByte(vec3 direction) {
                           atan(direction.z, direction.x),
                           float(abs(direction.x) < abs(direction.z)));
     phi = (phi / PI) * 0.5 + 0.5;
-    ivec2 angles = ivec2(round(theta * 8.0), round(phi * 16.0));
+    return vec2(theta, phi);
+}
+
+vec3 decodeDirectionFromF8x2(vec2 thetaPhi) {
+    float theta = thetaPhi.x * PI;
+    float phi = (thetaPhi.y * 2.0 - 1.0) * PI;
+    
+    float sinTheta = sin(theta);
+    return normalize(vec3(sinTheta * cos(phi), cos(theta), sinTheta * sin(phi)));
+}
+
+int encodeDirectionToByte(vec3 direction) {
+    vec2 thetaPhi = encodeDirectionToF8x2(direction);
+    ivec2 angles = ivec2(round(thetaPhi.x * 8.0), round(thetaPhi.y * 16.0));
     return angles.y * 9 + angles.x;
 }
 
 vec3 decodeDirectionFromByte(int data) {
-    vec2 angles = vec2(data % 9, data / 9);
-    float theta = (angles.x / 8.0) * PI;
-    float phi = ((angles.y / 16.0) * 2.0 - 1.0) * PI;
-    
-    float sinTheta = sin(theta);
-    return normalize(vec3(sinTheta * cos(phi), cos(theta), sinTheta * sin(phi)));
+    vec2 thetaPhi = vec2((data % 9) / 8.0, (data / 9) / 16.0);
+    return decodeDirectionFromF8x2(thetaPhi);
 }
 
 float encodeDirectionToF8(vec3 direction) {
@@ -177,16 +186,55 @@ vec3 YCoCg2rgb(vec3 ycocg) {
     return vec3(t + ycocg.g, ycocg.r + ycocg.b, t - ycocg.g);
 }
 
-vec4 encodeY16CoCg8(vec3 rgb) {
+vec4 encodeYCoCg1688(vec3 rgb) {
     vec3 YCoCg = rgb2YCoCg(rgb);
 
     float Y = YCoCg.x * 255.0;
     return vec4(vec2(floor(Y), int(Y * 256.0) & 0xFF) / 255.0, YCoCg.yz + 0.5);
 }
 
-vec3 decodeY16CoCg8(vec4 ycocg1688) {
+vec3 decodeYCoCg1688(vec4 ycocg1688) {
     float Y = ycocg1688.x + ycocg1688.y / 256.0;
     vec3 YCoCg = vec3(Y, ycocg1688.zw - 0.5);
+    return YCoCg2rgb(YCoCg);
+}
+
+vec2 encodeYCoCg844(vec3 rgb) {
+    vec3 YCoCg = rgb2YCoCg(rgb);
+    vec2 CoCg = round((YCoCg.yz + 0.5) * 15.0);
+
+    return vec2(YCoCg.x, (CoCg.x * 16.0 + CoCg.y) / 255.0);
+}
+
+vec3 decodeYCoCg844(vec2 YCoCg) {
+    YCoCg.y *= 255.0;
+    vec2 CoCg = vec2(floor(YCoCg.y / 16.0), mod(YCoCg.y, 16.0));
+
+    return YCoCg2rgb(vec3(YCoCg.x, CoCg / 15.0 - 0.5));
+}
+
+vec3 encodeYCoCg776(vec3 rgb, uint lowerBits) {
+    vec3 YCoCg = rgb2YCoCg(rgb);
+    YCoCg.yz += 0.5;
+
+    uint bits = lowerBits;
+    bits |= uint(YCoCg.x * 127.0) << 17u;
+    bits |= uint(YCoCg.y * 127.0) << 10u;
+    bits |= uint(YCoCg.z * 63.0) << 4u;
+
+    return vec3(bits >> 16u, (bits >> 8u) & 0xFFu, bits & 0xFFu) / 255.0;
+}
+
+vec3 decodeYCoCg776(vec3 v, out uint lowerBits) {
+    uvec3 data = uvec3(v * 255.0);
+    uint bits = (data.r << 16) | (data.g << 8) | data.b;
+    lowerBits = bits & 15u;
+
+    float Y = float(bits >> 17u) / 127.0;
+    float Co = float((bits >> 10u) & 127u) / 127.0;
+    float Cg = float((bits >> 4u) & 63u) / 63.0;
+    
+    vec3 YCoCg = vec3(Y, Co - 0.5, Cg - 0.5);
     return YCoCg2rgb(YCoCg);
 }
 

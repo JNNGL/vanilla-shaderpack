@@ -3,6 +3,7 @@
 #extension GL_MC_moj_import : enable
 #moj_import <minecraft:atlas.glsl>
 #moj_import <minecraft:encodings.glsl>
+#moj_import <settings:settings.glsl>
 
 uniform sampler2D InSampler;
 uniform sampler2D UvSampler;
@@ -21,16 +22,24 @@ void main() {
     vec4 uv = texture(UvSampler, texCoord);
     if (uv.a == 1.0) {
         fragColor = texture(InSampler, texCoord);
+        fragColor.a = 1.0;
         return;
     }
 
     fragColor = sampleCombinedAtlas(AtlasSampler, uv, ATLAS_ALBEDO);
+    fragColor.a = 1.0;
 
     vec4 color = texture(InSampler, texCoord);
     ivec2 fragCoord = ivec2(gl_FragCoord.xy);
     ivec2 local = fragCoord % 2;
     if (local == ivec2(1, 1)) {
+#if (ENABLE_DIRECTIONAL_LIGHTMAP == yes)
+        uint lowerBits;
+        fragColor.rgb *= decodeYCoCg776(color.rgb, lowerBits);
+        fragColor.a = float(lowerBits) / 255.0;
+#else
         fragColor.rgb *= color.rgb;
+#endif // ENABLE_DIRECTIONAL_LIGHTMAP
         return;
     }
 
@@ -55,6 +64,12 @@ void main() {
     }
 
     if (vertexColor.a != 1.0) {
+#if (ENABLE_DIRECTIONAL_LIGHTMAP == yes)
+        uint lowerBits;
+        fragColor.rgb *= decodeYCoCg776(vertexColor.rgb, lowerBits);
+        fragColor.a = float(lowerBits) / 255.0;
+#else
         fragColor.rgb *= vertexColor.rgb;
+#endif // ENABLE_DIRECTIONAL_LIGHTMAP
     }
 }

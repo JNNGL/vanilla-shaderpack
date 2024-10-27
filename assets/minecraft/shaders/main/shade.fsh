@@ -5,6 +5,7 @@
 #moj_import <minecraft:projections.glsl>
 #moj_import <minecraft:srgb.glsl>
 #moj_import <minecraft:random.glsl>
+#moj_import <minecraft:encodings.glsl>
 #moj_import <minecraft:brdf.glsl>
 #moj_import <minecraft:metals.glsl>
 #moj_import <settings:settings.glsl>
@@ -19,8 +20,11 @@ uniform sampler2D SpecularSampler;
 uniform sampler2D LightmapSampler;
 uniform sampler2D NoiseSampler;
 
+uniform vec2 InSize;
+
 in vec2 texCoord;
 flat in vec3 sunDirection;
+flat in mat4 projViewMat;
 flat in mat4 invProjViewMat;
 flat in int shouldUpdate;
 in vec4 near;
@@ -35,8 +39,9 @@ void main() {
     float depth = texture(DepthSampler, texCoord).r;
     vec3 fragPos = unprojectScreenSpace(invProjViewMat, texCoord, depth);
 
+    vec4 normalData = texture(NormalSampler, texCoord);
     vec4 shadow = texelFetch(ShadowSampler, ivec2(gl_FragCoord.x, max(1.0, gl_FragCoord.y)), 0);
-    vec3 normal = normalize(texture(NormalSampler, texCoord).rgb * 2.0 - 1.0);
+    vec3 normal = decodeDirectionFromF8x2(normalData.rg);
     
     vec3 pointOnNearPlane = near.xyz / near.w;
     vec3 direction = normalize(fragPos - pointOnNearPlane);
@@ -47,7 +52,8 @@ void main() {
     } else {
         float NdotL = dot(normal, sunDirection);
 
-        vec3 albedo = srgbToLinear(texture(InSampler, texCoord).rgb);
+        vec4 albedoData = texture(InSampler, texCoord);
+        vec3 albedo = srgbToLinear(albedoData.rgb);
         vec2 lightLevel = texture(LightmapSampler, texCoord).rg;
 
         vec4 specularData = texture(SpecularSampler, texCoord);
@@ -77,9 +83,11 @@ void main() {
         vec3 diffuse = hammonDiffuse(albedo, N, V, L, H, F, roughness * roughness);
         diffuse *= clamp(NdotL, 0.0, 1.0) * radiance;
 
+        float ambientOcclusion = shadow.g * normalData.a;
+
         float lightColorLength = length(lightColor);
         vec3 ambientColor = pow(sampleSkyLUT(SkySampler, vec3(0.0001, 1.0, 0.0), sunDirection), vec3(1.0 / 3.0)) * 5.0;
-        vec3 ambient = albedo * pow(shadow.g, 1.0) * ambientColor * 0.2 * (lightColorLength + 0.13) * (-sqrt(clamp(-NdotL, 0.0, 0.6)) * 0.2 * lightColorLength + 1.0);
+        vec3 ambient = albedo * ambientOcclusion * ambientColor * 0.2 * (lightColorLength + 0.13) * (-sqrt(clamp(-NdotL, 0.0, 0.6)) * 0.2 * lightColorLength + 1.0);
 
 #if (ENABLE_SUBSURFACE_SCATTERING == yes)
         // lame subsurface scattering "approximation"
@@ -100,13 +108,26 @@ void main() {
         vec3 specular = radiance * numerator / denominator;
         if (metalId >= 230) specular *= albedo;
 
-        const vec3 BLOCKLIGHT_COLOR = vec3(255.0, 212.0, 160.0) / 255.0;
+        vec3 flatNormal = decodeDirectionFromF8(normalData.z);
+        vec3 tangent = normalize(cross(flatNormal, vec3(0.0, 1.0, 1.0)));
+        vec3 bitangent = cross(flatNormal, tangent);
+        mat3 tbn = mat3(tangent, bitangent, flatNormal);
 
         vec3 absNormal = abs(normal) * vec3(0.6, 1.0, 0.8);
         float ambientFactor = 0.6 + 0.1 * float(absNormal.x > absNormal.z);
-        if (absNormal.y > absNormal.x && absNormal.y > absNormal.z) ambientFactor += 0.2;
+        ambientFactor += 0.2 * float(absNormal.y > absNormal.x && absNormal.y > absNormal.z);
 
-        vec3 blockLight = BLOCKLIGHT_COLOR * BLOCKLIGHT_COLOR * 2.5 * albedo * mix(0.1, 1.0, shadow.g) * ambientFactor;
+        vec3 blockLight = BLOCKLIGHT_COLOR * albedo * mix(0.1, 1.0, ambientOcclusion) * ambientFactor;
+
+#if (ENABLE_DIRECTIONAL_LIGHTMAP == yes)
+        if (albedoData.a != 1.0) {
+            int lmPacked = int(albedoData.a * 255.0);
+            vec2 lmDirection = normalize(vec3(lmPacked & 3, (lmPacked >> 2) & 3, 2.0) - 1.0).xy;
+            if (lmDirection == vec2(0.0)) lmDirection.xy = vec2(0.43);
+            vec3 blockLightDir = tbn * normalize(vec3(lmDirection, DIRECTIONAL_LIGHTMAP_HEIGHT));
+            blockLight *= abs(dot(blockLightDir, normal));
+        }
+#endif // ENABLE_DIRECTIONAL_LIGHTMAP
 
         vec3 ambient0 = vec3(0.7, 0.8, 1.0) * 0.025 * albedo;
 

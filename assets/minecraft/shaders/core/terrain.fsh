@@ -4,6 +4,7 @@
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:shadow.glsl>
 #moj_import <minecraft:datamarker.glsl>
+#moj_import <settings:settings.glsl>
 
 #extension GL_ARB_texture_query_lod : require
 
@@ -43,8 +44,6 @@ void main() {
     if (discardSunData(gl_FragCoord.xy)) {
         discard;
     }
-
-    vec3 normal = normalize(cross(dFdx(fragPos), dFdy(fragPos)));
     
     if (dataQuad > 0) {
         ivec2 pixel = ivec2(floor(gl_FragCoord.xy));
@@ -62,6 +61,21 @@ void main() {
     vec3 p2 = dFdy(fragPos);
     vec2 t1 = dFdx(texCoord0);
     vec2 t2 = dFdy(texCoord0);
+
+    vec3 normal = normalize(cross(p1, p2));
+
+#if (ENABLE_DIRECTIONAL_LIGHTMAP == yes)
+    vec2 lmDeriv = vec2(dFdx(lmCoord.x), dFdy(lmCoord.x));
+
+    vec3 tangent = normalize(cross(normal, vec3(0.0, 1.0, 1.0)));
+    vec3 bitangent = cross(normal, tangent);
+    mat3 tbn = mat3(tangent, bitangent, normal);
+
+    vec3 lmDirection = dot(lmDeriv, lmDeriv) < 0.00001 ? vec3(0.0) : normalize(cross(p2, normal) * lmDeriv.x + cross(normal, p1) * lmDeriv.y) * tbn;
+    
+    lmDirection = sign(lmDirection) * vec3(greaterThan(abs(lmDirection), vec3(0.001))) + 1;
+    uint lmPacked = uint(lmDirection.x) | (uint(lmDirection.y) << 2u);
+#endif // ENABLE_DIRECTIONAL_LIGHTMAP
 
     int mipLevel = int(textureQueryLOD(Sampler0, texCoord0).x);
 
@@ -91,7 +105,11 @@ void main() {
             fragColor = vec4(vec2(lmCoord) / 255.0, encodeDirectionToF8(tangent), 1.0);
         } else if (local == ivec2(1, 1)) {
             vec3 fragmentColor = unshadeBlock(vertexColor, normal).rgb;
-            fragColor.rgb = vec3(fragmentColor);
+#if (ENABLE_DIRECTIONAL_LIGHTMAP == yes)
+            fragColor.rgb = encodeYCoCg776(fragmentColor, lmPacked);
+#else
+            fragColor.rgb = fragmentColor;
+#endif // ENABLE_DIRECTIONAL_LIGHTMAP
         } else {
             alpha = (quadAlpha << 4) | mipLevel;
         }

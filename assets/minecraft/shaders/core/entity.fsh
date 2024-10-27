@@ -35,6 +35,4 @@ void main() {
     color.rgb = mix(overlayColor.rgb, color.rgb, overlayColor.a);
 #endif
     fragColor = color;
-
-    discard;
 }

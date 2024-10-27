@@ -56,7 +56,6 @@ void main() {
     vec3 color = decodeLogLuv(texture(InSampler, texCoord));
 
     vec4 shadow = texelFetch(ShadowSampler, ivec2(gl_FragCoord.x, max(1.0, gl_FragCoord.y)), 0);
-    vec3 normal = texture(NormalSampler, texCoord).rgb * 2.0 - 1.0;
 
     float linearDepth = linearizeDepth(depth * 2.0 - 1.0, planes);
     float apLinearDepth = linearDepth;
@@ -86,7 +85,7 @@ void main() {
         vec3 viewDirection = mat3(ModelViewMat) * reflected;
 
         vec3 reflection = sampleSkyLUT(SkySampler, reflected, sunDirection) * sunIntensity;
-        
+
         float linearDepthWater = linearizeDepth(translucentDepth * 2.0 - 1.0, planes);
         apLinearDepth = linearDepthWater;
 
