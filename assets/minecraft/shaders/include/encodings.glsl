@@ -214,10 +214,10 @@ vec3 decodeYCoCg844(vec2 YCoCg) {
 }
 
 vec3 encodeYCoCg776(vec3 rgb, uint lowerBits) {
-    vec3 YCoCg = rgb2YCoCg(rgb);
+    vec3 YCoCg = rgb2YCoCg(clamp(rgb, 0.0, 1.0));
     YCoCg.yz += 0.5;
 
-    uint bits = lowerBits;
+    uint bits = lowerBits & 15u;
     bits |= uint(YCoCg.x * 127.0) << 17u;
     bits |= uint(YCoCg.y * 127.0) << 10u;
     bits |= uint(YCoCg.z * 63.0) << 4u;
@@ -227,7 +227,7 @@ vec3 encodeYCoCg776(vec3 rgb, uint lowerBits) {
 
 vec3 decodeYCoCg776(vec3 v, out uint lowerBits) {
     uvec3 data = uvec3(v * 255.0);
-    uint bits = (data.r << 16) | (data.g << 8) | data.b;
+    uint bits = (data.r << 16u) | (data.g << 8u) | data.b;
     lowerBits = bits & 15u;
 
     float Y = float(bits >> 17u) / 127.0;

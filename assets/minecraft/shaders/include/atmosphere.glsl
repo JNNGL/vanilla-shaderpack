@@ -79,9 +79,7 @@ vec3 sampleMultipleScatteringLUT(sampler2D lut, vec3 position, vec3 sunDirection
     return decodeLogLuv(texture(lut, clamp(vec2(x, y), 1.0 / texSize, 1.0 - 1.0 / texSize))) / 5.0;
 }
 
-vec3 computeTransmittanceToBoundary(vec3 position, vec3 direction, float travelDistance) {
-    const int samples = ATMOSPHERE_TRANSMITTANCE_SAMPLES;
-
+vec3 computeTransmittanceToBoundary(vec3 position, vec3 direction, float travelDistance, int samples) {
     float rayleighOpticalLength = 0.0;
     float mieOpticalLength = 0.0;
     float ozoneOpticalLength = 0.0;
@@ -100,6 +98,10 @@ vec3 computeTransmittanceToBoundary(vec3 position, vec3 direction, float travelD
 
     vec3 extinction = rayleighOpticalLength * rayleighScatteringBeta + mieOpticalLength * mieScatteringBeta + mieOpticalLength * mieAbsorptionBase + ozoneOpticalLength * ozoneAbsorption;
     return exp(-extinction);
+}
+
+vec3 computeTransmittanceToBoundary(vec3 position, vec3 direction, float travelDistance) {
+    return computeTransmittanceToBoundary(position, direction, travelDistance, ATMOSPHERE_TRANSMITTANCE_SAMPLES);
 }
 
 mat2x3 raymarchAtmosphericScattering(sampler2D lut, sampler2D ms, vec3 position, vec3 direction, vec3 sunDirection, float travelDistance) {
