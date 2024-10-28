@@ -32,10 +32,10 @@ vec4 getPointOnFarPlane(mat4 invProj, vec2 ndc) {
     return invProj * vec4(ndc, 1.0, 1.0);
 }
 
-vec2 getPlanes(mat4 invProj) {
-    vec4 nearPlaneProbe = getPointOnNearPlane(invProj, vec2(0.0, 0.0));
-    vec4 farPlaneProbe = getPointOnFarPlane(invProj, vec2(0.0, 0.0));
-    return vec2(length(nearPlaneProbe.xyz / nearPlaneProbe.w), length(farPlaneProbe.xyz / farPlaneProbe.w));
+vec2 getPlanes(mat4 proj) {
+    const float near = 0.05;
+    float far = proj[3][2] * near / (proj[3][2] + 2.0 * near);
+    return vec2(near, far);
 }
 
 // non-linear [-1.0,1.0] -> linear [near,far]

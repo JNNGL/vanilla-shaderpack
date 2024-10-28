@@ -31,6 +31,6 @@ void main() {
     invProjViewMat = inverse(projection * ModelViewMat);
     sunDirection = decodeSunDirection(DataSampler);
     near = getPointOnNearPlane(invProjViewMat, gl_Position.xy);
-    planes = getPlanes(invProjViewMat);
+    planes = getPlanes(projection);
     totalOffset = decodeTotalOffset(DataSampler);
 }

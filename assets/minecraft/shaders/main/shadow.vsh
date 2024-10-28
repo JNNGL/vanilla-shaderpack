@@ -47,5 +47,5 @@ void main() {
     shadowProjMat = shadowProj * shadowView;
     lightDir = normalize(shadowEye);
     timeSeed = decodeTemporalFrame(FrameSampler) / 5.0;
-    planes = getPlanes(invViewProjMat);
+    planes = getPlanes(projection);
 }

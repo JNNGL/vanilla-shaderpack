@@ -20,5 +20,5 @@ void main() {
     invProjViewMat = inverse(projection * ModelViewMat);
     lightDirection = decodeSunDirection(DataSampler);
 
-    planes = getPlanes(invProjViewMat);
+    planes = getPlanes(projection);
 }
