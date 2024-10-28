@@ -70,7 +70,7 @@ void main() {
 
         vec3 lightColor = transmittance * LIGHT_COLOR_MULTIPLIER;
         vec3 radiance = 4.0 * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);            
-        float NdotL = dot(mat3(ModelViewMat) * Normal, normalize(vec3(0.5, 1.0, 1.0)));
+        float NdotL = dot(mat3(ModelViewMat) * Normal, normalize(vec3(0.0, 1.7, 1.0)));
 
         handDiffuse += (1.0 / PI) * clamp(NdotL, 0.0, 1.0) * radiance * length(transmittance);
         handDiffuse += 0.3 * dot(transmittance, transmittance) * vec3(70, 90, 115) / 255.0;
