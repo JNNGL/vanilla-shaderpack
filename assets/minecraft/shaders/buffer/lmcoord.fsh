@@ -18,7 +18,7 @@ void main() {
     float depth = texture(DepthSampler, texCoord).r;
     vec4 color = texture(InSampler, texCoord);
 
-    if (depth == 1.0 || color.a == 1.0) {
+    if (depth == 1.0) {
         fragColor = vec4(0.0);
         fragColor.a = 1.0;
         return;

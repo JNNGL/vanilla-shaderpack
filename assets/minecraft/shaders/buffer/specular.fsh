@@ -12,7 +12,7 @@ out vec4 fragColor;
 
 void main() {
     vec4 uv = texture(UvSampler, texCoord);
-    if (uv.a == 1.0) {
+    if (uv.a == 1.0 || (int(uv.a * 255.0) >> 4) == 15) {
         fragColor = vec4(0.0);
         return;
     }

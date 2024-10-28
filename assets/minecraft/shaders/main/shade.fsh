@@ -120,7 +120,7 @@ void main() {
         vec3 blockLight = BLOCKLIGHT_COLOR * albedo * mix(0.1, 1.0, ambientOcclusion) * ambientFactor;
 
 #if (ENABLE_DIRECTIONAL_LIGHTMAP == yes)
-        if (albedoData.a != 1.0) {
+        if (albedoData.a < 15.5 / 255.0) {
             int lmPacked = int(albedoData.a * 255.0);
             vec2 lmDirection = normalize(vec3(lmPacked & 3, (lmPacked >> 2) & 3, 2.0) - 1.0).xy;
             if (lmDirection == vec2(0.0)) lmDirection.xy = vec2(0.43);

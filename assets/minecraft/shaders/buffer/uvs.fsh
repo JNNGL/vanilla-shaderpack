@@ -11,14 +11,21 @@ void main() {
     float depth = texture(DepthSampler, texCoord).r;
     vec4 color = texture(InSampler, texCoord);
 
-    if (depth == 1.0 || color.a == 1.0) {
-        fragColor = vec4(0.0);
-        fragColor.a = 1.0;
-        return;
-    }
+    int alpha = int(color.a * 255.0);
+    int quadOnly = alpha >> 4;
 
     ivec2 fragCoord = ivec2(gl_FragCoord.xy);
     ivec2 local = fragCoord % 2;
+
+    bool mask = local == ivec2(0, 0) && color.ba == vec2(1.0);
+    bool noData = (quadOnly == 15 || mask) && depth != 1.0;
+    if (depth == 1.0 || color.a == 1.0 || noData) {
+        fragColor = vec4(0.0);
+        int lower = mask ? 0 : (alpha & 0xF);
+        fragColor.a = noData ? (float((15 << 4) | lower) / 255.0) : 1.0;
+        return;
+    }
+
     if (local.x != local.y) {
         fragColor = color;
         return;
@@ -30,9 +37,6 @@ void main() {
         textureOffset(InSampler, texCoord, ivec2(+1, 0)),
         textureOffset(InSampler, texCoord, ivec2(-1, 0))
     );
-
-    int alpha = int(color.a * 255.0);
-    int quadOnly = alpha >> 4;
 
     fragColor = candidateMatrix[2];
     for (int i = 0; i < 4; i++) {

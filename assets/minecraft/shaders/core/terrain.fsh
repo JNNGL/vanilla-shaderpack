@@ -85,6 +85,9 @@ void main() {
     }
 #endif
 
+    ivec2 fragCoord = ivec2(gl_FragCoord.xy);
+    ivec2 local = fragCoord % 2;
+
     float lodAlpha = texelFetch(Sampler0, ivec2(texCoord0 * textureSize(Sampler0, 0)), 0).a;
     int textureAlpha = int(round(color.a * 255.0));
     if (textureAlpha >= 5 && textureAlpha <= 250 && lodAlpha < 1.0 && lodAlpha >= 5.0 / 255.0) {
@@ -99,8 +102,6 @@ void main() {
         int quadAlpha = quadId % 15;
         int alpha = (quadAlpha << 4) | (subX << 2) | subY;
 
-        ivec2 fragCoord = ivec2(gl_FragCoord.xy);
-        ivec2 local = fragCoord % 2;
         if (local == ivec2(0, 0)) {
             fragColor = vec4(vec2(lmCoord) / 255.0, encodeDirectionToF8(tangent), 1.0);
         } else if (local == ivec2(1, 1)) {
@@ -116,8 +117,12 @@ void main() {
 
         fragColor.a = float(alpha) / 255.0;
     } else {
-        fragColor = color * unshadeBlock(vertexColor, normal) * ColorModulator;
-        fragColor.a = 1.0;
+        if (local == ivec2(0, 0) && color != vec4(0.0, 0.0, 0.0, 1.0)) {
+            fragColor = vec4(vec2(lmCoord) / 255.0, encodeDirectionToF8(tangent), float(15 << 4) / 255.0);
+        } else {
+            fragColor = color * unshadeBlock(vertexColor, normal) * ColorModulator;
+            fragColor.a = 1.0;
+        }
     }
 
     // fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);

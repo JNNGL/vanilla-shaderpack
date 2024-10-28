@@ -26,6 +26,12 @@ void main() {
         return;
     }
 
+    if ((int(uv.a * 255.0) >> 4) == 15) {
+        fragColor = textureOffset(InSampler, texCoord, ivec2(1, 0));
+        fragColor.a = 1.0;
+        return;
+    }
+
     fragColor = sampleCombinedAtlas(AtlasSampler, uv, ATLAS_ALBEDO);
     fragColor.a = 1.0;
 

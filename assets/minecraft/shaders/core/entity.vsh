@@ -38,9 +38,18 @@ out float isGUI;
 out float isHand;
 flat out ivec2 atlasDim;
 out vec3 handDiffuse;
+out vec2 lmCoord;
+out vec3 fragPos;
+flat out int quadId;
+flat out int isPBR;
 
 void main() {
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
+    
+    quadId = gl_VertexID / 4;
+
+    lmCoord = vec2(UV2);
+    fragPos = Position;
 
     vec4 atlasData = texelFetch(Sampler0, ivec2(0, 0), 0);
     ivec2 dimLog2 = ivec2(atlasData.xy * 255.0);
@@ -48,6 +57,8 @@ void main() {
 
     isHand = float(FogStart > 3e38 && ProjMat[2][3] != 0.0);
     isGUI = float(ProjMat[2][3] == 0.0 || isHand > 0.0);
+
+    isPBR = int(ivec4(round(texelFetch(Sampler0, ivec2(1, 0), 0) * 255.0)) == ivec4(90, 187, 3, 120));
 
     handDiffuse = vec3(0.0);
     if (isHand > 0.0) {
