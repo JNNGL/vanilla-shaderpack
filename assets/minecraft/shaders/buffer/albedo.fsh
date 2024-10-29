@@ -27,7 +27,19 @@ void main() {
     }
 
     if ((int(uv.a * 255.0) >> 4) == 15) {
-        fragColor = textureOffset(InSampler, texCoord, ivec2(1, 0));
+        mat4 candidateMatrix = mat4(
+            textureOffset(InSampler, texCoord, ivec2(+1, 0)),
+            textureOffset(InSampler, texCoord, ivec2(-1, 0)),
+            textureOffset(InSampler, texCoord, ivec2(0, +1)),
+            textureOffset(InSampler, texCoord, ivec2(0, -1))
+        );
+        fragColor = vec4(0.0);
+        for (int i = 0; i < 4; i++) {
+            if ((int(candidateMatrix[i].a * 255.0) >> 4) == 15) {
+                fragColor = candidateMatrix[i];
+                break;
+            }
+        }
         fragColor.a = 1.0;
         return;
     }

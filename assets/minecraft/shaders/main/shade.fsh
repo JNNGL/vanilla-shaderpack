@@ -27,6 +27,7 @@ flat in vec3 sunDirection;
 flat in mat4 projViewMat;
 flat in mat4 invProjViewMat;
 flat in int shouldUpdate;
+flat in vec3 transmittanceToSun;
 in vec4 near;
 
 out vec4 fragColor;
@@ -49,6 +50,11 @@ void main() {
     vec3 color;
     if (depth == 1.0) {
         color = sampleSkyLUT(SkySampler, direction, sunDirection) * sunIntensity;
+
+        // float fade = pow(dot(direction, sunDirection), 1.0);
+        // if (fade > 0.1) {
+        //     color += pow(sunIntensity, 1.0) * clamp((fade - 0.9999) / (1.0 - 0.9999), 0.0, 1.0) * transmittanceToSun * LIGHT_COLOR_MULTIPLIER;
+        // }
     } else {
         float NdotL = dot(normal, sunDirection);
 

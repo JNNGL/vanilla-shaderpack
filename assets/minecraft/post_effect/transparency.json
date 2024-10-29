@@ -142,6 +142,7 @@
                         { "sampler_name": "Normal", "target": "normals" },
                         { "sampler_name": "Sky", "target": "sky_view", "bilinear": true },
                         { "sampler_name": "Transmittance", "target": "transmittance", "bilinear": true },
+                        { "sampler_name": "MultipleScattering", "target": "multiple_scattering", "bilinear": true },
                         { "sampler_name": "Specular", "target": "specular" },
                         { "sampler_name": "Lightmap", "target": "lmcoord" },
                         { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 } ],
