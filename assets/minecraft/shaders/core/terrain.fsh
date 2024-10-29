@@ -77,7 +77,7 @@ void main() {
     uint lmPacked = uint(lmDirection.x) | (uint(lmDirection.y) << 2u);
 #endif // ENABLE_DIRECTIONAL_LIGHTMAP
 
-    int mipLevel = int(textureQueryLOD(Sampler0, texCoord0).x);
+    int mipLevel = clamp(int(textureQueryLOD(Sampler0, texCoord0).x), 0, 4);
 
 #ifdef ALPHA_CUTOUT
     if (color.a < ALPHA_CUTOUT) {
