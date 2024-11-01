@@ -45,7 +45,7 @@ void main() {
     float translucentDepth = texture(TranslucentDepthSampler, texCoord).r;
 
     vec3 fragPos = unprojectScreenSpace(invProjViewMat, texCoord, depth);
-    float vertexDistance = length(fragPos);
+    float vertexDistance = length(fragPos.xz);
 
     vec3 pointOnNearPlane = near.xyz / near.w;
     vec3 direction = normalize(fragPos - pointOnNearPlane);
@@ -70,7 +70,7 @@ void main() {
         vec3 waterNormal = reconstructNormal(TranslucentDepthSampler, invProjViewMat, texCoord, InSize);
 
         vec3 viewSpacePos = unprojectScreenSpace(invProjection, texCoord, translucentDepth);
-        vertexDistance = length(viewSpacePos);
+        vertexDistance = length(viewSpacePos.xz);
 
         vec2 wavePosition = (viewSpacePos * mat3(ModelViewMat)).xz + totalOffset.xz;
 
