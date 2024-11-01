@@ -20,7 +20,7 @@ float getFloat(int index) {
         case 0: return AmbientLightFactor;
         case 1: return SkyFactor;
         case 2: return BlockFactor;
-        case 3: return UseBrightLightmap;
+        case 3: return float(UseBrightLightmap);
         case 4: return SkyLightColor[0];
         case 5: return SkyLightColor[1];
         case 6: return SkyLightColor[2];

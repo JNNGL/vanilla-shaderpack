@@ -12,15 +12,15 @@
         "prev_normals": {},
 
         "shadowmap_depth": {},
-        "shadowmap_depth_cache": {"width": 1922, "height": 1080},
+        "shadowmap_depth_cache": {"width": 4000, "height": 3000},
 
         "shadow": {},
         "shadow_temp": {},
-        "shadow_prev": {"width": 1920, "height": 1080},
+        "shadow_prev": {"width": 4001, "height": 3000},
 
         "final": {},
         "final_comp": {},
-        "final_prev": {"width": 1921, "height": 1080},
+        "final_prev": {"width": 4002, "height": 3000},
 
         "transmittance": {"width": 256, "height": 128},
         "multiple_scattering": {"width": 32, "height": 32},

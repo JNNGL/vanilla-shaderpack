@@ -13,7 +13,7 @@
 #define SHADOW_VIEW_FRUSTUM_Y vec2(-256.0, 256.0)
 #define SHADOW_VIEW_FRUSTUM_Z vec2(0.05, 512.0)
 
-#define SHADOW_MAP_PERIOD 8
+#define SHADOW_MAP_PERIOD 16
 
 
 // ========<  WATER  >======== //
@@ -71,7 +71,7 @@
 // ========<  ATMOSPHERE  >======== //
 
 #define CAMERA_HEIGHT 1.0
-#define SUN_INTENSITY 10.0
+#define SUN_INTENSITY 7.0
 
 #define EARTH_RADIUS 6371.0e3
 #define ATMOSPHERE_RADIUS 6471.0e3

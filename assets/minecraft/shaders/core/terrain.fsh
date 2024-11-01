@@ -1,12 +1,11 @@
 #version 330
 
+#extension GL_ARB_texture_query_lod : require
 #extension GL_MC_moj_import : enable
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:shadow.glsl>
 #moj_import <minecraft:datamarker.glsl>
 #moj_import <settings:settings.glsl>
-
-#extension GL_ARB_texture_query_lod : require
 
 uniform sampler2D Sampler0;
 
