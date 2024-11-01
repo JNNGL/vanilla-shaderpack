@@ -31,6 +31,7 @@ flat in mat4 invProjViewMat;
 flat in vec2 planes;
 flat in vec3 totalOffset;
 flat in int shouldUpdate;
+flat in vec2 fogStartEnd;
 in vec4 near;
 
 out vec4 fragColor;
@@ -44,6 +45,7 @@ void main() {
     float translucentDepth = texture(TranslucentDepthSampler, texCoord).r;
 
     vec3 fragPos = unprojectScreenSpace(invProjViewMat, texCoord, depth);
+    float vertexDistance = length(fragPos);
 
     vec3 pointOnNearPlane = near.xyz / near.w;
     vec3 direction = normalize(fragPos - pointOnNearPlane);
@@ -68,6 +70,7 @@ void main() {
         vec3 waterNormal = reconstructNormal(TranslucentDepthSampler, invProjViewMat, texCoord, InSize);
 
         vec3 viewSpacePos = unprojectScreenSpace(invProjection, texCoord, translucentDepth);
+        vertexDistance = length(viewSpacePos);
 
         vec2 wavePosition = (viewSpacePos * mat3(ModelViewMat)).xz + totalOffset.xz;
 
@@ -129,6 +132,14 @@ void main() {
 
     color = color * aerial[1] + aerial[0] * sunIntensity * volumetricShadowing;
 #endif // ENABLE_AERIAL_PERSPECTIVE
+
+    if (vertexDistance >= fogStartEnd.x) {
+        float blendFactor = min(1.0, (vertexDistance - fogStartEnd.x) / (fogStartEnd.y - fogStartEnd.x));
+        blendFactor = smoothstep(0.0, 1.0, blendFactor);
+
+        vec3 fogColor = sampleSkyLUT(SkySampler, direction, sunDirection) * sunIntensity;
+        color = mix(color, fogColor, blendFactor);
+    }
 
     fragColor = encodeLogLuv(color);
 }

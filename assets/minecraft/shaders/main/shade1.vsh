@@ -18,6 +18,7 @@ flat out mat4 invProjViewMat;
 flat out vec2 planes;
 flat out vec3 totalOffset;
 flat out int shouldUpdate;
+flat out vec2 fogStartEnd;
 out vec4 near;
 
 void main() {
@@ -33,4 +34,5 @@ void main() {
     near = getPointOnNearPlane(invProjViewMat, gl_Position.xy);
     planes = getPlanes(projection);
     totalOffset = decodeTotalOffset(DataSampler);
+    fogStartEnd = vec2(decodeFogStart(DataSampler), decodeFogEnd(DataSampler));
 }
