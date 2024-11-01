@@ -62,7 +62,6 @@
 // ========< POST-PROCESS >======== //
 
 #define BLOOM_STRENGTH 0.035
-#define ENABLE_FXAA yes
 
 
 // ========<  ATMOSPHERE  >======== //
@@ -91,6 +90,8 @@
 #define ATMOSPHERE_TRANSMITTANCE_SAMPLES 40
 #define ATMOSPHERE_RAYMARCH_SAMPLES 20
 #define ATMOSPHERE_MS_SAMPLES ivec2(8, 20)
+
+#define ENABLE_DISTANT_FOG yes
 
 // ========<  END  >======== //
 

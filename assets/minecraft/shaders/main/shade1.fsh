@@ -133,6 +133,7 @@ void main() {
     color = color * aerial[1] + aerial[0] * sunIntensity * volumetricShadowing;
 #endif // ENABLE_AERIAL_PERSPECTIVE
 
+#if (ENABLE_DISTANT_FOG == yes)
     if (vertexDistance >= fogStartEnd.x) {
         float blendFactor = min(1.0, (vertexDistance - fogStartEnd.x) / (fogStartEnd.y - fogStartEnd.x));
         blendFactor = smoothstep(0.0, 1.0, blendFactor);
@@ -140,6 +141,7 @@ void main() {
         vec3 fogColor = sampleSkyLUT(SkySampler, direction, sunDirection) * sunIntensity;
         color = mix(color, fogColor, blendFactor);
     }
+#endif // ENABLE_DISTANT_FOG
 
     fragColor = encodeLogLuv(color);
 }

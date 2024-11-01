@@ -263,7 +263,7 @@
 
         {
             "program": "minecraft:util/copy",
-            "inputs": [ { "sampler_name": "In", "target": "final_comp", "bilinear": true },
+            "inputs": [ { "sampler_name": "In", "target": "final_comp", "bilinear": false },
                         { "sampler_name": "Mojank", "target": "final_prev" } ],
             "output": "minecraft:main"
         }
