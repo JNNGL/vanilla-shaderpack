@@ -1,0 +1,15 @@
+{
+    "vertex": "minecraft:taa/resolve",
+    "fragment": "minecraft:taa/resolve",
+    "samplers": [
+        { "name": "InSampler" },
+        { "name": "HistorySampler" },
+        { "name": "DataSampler" },
+        { "name": "DepthSampler" }
+    ],
+    "uniforms": [
+        { "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+        { "name": "HistorySize", "type": "float", "count": 2, "values": [ 1.0, 1.0 ] },
+        { "name": "InSize", "type": "float", "count": 2, "values": [ 1.0, 1.0 ] }
+    ]
+}

@@ -9,13 +9,18 @@
 uniform sampler2D InSampler;
 uniform sampler2D BloomSampler;
 
+uniform vec2 InSize;
+
 in vec2 texCoord;
 
 out vec4 fragColor;
 
 void main() {
-    vec3 color = decodeLogLuv(texture(InSampler, texCoord));
-    vec3 bloom = decodeLogLuv(texture(BloomSampler, texCoord));
+    vec2 clampedTex = texCoord;
+    clampedTex.y = max(2.0 / InSize.y, clampedTex.y);
+
+    vec3 color = decodeLogLuv(texture(InSampler, clampedTex));
+    vec3 bloom = decodeLogLuv(texture(BloomSampler, clampedTex));
 
     color = mix(color, bloom, BLOOM_STRENGTH);
 

@@ -24,6 +24,8 @@ uniform mat4 ProjMat;
 uniform mat4 TextureMat;
 uniform float FogStart;
 uniform int FogShape;
+uniform float GameTime;
+uniform vec2 ScreenSize;
 
 uniform vec3 Light0_Direction;
 uniform vec3 Light1_Direction;
@@ -43,9 +45,20 @@ out vec3 fragPos;
 flat out int quadId;
 flat out int isPBR;
 
+float halton(int i, int b) {
+    float f = 1.0;
+    float r = 0.0;
+
+    while (i > 0) {
+        f /= float(b);
+        r  += f * float(i % b);
+        i = int(floor(float(i) / float(b)));
+    }
+
+    return r;
+}
+
 void main() {
-    gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
-    
     quadId = gl_VertexID / 4;
 
     lmCoord = vec2(UV2);
@@ -102,4 +115,16 @@ void main() {
 #ifdef APPLY_TEXTURE_MATRIX
     texCoord0 = (TextureMat * vec4(UV0, 0.0, 1.0)).xy;
 #endif
+
+    int jitterIndex = int(hash(floatBitsToUint(GameTime)) % 8u);
+    float haltonX = 2.0 * halton(jitterIndex + 1, 2) - 1.0;
+    float haltonY = 2.0 * halton(jitterIndex + 1, 3) - 1.0;
+
+    mat4 jitteredProj = ProjMat;
+    if (isGUI < 0.5) {
+        jitteredProj[2][0] += haltonX / ScreenSize.x;
+        jitteredProj[2][1] += haltonY / ScreenSize.y;
+    }
+
+    gl_Position = jitteredProj * ModelViewMat * vec4(Position, 1.0);
 }

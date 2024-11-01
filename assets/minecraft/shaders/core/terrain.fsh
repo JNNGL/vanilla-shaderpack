@@ -22,6 +22,7 @@ in float vertexDistance;
 in vec4 vertexColor;
 in vec2 texCoord0;
 in vec4 normal;
+flat in mat4 jitteredProj;
 flat in int dataQuad;
 flat in int shadow;
 flat in float skyFactor;
@@ -50,7 +51,7 @@ void main() {
             discard;
         }
 
-        fragColor = writeDataMarker(pixel, ProjMat, FogStart, FogEnd, ModelOffset, GameTime, shadow > 0, mat3(ModelViewMat), skyFactor);
+        fragColor = writeDataMarker(pixel, jitteredProj, FogStart, FogEnd, ModelOffset, GameTime, shadow > 0, mat3(ModelViewMat), skyFactor, ProjMat[2].xy);
         return;
     }
 

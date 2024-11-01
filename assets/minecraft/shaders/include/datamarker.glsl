@@ -17,7 +17,7 @@
 // 35-36 - sky factor
 
 bool discardDataMarker(ivec2 pixel) {
-    return pixel.y >= 1 || pixel.x > 36;
+    return pixel.y >= 1 || pixel.x > 38;
 }
 
 bool discardSunData(vec2 fragCoord) {
@@ -25,7 +25,7 @@ bool discardSunData(vec2 fragCoord) {
     return pixel.y == 0 && pixel.x >= 32 && pixel.x <= 34;
 }
 
-vec4 writeDataMarker(ivec2 pixel, mat4 projMat, float fogStart, float fogEnd, vec3 chunkOffset, float gameTime, bool isShadowMap, mat3 viewMat, float skyFactor) {
+vec4 writeDataMarker(ivec2 pixel, mat4 projMat, float fogStart, float fogEnd, vec3 chunkOffset, float gameTime, bool isShadowMap, mat3 viewMat, float skyFactor, vec2 projUnjitter) {
     if (pixel.x <= 15) { // projection matrix
         int index = int(pixel.x);
         return vec4(packFPtoF8x3(projMat[index / 4][index % 4], FP_PRECISION_HIGH), 1.0);
@@ -49,6 +49,9 @@ vec4 writeDataMarker(ivec2 pixel, mat4 projMat, float fogStart, float fogEnd, ve
         int index = int(pixel.x) - 35;
         vec4 data = packF32toF8x4(skyFactor);
         return vec4(data[index * 2], data[index * 2 + 1], 0.0, 1.0);
+    } else if (pixel.x <= 38) { // proj unjitter
+        int index = int(pixel.x) - 37;
+        return vec4(packFPtoF8x3(projUnjitter[index], FP_PRECISION_HIGH), 1.0);
     }
 
     return vec4(0.0);
@@ -135,6 +138,19 @@ float decodeSkyFactor(sampler2D dataSampler) {
     data.xy = texelFetch(dataSampler, ivec2(35, 0), 0).rg;
     data.zw = texelFetch(dataSampler, ivec2(36, 0), 0).rg;
     return unpackF32fromF8x4(data);
+}
+
+mat4 decodeUnjitteredProjection(sampler2D dataSampler) {
+    mat4 projection = decodeProjectionMatrix(dataSampler);
+
+    vec2 unjitter;
+    for (int i = 0; i < 2; i++) {
+        vec3 color = texelFetch(dataSampler, ivec2(37 + i, 0), 0).rgb;
+        unjitter[i] = unpackFPfromF8x3(color, FP_PRECISION_HIGH);
+    }
+
+    projection[2].xy = unjitter;
+    return projection;
 }
 
 

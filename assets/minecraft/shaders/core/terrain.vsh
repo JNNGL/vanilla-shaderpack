@@ -22,11 +22,13 @@ uniform mat4 ProjMat;
 uniform vec3 ModelOffset;
 uniform int FogShape;
 uniform float GameTime;
+uniform vec2 ScreenSize;
 
 out float vertexDistance;
 out vec4 vertexColor;
 out vec2 texCoord0;
 out vec4 normal;
+flat out mat4 jitteredProj;
 flat out int dataQuad;
 flat out int shadow;
 flat out float skyFactor;
@@ -34,6 +36,19 @@ flat out int quadId;
 out vec2 lmCoord;
 out vec3 fragPos;
 out vec4 glPos;
+
+float halton(int i, int b) {
+    float f = 1.0;
+    float r = 0.0;
+
+    while (i > 0) {
+        f /= float(b);
+        r  += f * float(i % b);
+        i = int(floor(float(i) / float(b)));
+    }
+
+    return r;
+}
 
 void main() {
     ivec4 col = ivec4(round(texture(Sampler0, UV0) * 255.0));
@@ -51,7 +66,15 @@ void main() {
         worldPos = applyWaving(worldPos, GameTime);
     }
 
-    gl_Position = ProjMat * ModelViewMat * vec4(worldPos, 1.0);
+    int jitterIndex = int(hash(floatBitsToUint(GameTime)) % 8u);
+    float haltonX = 2.0 * halton(jitterIndex + 1, 2) - 1.0;
+    float haltonY = 2.0 * halton(jitterIndex + 1, 3) - 1.0;
+    
+    jitteredProj = ProjMat;
+    jitteredProj[2][0] += haltonX / ScreenSize.x;
+    jitteredProj[2][1] += haltonY / ScreenSize.y;
+
+    gl_Position = jitteredProj * ModelViewMat * vec4(worldPos, 1.0);
     glPos = gl_Position;
 
     shadow = 0;

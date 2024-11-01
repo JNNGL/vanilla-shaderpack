@@ -25,6 +25,8 @@
         "sky_view": {"width": 200, "height": 200},
         "aerial_perspective": {"width": 576, "height": 48},
 
+        "history": {"width": 4001, "height": 3000},
+
         "a": {}, "b": {}, "c": {}, "d": {}, "e": {}, "f": {},
         "e1": {}, "d1": {}, "c1": {}, "b1": {}, "a1": {}, "bloom": {}
     },
@@ -146,8 +148,23 @@
         },
 
         {
+            "program": "minecraft:taa/resolve",
+            "inputs": [ { "sampler_name": "In", "target": "swap2" },
+                        { "sampler_name": "History", "target": "history", "bilinear": true },
+                        { "sampler_name": "Data", "target": "minecraft:main" },
+                        { "sampler_name": "Depth", "target": "translucent", "use_depth_buffer": true } ],
+            "output": "swap"
+        },
+        {
+            "program": "minecraft:util/copy_over_frame",
+            "inputs": [ { "sampler_name": "In", "target": "swap" } ],
+            "output": "history"
+        },
+
+        {
             "program": "minecraft:bloom/downsample",
-            "inputs": [ { "sampler_name": "In", "target": "swap2", "bilinear": true } ],
+            "inputs": [ { "sampler_name": "In", "target": "swap", "bilinear": true },
+                        { "sampler_name": "Mojank", "target": "history" } ],
             "uniforms": [ { "name": "Iteration", "values": [ 1.0 ] } ],
             "output": "a"
         },
@@ -219,14 +236,14 @@
         {
             "program": "minecraft:bloom/upsample",
             "inputs": [ { "sampler_name": "In", "target": "a1", "bilinear": true },
-                        { "sampler_name": "Downsampled", "target": "swap2", "bilinear": true } ],
+                        { "sampler_name": "Downsampled", "target": "swap", "bilinear": true } ],
             "uniforms": [ { "name": "Iteration", "values": [ 1.0 ] } ],
             "output": "bloom"
         },
 
         {
             "program": "minecraft:post/tonemap",
-            "inputs": [ { "sampler_name": "In", "target": "swap2" },
+            "inputs": [ { "sampler_name": "In", "target": "swap" },
                         { "sampler_name": "Bloom", "target": "bloom" } ],
             "output": "final"
         },
@@ -245,7 +262,7 @@
         },
 
         {
-            "program": "minecraft:post/fxaa",
+            "program": "minecraft:util/copy",
             "inputs": [ { "sampler_name": "In", "target": "final_comp", "bilinear": true },
                         { "sampler_name": "Mojank", "target": "final_prev" } ],
             "output": "minecraft:main"

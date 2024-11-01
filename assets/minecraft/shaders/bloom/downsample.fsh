@@ -14,6 +14,11 @@ flat in ivec2 outRes;
 
 out vec4 fragColor;
 
+vec4 textureClamped(sampler2D samp, vec2 texCoord) {
+    texCoord = clamp(texCoord, 1.5 / OutSize, 1.0 - 1.5 / OutSize);
+    return texture(samp, texCoord);
+}
+
 void main() {
     ivec2 coord = ivec2(gl_FragCoord.xy);
     if (any(greaterThanEqual(coord, outRes))) {
@@ -27,22 +32,22 @@ void main() {
     float x = 1.0 / OutSize.x;
     float y = 1.0 / OutSize.y;
 
-    vec3 a = decodeLogLuv(texture(InSampler, vec2(texCoord.x - 2 * x, texCoord.y + 2 * y)));
-    vec3 b = decodeLogLuv(texture(InSampler, vec2(texCoord.x,         texCoord.y + 2 * y)));
-    vec3 c = decodeLogLuv(texture(InSampler, vec2(texCoord.x + 2 * x, texCoord.y + 2 * y)));
+    vec3 a = decodeLogLuv(textureClamped(InSampler, vec2(texCoord.x - 2 * x, texCoord.y + 2 * y)));
+    vec3 b = decodeLogLuv(textureClamped(InSampler, vec2(texCoord.x,         texCoord.y + 2 * y)));
+    vec3 c = decodeLogLuv(textureClamped(InSampler, vec2(texCoord.x + 2 * x, texCoord.y + 2 * y)));
 
-    vec3 d = decodeLogLuv(texture(InSampler, vec2(texCoord.x - 2 * x, texCoord.y)));
-    vec3 e = decodeLogLuv(texture(InSampler, vec2(texCoord.x,         texCoord.y)));
-    vec3 f = decodeLogLuv(texture(InSampler, vec2(texCoord.x + 2 * x, texCoord.y)));
+    vec3 d = decodeLogLuv(textureClamped(InSampler, vec2(texCoord.x - 2 * x, texCoord.y)));
+    vec3 e = decodeLogLuv(textureClamped(InSampler, vec2(texCoord.x,         texCoord.y)));
+    vec3 f = decodeLogLuv(textureClamped(InSampler, vec2(texCoord.x + 2 * x, texCoord.y)));
 
-    vec3 g = decodeLogLuv(texture(InSampler, vec2(texCoord.x - 2 * x, texCoord.y - 2 * y)));
-    vec3 h = decodeLogLuv(texture(InSampler, vec2(texCoord.x,         texCoord.y - 2 * y)));
-    vec3 i = decodeLogLuv(texture(InSampler, vec2(texCoord.x + 2 * x, texCoord.y - 2 * y)));
+    vec3 g = decodeLogLuv(textureClamped(InSampler, vec2(texCoord.x - 2 * x, texCoord.y - 2 * y)));
+    vec3 h = decodeLogLuv(textureClamped(InSampler, vec2(texCoord.x,         texCoord.y - 2 * y)));
+    vec3 i = decodeLogLuv(textureClamped(InSampler, vec2(texCoord.x + 2 * x, texCoord.y - 2 * y)));
 
-    vec3 j = decodeLogLuv(texture(InSampler, vec2(texCoord.x - x, texCoord.y + y)));
-    vec3 k = decodeLogLuv(texture(InSampler, vec2(texCoord.x + x, texCoord.y + y)));
-    vec3 l = decodeLogLuv(texture(InSampler, vec2(texCoord.x - x, texCoord.y - y)));
-    vec3 m = decodeLogLuv(texture(InSampler, vec2(texCoord.x + x, texCoord.y - y)));
+    vec3 j = decodeLogLuv(textureClamped(InSampler, vec2(texCoord.x - x, texCoord.y + y)));
+    vec3 k = decodeLogLuv(textureClamped(InSampler, vec2(texCoord.x + x, texCoord.y + y)));
+    vec3 l = decodeLogLuv(textureClamped(InSampler, vec2(texCoord.x - x, texCoord.y - y)));
+    vec3 m = decodeLogLuv(textureClamped(InSampler, vec2(texCoord.x + x, texCoord.y - y)));
 
     vec3 color = e * 0.125;
     color += (a + c + g + i) * 0.03125;

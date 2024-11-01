@@ -28,6 +28,18 @@
             }
         },
         {
+            "from": [ 15.999, 15.999, 15.999 ],
+            "to":   [ 0.001, 0.001, 0.001 ],
+            "faces": {
+                "down":  { "texture": "#bottom", "cullface": "up" },
+                "up":    { "texture": "#top", "cullface": "down" },
+                "north": { "texture": "#side", "cullface": "south" },
+                "south": { "texture": "#side", "cullface": "north" },
+                "west":  { "texture": "#side", "cullface": "east" },
+                "east":  { "texture": "#side", "cullface": "west" }
+            }
+        },
+        {
             "from": [ 8, 8, 8 ],
             "to":   [ 8, 8, 8 ],
             "faces": {

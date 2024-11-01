@@ -11,6 +11,7 @@ uniform sampler2D ShadowMapSampler;
 uniform sampler2D FrameSampler;
 
 uniform mat4 ModelViewMat;
+uniform float GameTime;
 
 out vec2 texCoord;
 flat out mat4 projection;
@@ -46,6 +47,6 @@ void main() {
     near = getPointOnNearPlane(invViewProjMat, gl_Position.xy);
     shadowProjMat = shadowProj * shadowView;
     lightDir = normalize(shadowEye);
-    timeSeed = 0.0;
+    timeSeed = float(hash(floatBitsToUint(GameTime)) % 8u) / 8.0;
     planes = getPlanes(projection);
 }
