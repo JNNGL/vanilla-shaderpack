@@ -46,6 +46,6 @@ void main() {
     near = getPointOnNearPlane(invViewProjMat, gl_Position.xy);
     shadowProjMat = shadowProj * shadowView;
     lightDir = normalize(shadowEye);
-    timeSeed = decodeTemporalFrame(FrameSampler) / 5.0;
+    timeSeed = 0.0;
     planes = getPlanes(projection);
 }

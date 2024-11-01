@@ -15,8 +15,6 @@
         "shadowmap_depth_cache": {"width": 4000, "height": 3000},
 
         "shadow": {},
-        "shadow_temp": {},
-        "shadow_prev": {"width": 4001, "height": 3000},
 
         "final": {},
         "final_comp": {},
@@ -113,24 +111,8 @@
                         { "sampler_name": "TranslucentDepth", "target": "translucent", "use_depth_buffer": true },
                         { "sampler_name": "ShadowMap", "target": "shadowmap_depth" },
                         { "sampler_name": "Normal", "target": "normals" },
-                        { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 },
-                        { "sampler_name": "Frame", "target": "shadow_prev" } ],
+                        { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 } ],
             "output": "shadow"
-        },
-
-        {
-            "program": "minecraft:main/temporal",
-            "inputs": [ { "sampler_name": "In", "target": "shadow" },
-                        { "sampler_name": "Data", "target": "minecraft:main" },
-                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
-                        { "sampler_name": "Previous", "target": "shadow_prev", "bilinear": true } ],
-            "output": "shadow_temp"
-        },
-
-        {
-            "program": "minecraft:util/copy_over_frame",
-            "inputs": [ { "sampler_name": "In", "target": "shadow_temp" } ],
-            "output": "shadow_prev"
         },
 
         {
@@ -138,7 +120,7 @@
             "inputs": [ { "sampler_name": "In", "target": "albedo" },
                         { "sampler_name": "Data", "target": "minecraft:main" },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
-                        { "sampler_name": "Shadow", "target": "shadow_prev" },
+                        { "sampler_name": "Shadow", "target": "shadow" },
                         { "sampler_name": "Normal", "target": "normals" },
                         { "sampler_name": "Sky", "target": "sky_view", "bilinear": true },
                         { "sampler_name": "Transmittance", "target": "transmittance", "bilinear": true },
@@ -153,7 +135,7 @@
             "inputs": [ { "sampler_name": "In", "target": "swap" },
                         { "sampler_name": "Data", "target": "shadowmap_depth" },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
-                        { "sampler_name": "Shadow", "target": "shadow_prev" },
+                        { "sampler_name": "Shadow", "target": "shadow" },
                         { "sampler_name": "Normal", "target": "normals" },
                         { "sampler_name": "Sky", "target": "sky_view", "bilinear": true },
                         { "sampler_name": "Translucent", "target": "translucent" },
