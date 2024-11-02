@@ -20,6 +20,7 @@ uniform sampler2D SpecularSampler;
 uniform sampler2D LightmapSampler;
 uniform sampler2D NoiseSampler;
 
+uniform float GameTime;
 uniform vec2 InSize;
 
 in vec2 texCoord;
@@ -63,7 +64,9 @@ void main() {
         vec2 lightLevel = texture(LightmapSampler, texCoord).rg;
 
         vec4 specularData = texture(SpecularSampler, texCoord);
-        float roughness = pow(1.0 - specularData.r, 1.3);
+        float roughness = 1.0 - specularData.r;
+        roughness *= roughness;
+        
         float subsurfaceFactor = specularData.b;
 
         vec3 transmittance = sampleTransmittanceLUT(TransmittanceSampler, vec3(0.0, earthRadius + cameraHeight, 0.0) + fragPos, sunDirection);
@@ -86,7 +89,7 @@ void main() {
             F = fresnelSchlick(max(dot(H, V), 0.0), F0);
         }
 
-        vec3 diffuse = hammonDiffuse(albedo, N, V, L, H, F, roughness * roughness);
+        vec3 diffuse = hammonDiffuse(albedo, N, V, L, H, F, roughness);
         diffuse *= clamp(NdotL, 0.0, 1.0) * radiance;
 
         float ambientOcclusion = shadow.g * normalData.a;
@@ -106,7 +109,7 @@ void main() {
         // TODO: Refactor this shit
         
         float NDF = DistributionGGX(N, H, roughness);
-        float G = GeometrySmith(N, V, L, roughness);
+        float G = SmithGGXMaskingShadowing(N, V, L, roughness);
         
         vec3 numerator = NDF * G * F;
         float denominator = 4.0 * max(dot(N, V), 0.0) + 0.0001;

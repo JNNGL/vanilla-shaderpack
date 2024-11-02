@@ -6,8 +6,7 @@
 #extension GL_MC_moj_import : enable
 #moj_import <minecraft:constants.glsl>
 
-float DistributionGGX(vec3 N, vec3 H, float roughness) {
-    float a = roughness * roughness;
+float DistributionGGX(vec3 N, vec3 H, float a) {
     float a2 = a * a;
 
     float NdotH = max(dot(N, H), 0.0);
@@ -20,23 +19,25 @@ float DistributionGGX(vec3 N, vec3 H, float roughness) {
     return numerator / denominator;
 }
 
-float GeometrySchlickGGX(float NdotV, float roughness) {
-    float r = (roughness + 1.0);
-    float k = (r * r) / 8.0;
+float SmithGGXMasking(vec3 N, vec3 V, float a) {
+    a *= a;
 
-    float nominator = NdotV;
-    float denominator = NdotV * (1.0 - k) + k;
+    float NdotV = max(0.0, dot(N, V));
+    float denom = sqrt(a + (1.0 - a) * NdotV * NdotV) + NdotV;
 
-    return nominator / denominator;
+    return 2.0 * NdotV / max(denom, 1.0e-5);
 }
 
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx1 = GeometrySchlickGGX(NdotV, roughness);
-    float ggx2 = GeometrySchlickGGX(NdotL, roughness);
+float SmithGGXMaskingShadowing(vec3 N, vec3 V, vec3 L, float a) {
+    a *= a;
 
-    return ggx1 * ggx2;
+    float NdotL = max(0.0, dot(N, L));
+    float NdotV = max(0.0, dot(N, V));
+
+    float denomA = NdotV * sqrt(a + (1.0 - a) * NdotL * NdotL);
+    float denomB = NdotL * sqrt(a + (1.0 - a) * NdotV * NdotV);
+    
+    return 2.0 * NdotL * NdotV / max(denomA + denomB, 1.0e-5);
 }
 
 vec3 hammonDiffuse(vec3 albedo, vec3 N, vec3 V, vec3 L, vec3 H, vec3 F, float alpha) {
