@@ -111,7 +111,7 @@ void main() {
         vec3 numerator = NDF * G * F;
         float denominator = 4.0 * max(dot(N, V), 0.0) + 0.0001;
 
-        vec3 specular = radiance * numerator / denominator;
+        vec3 specular = radiance * min(numerator / denominator, 10.0);
         if (metalId >= 230) specular *= albedo;
 
         vec3 flatNormal = decodeDirectionFromF8(normalData.z);
