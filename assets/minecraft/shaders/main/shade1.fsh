@@ -106,11 +106,22 @@ void main() {
             float alpha = max(falloff.x, falloff.y) - max(edgeFactor.x, edgeFactor.y);
             alpha = smoothstep(0.0, 1.0, clamp(alpha, 0.0, 1.0));
 
-            float apOffset = (1.0 - alpha) * distance(unprojectScreenSpace(invProjection, hitTexCoord, hitDepth), viewSpacePos);
+            hitPoint = unprojectScreenSpace(invProjection, hitTexCoord, hitDepth);
+            float apOffset = (1.0 - alpha) * distance(hitPoint, viewSpacePos);
             apLinearDepth += pow(apOffset, 1.0 / 1.3);
             apLinearDepth = clamp(apLinearDepth, planes.x, planes.y);
 
+            vec3 reflectionFog = reflection;
             reflection = mix(screenSpaceReflection, reflection, alpha);
+
+#if (ENABLE_DISTANT_FOG == yes)
+            float reflectionDistance = length(hitPoint);
+            if (reflectionDistance >= fogStartEnd.x) {
+                float blendFactor = min(1.0, (reflectionDistance - fogStartEnd.x) / (fogStartEnd.y - fogStartEnd.x));
+                blendFactor = smoothstep(0.0, 1.0, blendFactor);
+                reflection = mix(color, reflectionFog, blendFactor);
+            }
+#endif // ENABLE_DISTANT_FOG
         }
 #endif // ENABLE_WATER_SSR
 
