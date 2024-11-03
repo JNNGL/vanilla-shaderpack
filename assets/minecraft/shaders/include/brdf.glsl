@@ -22,22 +22,34 @@ float DistributionGGX(vec3 N, vec3 H, float a) {
 float SmithGGXMasking(vec3 N, vec3 V, float a) {
     a *= a;
 
-    float NdotV = max(0.0, dot(N, V));
+    float NdotV = max(1.0e-5, dot(N, V));
     float denom = sqrt(a + (1.0 - a) * NdotV * NdotV) + NdotV;
 
-    return 2.0 * NdotV / max(denom, 1.0e-5);
+    return 2.0 * NdotV / max(denom, 1.0e-6);
 }
 
 float SmithGGXMaskingShadowing(vec3 N, vec3 V, vec3 L, float a) {
     a *= a;
 
-    float NdotL = max(0.0, dot(N, L));
-    float NdotV = max(0.0, dot(N, V));
+    float NdotL = max(1.0e-5, dot(N, L));
+    float NdotV = max(1.0e-5, dot(N, V));
 
     float denomA = NdotV * sqrt(a + (1.0 - a) * NdotL * NdotL);
     float denomB = NdotL * sqrt(a + (1.0 - a) * NdotV * NdotV);
     
-    return 2.0 * NdotL * NdotV / max(denomA + denomB, 1.0e-5);
+    return 2.0 * NdotL * NdotV / max(denomA + denomB, 1.0e-6);
+}
+
+vec3 sampleGGXVNDF(vec3 V, float roughness, vec2 u) {
+    V = normalize(vec3(V.xy * roughness, V.z));
+    
+    float phi = 2.0 * PI * u.x;
+    float z = (1.0 - u.y) * (1.0 + V.z) - V.z;
+    float r = sqrt(clamp(1.0 - z * z, 0.0, 1.0));
+    vec2 xy = vec2(cos(phi), sin(phi)) * r;
+
+    vec3 H = vec3(xy, z) + V;
+    return normalize(vec3(H.xy * roughness, H.z));
 }
 
 vec3 hammonDiffuse(vec3 albedo, vec3 N, vec3 V, vec3 L, vec3 H, vec3 F, float alpha) {
@@ -55,7 +67,7 @@ vec3 hammonDiffuse(vec3 albedo, vec3 N, vec3 V, vec3 L, vec3 H, vec3 F, float al
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0) {
-    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+    return F0 + (1.0 - F0) * clamp(pow(1.0 - cosTheta, 5.0), 0.0, 1.0);
 }
 
 vec3 fresnelConductor(float cosT, vec3 N, vec3 K) {
@@ -72,6 +84,11 @@ vec3 fresnelConductor(float cosT, vec3 N, vec3 K) {
     vec3 Rp = Rs * (a2b2 - AcT + sinT4) / (a2b2 + AcT + sinT4); // => Rs * (cos^2 * (a2 + b2) - 2*a*cos*sin^2 + sin^4) / (cos^2 * (a2 + b2) + 2*a*cos*sin^2 + sin^4)
 
     return clamp((Rs + Rp) * 0.5, 0.0, 1.0);
+}
+
+vec3 F0toIOR(vec3 f0) {
+    vec3 r = sqrt(f0);
+    return (1.0 + r) / (1.0 - r);
 }
 
 #endif // _GGX_GLSL

@@ -118,16 +118,11 @@ void main() {
         fragColor.a = float(alpha) / 255.0;
     } else {
         if (local == ivec2(0, 0) && color != vec4(0.0, 0.0, 0.0, 1.0)) {
+            vec3 tangent = normalize(cross(p2, normal) * t1.x + cross(normal, p1) * t2.x);
             fragColor = vec4(vec2(lmCoord) / 255.0, encodeDirectionToF8(tangent), float(15 << 4) / 255.0);
         } else {
             fragColor = color * unshadeBlock(vertexColor, normal) * ColorModulator;
             fragColor.a = 1.0;
         }
     }
-
-    // fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
-    
-    // if (shadowQuad > 0) {
-    //     fragColor = vec4(packDepthClipSpaceRGB8(glPos.z / glPos.w), 1.0);
-    // }
 }

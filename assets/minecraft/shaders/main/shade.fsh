@@ -52,9 +52,8 @@ void main() {
     if (depth == 1.0) {
         color = sampleSkyLUT(SkySampler, direction, sunDirection) * sunIntensity;
 
-        // float fade = pow(dot(direction, sunDirection), 1.0);
-        // if (fade > 0.1) {
-        //     color += pow(sunIntensity, 1.0) * clamp((fade - 0.9999) / (1.0 - 0.9999), 0.0, 1.0) * transmittanceToSun * LIGHT_COLOR_MULTIPLIER;
+        // if (pow(dot(direction, sunDirection), 1.0) > 0.9995) {
+        //     color += sunIntensity * transmittanceToSun;
         // }
     } else {
         float NdotL = dot(normal, sunDirection);
@@ -114,12 +113,7 @@ void main() {
         vec3 numerator = NDF * G * F;
         float denominator = 4.0 * max(dot(N, V), 0.0) + 0.0001;
 
-        vec3 specular = radiance * min(numerator / denominator, 10.0);
-
-        vec3 flatNormal = decodeDirectionFromF8(normalData.z);
-        vec3 tangent = normalize(cross(flatNormal, vec3(0.0, 1.0, 1.0)));
-        vec3 bitangent = cross(flatNormal, tangent);
-        mat3 tbn = mat3(tangent, bitangent, flatNormal);
+        vec3 specular = radiance * min(numerator / (denominator * 2.0 * PI), 10.0);
 
         vec3 absNormal = abs(normal) * vec3(0.6, 1.0, 0.8);
         float ambientFactor = 0.6 + 0.1 * float(absNormal.x > absNormal.z);
@@ -129,20 +123,31 @@ void main() {
 
 #if (ENABLE_DIRECTIONAL_LIGHTMAP == yes)
         if (albedoData.a < 15.5 / 255.0) {
+            vec3 flatNormal = decodeDirectionFromF8(normalData.z);
+            vec3 lmTangent = normalize(cross(flatNormal, vec3(0.0, 1.0, 1.0)));
+            vec3 lmBitangent = cross(flatNormal, lmTangent);
+            mat3 lmTBN = mat3(lmTangent, lmBitangent, flatNormal);
+
             int lmPacked = int(albedoData.a * 255.0);
             vec2 lmDirection = normalize(vec3(lmPacked & 3, (lmPacked >> 2) & 3, 2.0) - 1.0).xy;
             if (lmDirection == vec2(0.0)) lmDirection.xy = vec2(0.43);
-            vec3 blockLightDir = tbn * normalize(vec3(lmDirection, DIRECTIONAL_LIGHTMAP_HEIGHT));
+            else if (lmDirection.x == 0.0) lmDirection.x = 0.43;
+            else if (lmDirection.y == 0.0) lmDirection.y = 0.43;
+            vec3 blockLightDir = lmTBN * normalize(vec3(lmDirection, DIRECTIONAL_LIGHTMAP_HEIGHT));
             blockLight *= abs(dot(blockLightDir, normal));
         }
 #endif // ENABLE_DIRECTIONAL_LIGHTMAP
+        blockLight *= 0.8;
+
+        float NdotV = max(0.0, dot(N, V));
+        float blockMult = mix(1.0 - pow(1.0 - NdotV, 5.0), 1.0, roughness);
 
         vec3 ambient0 = vec3(0.7, 0.8, 1.0) * 0.025 * albedo;
 
         color = vec3(0.0);
         color += (diffuse + specular) * (1.0 - shadow.x) * mix(0.5, 1.0, lightLevel.y);
         color += mix(ambient0 * 0.5, ambient, lightLevel.y * lightLevel.y);
-        color += mix(ambient0 * 0.5, blockLight, lightLevel.x * lightLevel.x);
+        color += mix(ambient0 * 0.5, blockLight * blockMult * (metalId >= 230 ? 0.2 : 1.0), lightLevel.x * lightLevel.x);
 
         if (fract(specularData.a) != 0.0) {
             color += pow(albedo, vec3(1.8)) * 13.0 * mix(0.0, 1.0, pow(specularData.a, 1.0 / 2.0));

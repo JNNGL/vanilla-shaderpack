@@ -7,12 +7,16 @@
 #moj_import <minecraft:random.glsl>
 #moj_import <minecraft:ssrt.glsl>
 #moj_import <minecraft:brdf.glsl>
+#moj_import <minecraft:metals.glsl>
+#moj_import <minecraft:srgb.glsl>
 #moj_import <settings:settings.glsl>
 
 uniform sampler2D InSampler;
 uniform sampler2D DepthSampler;
 uniform sampler2D ShadowSampler;
+uniform sampler2D AlbedoSampler;
 uniform sampler2D NormalSampler;
+uniform sampler2D SpecularSampler;
 uniform sampler2D SkySampler;
 uniform sampler2D TranslucentSampler;
 uniform sampler2D AerialPerspectiveSampler;
@@ -57,6 +61,68 @@ void main() {
 
     vec3 color = decodeLogLuv(texture(InSampler, texCoord));
 
+    vec4 normalData = texture(NormalSampler, texCoord);
+    vec3 normal = decodeDirectionFromF8x2(normalData.rg);
+
+    vec4 specularData = texture(SpecularSampler, texCoord);
+    float roughness = pow(1.0 - specularData.r, 1.3);
+    roughness *= roughness;
+
+    vec3 N = normalize(round(normal * 16.0) / 16.0);
+    vec3 V = -direction;
+
+    vec3 tangent = normalize(cross(normal, vec3(0.0, 1.0, 1.0)));
+    vec3 bitangent = cross(normal, tangent);
+    mat3 tbn = mat3(tangent, bitangent, normal);
+
+    vec3 V_t = V * tbn;
+
+    vec3 specular = vec3(0.0);
+    float wSpecSum = 0.0;
+
+    vec3 albedo = srgbToLinear(texture(AlbedoSampler, texCoord).rgb);
+    int metalId = int(round(specularData.g * 255.0));
+
+    vec3 viewFragPos = mat3(ModelViewMat) * fragPos;
+
+    float G1 = SmithGGXMasking(N, V, roughness);
+    for (int i = 0; i < 2; i++) {
+        vec3 rand = random(NoiseSampler, gl_FragCoord.xy, i + mod(GameTime * 1.0e6, 8.0) / 8.0);
+
+        vec3 R_H = tbn * sampleGGXVNDF(V_t, roughness, rand.xy);
+        vec3 R_L = reflect(-V, R_H);
+
+        vec3 R_radiance = sampleSkyLUT(SkySampler, R_L, sunDirection) * sunIntensity * LIGHT_COLOR_MULTIPLIER * 0.75;
+
+        vec2 hitPixel;
+        vec3 hitPoint;
+        bool hit = traceScreenSpaceRay(DepthSampler, projection, planes, InSize, viewFragPos, mat3(ModelViewMat) * R_L, 30.0, rand.z, 32.0, 1.0e6, hitPixel, hitPoint);
+        float hitDepth = texelFetch(DepthSampler, ivec2(hitPixel), 0).r;
+        if (hit && hitDepth != 1.0) {
+            vec2 hitTexCoord = hitPixel / InSize;
+            vec3 screenSpaceReflection = decodeLogLuv(texture(InSampler, hitTexCoord));
+            
+            R_radiance = screenSpaceReflection;
+        }
+
+        vec3 R_F;
+        if (metalId >= 230 && metalId <= 237) {
+            mat2x3 NK = HARDCODED_METALS[metalId - 230];
+            R_F = fresnelConductor(max(dot(R_H, V), 0.0), NK[0], NK[1]);
+        } else {
+            vec3 F0 = metalId > 237 ? albedo : vec3(specularData.g);
+            R_F = fresnelSchlick(max(dot(R_H, V), 0.0), F0);
+        }
+
+        float G2 = SmithGGXMaskingShadowing(N, V, R_L, roughness);
+
+        specular += R_radiance * R_F * (G2 / G1);
+        wSpecSum += 1.0;
+    }
+
+    specular /= wSpecSum;
+    color += specular;
+    
     vec4 shadow = texelFetch(ShadowSampler, ivec2(gl_FragCoord.x, max(1.0, gl_FragCoord.y)), 0);
 
     float linearDepth = linearizeDepth(depth * 2.0 - 1.0, planes);
@@ -95,7 +161,7 @@ void main() {
 #if (ENABLE_WATER_SSR == yes)
         vec2 hitPixel;
         vec3 hitPoint;
-        bool hit = traceScreenSpaceRay(DepthSampler, projection, planes, InSize, viewSpacePos, viewDirection, float(WATER_SSR_STRIDE), random(NoiseSampler, gl_FragCoord.xy, 0).x, float(WATER_SSR_STEPS), 1.0e6, hitPixel, hitPoint);
+        bool hit = traceScreenSpaceRay(DepthSampler, projection, planes, InSize, viewSpacePos, viewDirection, float(WATER_SSR_STRIDE), random(NoiseSampler, gl_FragCoord.xy, mod(GameTime * 1.0e6, 8.0) / 8.0).x, float(WATER_SSR_STEPS), 1.0e6, hitPixel, hitPoint);
         float hitDepth = texelFetch(DepthSampler, ivec2(hitPixel), 0).r;
         if (hit && hitDepth != 1.0) {
             vec2 hitTexCoord = hitPixel / InSize;
