@@ -1,18 +1,16 @@
 {
-    "vertex": "minecraft:main/shade1",
-    "fragment": "minecraft:main/shade1",
+    "vertex": "minecraft:main/reflections",
+    "fragment": "minecraft:main/reflections",
     "samplers": [
         { "name": "InSampler" },
         { "name": "DataSampler" },
         { "name": "DepthSampler" },
-        { "name": "ShadowSampler" },
+        { "name": "AlbedoSampler" },
         { "name": "NormalSampler" },
+        { "name": "SpecularSampler" },
         { "name": "SkySampler" },
-        { "name": "ReflectionSampler" },
-        { "name": "TranslucentSampler" },
-        { "name": "AerialPerspectiveSampler" },
-        { "name": "TranslucentDepthSampler" },
-        { "name": "NoiseSampler" }
+        { "name": "NoiseSampler" },
+        { "name": "FrameSampler" }
     ],
     "uniforms": [
         { "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },

@@ -2,6 +2,7 @@
 
 #extension GL_MC_moj_import : enable
 #moj_import <minecraft:projections.glsl>
+#moj_import <minecraft:datamarker.glsl>
 #moj_import <minecraft:luminance.glsl>
 #moj_import <minecraft:encodings.glsl>
 
@@ -18,6 +19,7 @@ flat in mat4 invProjViewMat;
 flat in mat4 prevProjViewMat;
 flat in vec3 viewOffset;
 flat in int shouldUpdate;
+flat in int frame;
 
 out vec4 fragColor;
 
@@ -82,6 +84,10 @@ vec3 sampleTextureCatmullRom(sampler2D tex, vec2 uv, vec2 texSize) {
 void main() {
     if (shouldUpdate == 0) {
         fragColor = texelFetch(HistorySampler, ivec2(gl_FragCoord.xy), 0);
+        return;
+    }
+
+    if (overlayTemporal(gl_FragCoord.xy, fragColor, (frame + 1) % 8)) {
         return;
     }
 

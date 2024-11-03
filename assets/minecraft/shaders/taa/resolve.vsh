@@ -14,6 +14,7 @@ flat out mat4 invProjViewMat;
 flat out mat4 prevProjViewMat;
 flat out vec3 viewOffset;
 flat out int shouldUpdate;
+flat out int frame;
 
 void main() {
     gl_Position = screenquad[gl_VertexID];
@@ -31,4 +32,5 @@ void main() {
     invProjViewMat = inverse(projection * ModelViewMat);
     prevProjViewMat = prevProjection * prevModelView;
     viewOffset = mod(position - prevPosition + 8.0, 16.0) - 8.0;
+    frame = decodeTemporalFrame(HistorySampler);
 }
