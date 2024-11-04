@@ -57,11 +57,11 @@ void main() {
 
     float roughness = 1.0 - texture(SpecularSampler, texCoord).r;
 
-    float distanceFactor = clamp((length(worldSpace) - 24.0) / 32.0, 0.0, 5.0);
+    float distanceFactor = clamp((length(worldSpace) - 8.0) / 8.0, 0.0, 5.0);
 
     vec3 previousSample = decodeLogLuv(texture(HistorySampler, screenSpace.xy * (InSize / HistorySize)));
     vec3 currentSample = decodeLogLuv(fragColor);
-    vec3 mixedSample = mix(previousSample, currentSample, 1.0 / (1.0 + roughness * 3.0 + distanceFactor));
+    vec3 mixedSample = mix(previousSample, currentSample, 1.0 / (1.0 + pow(roughness, 3.0) * 50.0 + distanceFactor));
 
     fragColor = encodeLogLuv(mixedSample);
 }

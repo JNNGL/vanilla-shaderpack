@@ -34,7 +34,7 @@ void main() {
 
     shouldUpdate = decodeIsShadowMap(DataSampler) ? 0 : 1;
 
-    projection = decodeProjectionMatrix(DataSampler);
+    projection = decodeUnjitteredProjection(DataSampler);
     invProjection = inverse(projection);
     invProjViewMat = inverse(projection * ModelViewMat);
     sunDirection = decodeSunDirection(DataSampler);

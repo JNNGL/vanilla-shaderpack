@@ -87,7 +87,7 @@ void main() {
         return;
     }
 
-    if (overlayTemporal(gl_FragCoord.xy, fragColor, (frame + 1) % 4)) {
+    if (overlayTemporal(gl_FragCoord.xy, fragColor, (frame + 1) % 6)) {
         return;
     }
 

@@ -29,13 +29,13 @@ const ivec2[] temporalOffsets = ivec2[](
 );
 
 void main() {
+    float centerDepth = texture(DepthSampler, texCoord).r;
     if (isShadowMap > 0 || int(gl_FragCoord.y) == 0) {
         return;
     }
 
     vec3 centerColor = decodeLogLuv(texture(InSampler, texCoord));
     vec3 centerNormal = decodeDirectionFromF8x2(texture(NormalSampler, texCoord).xy);
-    float centerDepth = texture(DepthSampler, texCoord).r;
     float centerLuma = luminance(centerColor);
     float centerSmooth = texture(SpecularSampler, texCoord).r;
 
@@ -49,6 +49,8 @@ void main() {
     vec3 cSum = centerColor;
 
     float roughnessSq = 1.0 - centerSmooth;
+
+    float slope = max(abs(dFdx(centerDepth)), abs(dFdy(centerDepth)));
 
     float step = Step;
     if (step <= roughnessSq * 20.0) {
