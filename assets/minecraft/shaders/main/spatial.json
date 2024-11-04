@@ -1,21 +1,16 @@
 {
-    "vertex": "minecraft:main/reflections",
-    "fragment": "minecraft:main/reflections",
+    "vertex": "minecraft:main/spatial",
+    "fragment": "minecraft:main/spatial",
     "samplers": [
         { "name": "InSampler" },
         { "name": "DataSampler" },
-        { "name": "DepthSampler" },
-        { "name": "AlbedoSampler" },
         { "name": "NormalSampler" },
         { "name": "SpecularSampler" },
-        { "name": "SkySampler" },
-        { "name": "NoiseSampler" },
-        { "name": "FrameSampler" },
-        { "name": "LightmapSampler" }
+        { "name": "DepthSampler" }
     ],
     "uniforms": [
         { "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
         { "name": "InSize", "type": "float", "count": 2, "values": [ 1.0, 1.0 ] },
-        { "name": "GameTime", "type": "float", "count": 1, "values": [ 1.0 ] }
+        { "name": "Step", "type": "float", "count": 1, "values": [ 1.0 ] }
     ]
 }

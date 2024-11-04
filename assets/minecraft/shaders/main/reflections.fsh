@@ -18,14 +18,13 @@ uniform sampler2D NormalSampler;
 uniform sampler2D SpecularSampler;
 uniform sampler2D SkySampler;
 uniform sampler2D NoiseSampler;
+uniform sampler2D LightmapSampler;
 
 uniform mat4 ModelViewMat;
 uniform vec2 InSize;
 
-in vec2 texCoord;
 flat in vec3 sunDirection;
 flat in mat4 projection;
-flat in mat4 invProjection;
 flat in mat4 invProjViewMat;
 flat in vec2 planes;
 flat in int shouldUpdate;
@@ -34,14 +33,27 @@ in vec4 near;
 
 out vec4 fragColor;
 
+const ivec2[] temporalOffsets = ivec2[](
+    ivec2(0, 0),
+    ivec2(1, 0),
+    ivec2(0, 1),
+    ivec2(1, 1)
+);
+
 void main() {
     if (shouldUpdate == 0) {
         return;
     }
 
+    // ivec2 fragCoord = ivec2(gl_FragCoord.xy) * 2;
+    // fragCoord += temporalOffsets[frameCounter];
+    // vec2 texCoord = vec2(fragCoord) / InSize;
+    vec2 texCoord = gl_FragCoord.xy / InSize;
+
+    fragColor = encodeLogLuv(vec3(0.0));
+
     float depth = texture(DepthSampler, texCoord).r;
     if (depth == 1.0) {
-        fragColor = encodeLogLuv(vec3(0.0));
         return;
     }
 
@@ -66,49 +78,44 @@ void main() {
 
     vec3 V_t = V * tbn;
 
-    vec3 specular = vec3(0.0);
-    float wSpecSum = 0.0;
-
     vec3 albedo = srgbToLinear(texture(AlbedoSampler, texCoord).rgb);
     int metalId = int(round(specularData.g * 255.0));
 
     vec3 viewFragPos = mat3(ModelViewMat) * fragPos;
 
     float G1 = SmithGGXMasking(N, V, roughness);
-    for (int i = 0; i < 2; i++) {
-        vec3 rand = random(NoiseSampler, gl_FragCoord.xy, i + timeSeed);
 
-        vec3 R_H = tbn * sampleGGXVNDF(V_t, roughness, rand.xy);
-        vec3 R_L = reflect(-V, R_H);
+    vec3 rand = random(NoiseSampler, gl_FragCoord.xy, timeSeed);
 
-        vec3 R_radiance = sampleSkyLUT(SkySampler, R_L, sunDirection) * sunIntensity * LIGHT_COLOR_MULTIPLIER * 0.75;
+    vec3 R_H = tbn * sampleGGXVNDF(V_t, roughness, rand.xy);
+    vec3 R_L = reflect(-V, R_H);
 
-        vec2 hitPixel;
-        vec3 hitPoint;
-        bool hit = traceScreenSpaceRay(DepthSampler, projection, planes, InSize, viewFragPos, mat3(ModelViewMat) * R_L, 30.0, rand.z, 32.0, 1.0e6, hitPixel, hitPoint);
-        float hitDepth = texelFetch(DepthSampler, ivec2(hitPixel), 0).r;
-        if (hit && hitDepth != 1.0) {
-            vec2 hitTexCoord = hitPixel / InSize;
-            vec3 screenSpaceReflection = decodeLogLuv(texture(InSampler, hitTexCoord));
-            
-            R_radiance = screenSpaceReflection;
-        }
+    vec2 lightLevel = texture(LightmapSampler, texCoord).rg;
+    vec3 R_radiance = sampleSkyLUT(SkySampler, R_L, sunDirection) * sunIntensity * LIGHT_COLOR_MULTIPLIER * lightLevel.y * 0.75;
 
-        vec3 R_F;
-        if (metalId >= 230 && metalId <= 237) {
-            mat2x3 NK = HARDCODED_METALS[metalId - 230];
-            R_F = fresnelConductor(max(dot(R_H, V), 0.0), NK[0], NK[1]);
-        } else {
-            vec3 F0 = metalId > 237 ? albedo : vec3(specularData.g);
-            R_F = fresnelSchlick(max(dot(R_H, V), 0.0), F0);
-        }
-
-        float G2 = SmithGGXMaskingShadowing(N, V, R_L, roughness);
-
-        specular += R_radiance * R_F * (G2 / G1);
-        wSpecSum += 1.0;
+    vec2 hitPixel;
+    vec3 hitPoint;
+    bool hit = traceScreenSpaceRay(DepthSampler, projection, planes, InSize, viewFragPos, mat3(ModelViewMat) * R_L, 30.0, rand.z, 32.0, 1.0e6, hitPixel, hitPoint);
+    float hitDepth = texelFetch(DepthSampler, ivec2(hitPixel), 0).r;
+    if (hit && hitDepth != 1.0) {
+        vec2 hitTexCoord = hitPixel / InSize;
+        vec3 screenSpaceReflection = decodeLogLuv(texture(InSampler, hitTexCoord));
+        
+        R_radiance = screenSpaceReflection;
     }
 
-    specular /= wSpecSum;
+    vec3 R_F;
+    if (metalId >= 230 && metalId <= 237) {
+        mat2x3 NK = HARDCODED_METALS[metalId - 230];
+        R_F = fresnelConductor(max(dot(R_H, V), 0.0), NK[0], NK[1]);
+    } else {
+        vec3 F0 = metalId > 237 ? albedo : vec3(specularData.g);
+        R_F = fresnelSchlick(max(dot(R_H, V), 0.0), F0);
+    }
+
+    float G2 = SmithGGXMaskingShadowing(N, V, R_L, roughness);
+
+    vec3 specular = R_radiance * R_F * (G2 / G1);
+
     fragColor = encodeLogLuv(specular);
 }

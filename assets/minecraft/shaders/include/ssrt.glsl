@@ -15,7 +15,7 @@ bool intersectsDepthBuffer(float sceneZMax, float rayZMin, float rayZMax) {
     float depthScale = min(1.0, abs(sceneZMax) / 100.0);
     sceneZMax -= mix(0.05, 0.0, depthScale);
 
-    return (rayZMax >= sceneZMax - 5.0) && (rayZMin <= sceneZMax);
+    return (rayZMax >= sceneZMax - 1.0) && (rayZMin <= sceneZMax);
 }
 
 bool traceScreenSpaceRay(sampler2D depthSampler, mat4 projection, vec2 planes, vec2 screenSize, vec3 origin, vec3 direction, float stride, float jitter, float maxSteps, float maxDistance, out vec2 hitPixel, out vec3 hitPoint) {

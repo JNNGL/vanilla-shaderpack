@@ -87,7 +87,7 @@ void main() {
         return;
     }
 
-    if (overlayTemporal(gl_FragCoord.xy, fragColor, (frame + 1) % 8)) {
+    if (overlayTemporal(gl_FragCoord.xy, fragColor, (frame + 1) % 4)) {
         return;
     }
 
@@ -95,6 +95,8 @@ void main() {
         fragColor = texture(DataSampler, texCoord);
         return;
     }
+
+    // fragColor = texture(InSampler, texCoord); return;
 
     vec3 sourceSampleTotal = vec3(0.0);
     float sourceSampleWeight = 0.0;

@@ -10,6 +10,7 @@ uniform sampler2D DataSampler;
 uniform sampler2D FrameSampler;
 
 uniform mat4 ModelViewMat;
+uniform vec2 InSize;
 
 out vec2 texCoord;
 flat out vec3 sunDirection;
@@ -19,11 +20,17 @@ flat out mat4 invProjViewMat;
 flat out vec2 planes;
 flat out int shouldUpdate;
 flat out float timeSeed;
+flat out int frameCounter;
 out vec4 near;
 
 void main() {
+    int frame = decodeTemporalFrame(FrameSampler);
+    frameCounter = frame % 4;
+
     gl_Position = screenquad[gl_VertexID];
     texCoord = sqTexCoord(gl_Position);
+
+    // gl_Position.xy = min(gl_Position.xy, 0.0);
 
     shouldUpdate = decodeIsShadowMap(DataSampler) ? 0 : 1;
 
@@ -33,5 +40,5 @@ void main() {
     sunDirection = decodeSunDirection(DataSampler);
     near = getPointOnNearPlane(invProjViewMat, gl_Position.xy);
     planes = getPlanes(projection);
-    timeSeed = float(decodeTemporalFrame(FrameSampler)) / 10.0;
+    timeSeed = float(frame) / 8.0;
 }

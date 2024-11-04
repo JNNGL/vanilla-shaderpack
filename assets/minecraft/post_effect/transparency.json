@@ -2,6 +2,7 @@
     "targets" : {
         "swap": {},
         "swap2": {},
+        "swap3": {},
 
         "uvs": {},
         "lmcoord": {},
@@ -16,6 +17,7 @@
 
         "shadow": {},
         "reflection": {},
+        "reflection_hist": {"width": 4003, "height": 3000},
 
         "final": {},
         "final_comp": {},
@@ -143,8 +145,64 @@
                         { "sampler_name": "Specular", "target": "specular" },
                         { "sampler_name": "Sky", "target": "sky_view", "bilinear": true },
                         { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 },
-                        { "sampler_name": "Frame", "target": "history" } ],
+                        { "sampler_name": "Frame", "target": "history" },
+                        { "sampler_name": "Lightmap", "target": "lmcoord" } ],
             "output": "reflection"
+        },
+        {
+            "program": "minecraft:main/temporal_upscale",
+            "inputs": [ { "sampler_name": "In", "target": "reflection", "bilinear": false }, 
+                        { "sampler_name": "Data", "target": "minecraft:main" }, 
+                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
+                        { "sampler_name": "History", "target": "reflection_hist" },
+                        { "sampler_name": "Specular", "target": "specular" },
+                        { "sampler_name": "Frame", "target": "history" } ],
+            "output": "swap3"
+        },
+        {
+            "program": "minecraft:util/copy_over_frame",
+            "inputs": [ { "sampler_name": "In", "target": "swap3" } ],
+            "output": "reflection_hist"
+        },
+        {
+            "program": "minecraft:main/spatial",
+            "inputs": [ { "sampler_name": "In", "target": "swap3" },
+                        { "sampler_name": "Data", "target": "minecraft:main" },
+                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
+                        { "sampler_name": "Normal", "target": "normals" },
+                        { "sampler_name": "Specular", "target": "specular" } ],
+            "uniforms": [ { "name": "Step", "values": [ 1.0 ] } ],
+            "output": "reflection"
+        },
+        {
+            "program": "minecraft:main/spatial",
+            "inputs": [ { "sampler_name": "In", "target": "reflection" },
+                        { "sampler_name": "Data", "target": "minecraft:main" },
+                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
+                        { "sampler_name": "Normal", "target": "normals" },
+                        { "sampler_name": "Specular", "target": "specular" } ],
+            "uniforms": [ { "name": "Step", "values": [ 2.0 ] } ],
+            "output": "swap3"
+        },
+        {
+            "program": "minecraft:main/spatial",
+            "inputs": [ { "sampler_name": "In", "target": "swap3" },
+                        { "sampler_name": "Data", "target": "minecraft:main" },
+                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
+                        { "sampler_name": "Normal", "target": "normals" },
+                        { "sampler_name": "Specular", "target": "specular" } ],
+            "uniforms": [ { "name": "Step", "values": [ 4.0 ] } ],
+            "output": "reflection"
+        },
+        {
+            "program": "minecraft:main/spatial",
+            "inputs": [ { "sampler_name": "In", "target": "reflection" },
+                        { "sampler_name": "Data", "target": "minecraft:main" },
+                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
+                        { "sampler_name": "Normal", "target": "normals" },
+                        { "sampler_name": "Specular", "target": "specular" } ],
+            "uniforms": [ { "name": "Step", "values": [ 8.0 ] } ],
+            "output": "swap3"
         },
         {
             "program": "minecraft:main/shade1",
@@ -154,11 +212,12 @@
                         { "sampler_name": "Shadow", "target": "shadow" },
                         { "sampler_name": "Normal", "target": "normals" },
                         { "sampler_name": "Sky", "target": "sky_view", "bilinear": true },
-                        { "sampler_name": "Reflection", "target": "reflection" },
+                        { "sampler_name": "Reflection", "target": "swap3" },
                         { "sampler_name": "Translucent", "target": "translucent" },
                         { "sampler_name": "AerialPerspective", "target": "aerial_perspective", "bilinear": true },
                         { "sampler_name": "TranslucentDepth", "target": "translucent", "use_depth_buffer": true },
-                        { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 } ],
+                        { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 },
+                        { "sampler_name": "Mojank", "target": "reflection_hist" } ],
             "output": "swap2"
         },
 
