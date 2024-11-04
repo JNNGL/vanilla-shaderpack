@@ -8,10 +8,13 @@ uniform sampler2D DataSampler;
 
 out vec2 texCoord;
 flat out int isShadowMap;
+flat out mat4 invProjection;
 
 void main() {
     gl_Position = screenquad[gl_VertexID];
     texCoord = sqTexCoord(gl_Position);
 
     isShadowMap = decodeIsShadowMap(DataSampler) ? 1 : 0;
+
+    invProjection = inverse(decodeProjectionMatrix(DataSampler));
 }

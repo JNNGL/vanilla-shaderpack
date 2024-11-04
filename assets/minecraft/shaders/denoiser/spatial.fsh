@@ -17,6 +17,7 @@ uniform float Step;
 
 in vec2 texCoord;
 flat in int isShadowMap;
+flat in mat4 invProjection;
 
 out vec4 fragColor;
 
@@ -37,6 +38,12 @@ void main() {
     float centerDepth = texture(DepthSampler, texCoord).r;
     float centerLuma = luminance(centerColor);
     float centerSmooth = texture(SpecularSampler, texCoord).r;
+
+    vec3 viewSpace = unprojectScreenSpace(invProjection, texCoord, centerDepth);
+    float dist = length(viewSpace);
+
+    float normalExp = clamp(2048.0 - dist * 8.0, 4.0, 2048.0);
+    float smoothMult = clamp(10.0 - dist / 64.0, 1.0, 10.0);
 
     float wSum = 1.0;
     vec3 cSum = centerColor;
@@ -61,9 +68,9 @@ void main() {
                 float smoothness = texture(SpecularSampler, sampleUV).r;
                 float luma = luminance(color);
 
-                float wNorm = pow(max(0.0, dot(centerNormal, normal)), 2048.0);
+                float wNorm = pow(max(0.0, dot(centerNormal, normal)), normalExp);
                 float wLum = abs(luma - centerLuma) * 0.8;
-                float wSmooth = abs(smoothness - centerSmooth) * 10.0;
+                float wSmooth = abs(smoothness - centerSmooth) * smoothMult;
                 float w = exp(-wLum - wSmooth - 0.1 * length(sampleOffset)) * wNorm;
 
                 wSum += w;
