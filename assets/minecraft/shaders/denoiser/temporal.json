@@ -1,6 +1,6 @@
 {
-    "vertex": "minecraft:main/temporal_upscale",
-    "fragment": "minecraft:main/temporal_upscale",
+    "vertex": "minecraft:denoiser/temporal",
+    "fragment": "minecraft:denoiser/temporal",
     "samplers": [
         { "name": "InSampler" },
         { "name": "DataSampler" },

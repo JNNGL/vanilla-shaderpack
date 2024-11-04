@@ -150,7 +150,7 @@
             "output": "reflection"
         },
         {
-            "program": "minecraft:main/temporal_upscale",
+            "program": "minecraft:denoiser/temporal",
             "inputs": [ { "sampler_name": "In", "target": "reflection", "bilinear": false }, 
                         { "sampler_name": "Data", "target": "minecraft:main" }, 
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
@@ -165,7 +165,7 @@
             "output": "reflection_hist"
         },
         {
-            "program": "minecraft:main/spatial",
+            "program": "minecraft:denoiser/spatial",
             "inputs": [ { "sampler_name": "In", "target": "swap3" },
                         { "sampler_name": "Data", "target": "minecraft:main" },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
@@ -175,7 +175,7 @@
             "output": "reflection"
         },
         {
-            "program": "minecraft:main/spatial",
+            "program": "minecraft:denoiser/spatial",
             "inputs": [ { "sampler_name": "In", "target": "reflection" },
                         { "sampler_name": "Data", "target": "minecraft:main" },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
@@ -185,7 +185,7 @@
             "output": "swap3"
         },
         {
-            "program": "minecraft:main/spatial",
+            "program": "minecraft:denoiser/spatial",
             "inputs": [ { "sampler_name": "In", "target": "swap3" },
                         { "sampler_name": "Data", "target": "minecraft:main" },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
@@ -195,7 +195,7 @@
             "output": "reflection"
         },
         {
-            "program": "minecraft:main/spatial",
+            "program": "minecraft:denoiser/spatial",
             "inputs": [ { "sampler_name": "In", "target": "reflection" },
                         { "sampler_name": "Data", "target": "minecraft:main" },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },

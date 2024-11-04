@@ -1,6 +1,6 @@
 {
-    "vertex": "minecraft:main/spatial",
-    "fragment": "minecraft:main/spatial",
+    "vertex": "minecraft:denoiser/spatial",
+    "fragment": "minecraft:denoiser/spatial",
     "samplers": [
         { "name": "InSampler" },
         { "name": "DataSampler" },
