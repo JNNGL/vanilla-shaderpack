@@ -61,12 +61,12 @@ void main() {
     vec4 normalData = texture(NormalSampler, texCoord);
     vec3 normal = decodeDirectionFromF8x2(normalData.rg);
 
+    vec4 shadow = texelFetch(ShadowSampler, ivec2(gl_FragCoord.x, max(1.0, gl_FragCoord.y)), 0);
+
     vec3 color = decodeLogLuv(texture(InSampler, texCoord));
     if (gl_FragCoord.y > 1.0) {
-        color += decodeLogLuv(texture(ReflectionSampler, texCoord));
+        color += decodeLogLuv(texture(ReflectionSampler, texCoord)) * shadow.g;
     }
-    
-    vec4 shadow = texelFetch(ShadowSampler, ivec2(gl_FragCoord.x, max(1.0, gl_FragCoord.y)), 0);
 
     float linearDepth = linearizeDepth(depth * 2.0 - 1.0, planes);
     float apLinearDepth = linearDepth;
