@@ -58,7 +58,7 @@ void main() {
     float roughness = 1.0 - texture(SpecularSampler, texCoord).r;
 
     float distanceFactor = clamp((length(worldSpace) - 8.0) / 8.0, 0.0, 5.0);
-    float roughnessFactor = clamp(pow(roughness, 3.0) * 50.0, 0.0, 10.0);
+    float roughnessFactor = clamp(pow(roughness, 2.3) * 50.0, 0.0, 10.0);
 
     vec3 previousSample = decodeLogLuv(texture(HistorySampler, screenSpace.xy * (InSize / HistorySize)));
     vec3 currentSample = decodeLogLuv(fragColor);

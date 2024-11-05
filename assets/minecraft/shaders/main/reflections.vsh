@@ -30,8 +30,6 @@ void main() {
     gl_Position = screenquad[gl_VertexID];
     texCoord = sqTexCoord(gl_Position);
 
-    // gl_Position.xy = min(gl_Position.xy, 0.0);
-
     shouldUpdate = decodeIsShadowMap(DataSampler) ? 0 : 1;
 
     projection = decodeUnjitteredProjection(DataSampler);

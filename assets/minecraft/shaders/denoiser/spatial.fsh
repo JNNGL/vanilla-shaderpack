@@ -48,12 +48,10 @@ void main() {
     float wSum = 1.0;
     vec3 cSum = centerColor;
 
-    float roughnessSq = 1.0 - centerSmooth;
-
-    float slope = max(abs(dFdx(centerDepth)), abs(dFdy(centerDepth)));
+    float roughnessSqrt = 1.0 - centerSmooth;
 
     float step = Step;
-    if (step <= roughnessSq * 20.0) {
+    if (step <= roughnessSqrt * 30.0) {
         const int radius = 2;
         for (int x = -radius; x <= radius; x++) {
             for (int y = -radius; y <= radius; y++) {
@@ -73,7 +71,7 @@ void main() {
                 float wNorm = pow(max(0.0, dot(centerNormal, normal)), normalExp);
                 float wLum = abs(luma - centerLuma) * 0.8;
                 float wSmooth = abs(smoothness - centerSmooth) * smoothMult;
-                float w = exp(-wLum - wSmooth - 0.1 * length(sampleOffset)) * wNorm;
+                float w = exp(-wLum - wSmooth - mix(0.1, 0.5, centerSmooth) * length(sampleOffset)) * wNorm;
 
                 wSum += w;
                 cSum += color * w;

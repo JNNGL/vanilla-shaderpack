@@ -3,6 +3,12 @@
 #ifndef _MATRICES_GLSL
 #define _MATRICES_GLSL
 
+mat3 constructTBN(vec3 normal) {
+    vec3 tangent = normalize(cross(normal, vec3(0.0, 1.0, 1.0)));
+    vec3 bitangent = cross(normal, tangent);
+    return mat3(tangent, bitangent, normal);
+}
+
 mat4 orthographicProjectionMatrix(float left, float right, float bottom, float top, float near, float far) {
     return mat4(
         2.0 / (right - left), 0.0, 0.0, 0.0,

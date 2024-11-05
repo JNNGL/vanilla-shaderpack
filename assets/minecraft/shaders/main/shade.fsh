@@ -8,6 +8,7 @@
 #moj_import <minecraft:encodings.glsl>
 #moj_import <minecraft:brdf.glsl>
 #moj_import <minecraft:metals.glsl>
+#moj_import <minecraft:fresnel.glsl>
 #moj_import <settings:settings.glsl>
 
 uniform sampler2D InSampler;
@@ -63,7 +64,7 @@ void main() {
         vec2 lightLevel = texture(LightmapSampler, texCoord).rg;
 
         vec4 specularData = texture(SpecularSampler, texCoord);
-        float roughness = pow(1.0 - specularData.r, 2.5);
+        float roughness = pow(1.0 - specularData.r, 2.0);
         
         float subsurfaceFactor = specularData.b;
 
@@ -76,16 +77,8 @@ void main() {
         vec3 V = -direction;
         vec3 H = normalize(V + L);
 
-        vec3 F;
-
         int metalId = int(round(specularData.g * 255.0));
-        if (metalId >= 230 && metalId <= 237) {
-            mat2x3 NK = HARDCODED_METALS[metalId - 230];
-            F = fresnelConductor(max(dot(H, V), 0.0), NK[0], NK[1]);
-        } else {
-            vec3 F0 = metalId > 237 ? albedo : vec3(specularData.g);
-            F = fresnelSchlick(max(dot(H, V), 0.0), F0);
-        }
+        vec3 F = fresnel(metalId, dot(H, V), albedo, vec3(specularData.g));
 
         vec3 diffuse = hammonDiffuse(albedo, N, V, L, H, F, roughness);
         diffuse *= clamp(NdotL, 0.0, 1.0) * radiance;
