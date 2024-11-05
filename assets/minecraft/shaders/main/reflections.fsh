@@ -66,8 +66,7 @@ void main() {
     vec3 normal = decodeDirectionFromF8x2(normalData.rg);
 
     vec4 specularData = texture(SpecularSampler, texCoord);
-    float roughness = pow(1.0 - specularData.r, 1.3);
-    roughness *= roughness;
+    float roughness = pow(1.0 - specularData.r, 2.5);
 
     vec3 N = normalize(round(normal * 16.0) / 16.0);
     vec3 V = -direction;
@@ -82,8 +81,6 @@ void main() {
     int metalId = int(round(specularData.g * 255.0));
 
     vec3 viewFragPos = mat3(ModelViewMat) * fragPos;
-
-    float G1 = SmithGGXMasking(N, V, roughness);
 
     vec3 rand = random(NoiseSampler, gl_FragCoord.xy, timeSeed);
 
@@ -113,6 +110,7 @@ void main() {
         R_F = fresnelSchlick(max(dot(R_H, V), 0.0), F0);
     }
 
+    float G1 = SmithGGXMasking(N, V, roughness);
     float G2 = SmithGGXMaskingShadowing(N, V, R_L, roughness);
 
     vec3 specular = R_radiance * R_F * (G2 / G1);

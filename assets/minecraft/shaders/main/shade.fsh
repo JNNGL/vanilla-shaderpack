@@ -63,8 +63,7 @@ void main() {
         vec2 lightLevel = texture(LightmapSampler, texCoord).rg;
 
         vec4 specularData = texture(SpecularSampler, texCoord);
-        float roughness = 1.0 - specularData.r;
-        roughness *= roughness;
+        float roughness = pow(1.0 - specularData.r, 2.5);
         
         float subsurfaceFactor = specularData.b;
 
