@@ -19,7 +19,7 @@ flat out mat4 invProjection;
 flat out mat4 invProjViewMat;
 flat out vec2 planes;
 flat out int shouldUpdate;
-flat out float timeSeed;
+flat out float seed;
 flat out int frameCounter;
 out vec4 near;
 
@@ -32,11 +32,11 @@ void main() {
 
     shouldUpdate = decodeIsShadowMap(DataSampler) ? 0 : 1;
 
-    projection = decodeUnjitteredProjection(DataSampler);
+    projection = decodeProjectionMatrix(DataSampler);
     invProjection = inverse(projection);
     invProjViewMat = inverse(projection * ModelViewMat);
     sunDirection = decodeSunDirection(DataSampler);
     near = getPointOnNearPlane(invProjViewMat, gl_Position.xy);
     planes = getPlanes(projection);
-    timeSeed = float(frame) / 8.0;
+    seed = float(frame) / 8.0;
 }

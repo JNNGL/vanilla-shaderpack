@@ -6,6 +6,7 @@
 #moj_import <minecraft:projections.glsl>
 #moj_import <minecraft:datamarker.glsl>
 #moj_import <minecraft:bilinear.glsl>
+#moj_import <settings:settings.glsl>
 
 uniform sampler2D InSampler;
 uniform sampler2D DepthSampler;
@@ -21,16 +22,9 @@ flat in mat4 invProjection;
 
 out vec4 fragColor;
 
-const ivec2[] temporalOffsets = ivec2[](
-    ivec2(0, 0),
-    ivec2(1, 0),
-    ivec2(0, 1),
-    ivec2(1, 1)
-);
-
 void main() {
     float centerDepth = texture(DepthSampler, texCoord).r;
-    if (isShadowMap > 0 || int(gl_FragCoord.y) == 0) {
+    if (isShadowMap > 0 || int(gl_FragCoord.y) == 0 || centerDepth == 1.0) {
         return;
     }
 
@@ -46,12 +40,13 @@ void main() {
     float smoothMult = clamp(10.0 - dist / 64.0, 1.0, 10.0);
 
     float wSum = 1.0;
-    vec3 cSum = centerColor;
+    vec3 cSum = centerColor * wSum;
 
     float roughnessSqrt = 1.0 - centerSmooth;
 
     float step = Step;
-    if (step <= roughnessSqrt * 30.0) {
+#if (DENOISE_BLOCK_REFLECTIONS == yes)
+    if (step * step <= roughnessSqrt * 400.0) {
         const int radius = 2;
         for (int x = -radius; x <= radius; x++) {
             for (int y = -radius; y <= radius; y++) {
@@ -71,13 +66,18 @@ void main() {
                 float wNorm = pow(max(0.0, dot(centerNormal, normal)), normalExp);
                 float wLum = abs(luma - centerLuma) * 0.8;
                 float wSmooth = abs(smoothness - centerSmooth) * smoothMult;
-                float w = exp(-wLum - wSmooth - mix(0.1, 0.5, centerSmooth) * length(sampleOffset)) * wNorm;
+                float w = exp(-wLum - wSmooth - mix(0.1, 2.0, pow(centerSmooth, 5.0)) * length(sampleOffset)) * wNorm;
 
                 wSum += w;
                 cSum += color * w;
             }
         }
     }
+#else
+    if (step > 10000.0) { // Minecraft unloads the pack if the Step uniform is not used in the shader.
+        wSum += 1.0e-6;
+    }
+#endif // DENOISE_BLOCK_REFLECTIONS
 
     cSum /= wSum;
     fragColor = encodeLogLuv(cSum);
