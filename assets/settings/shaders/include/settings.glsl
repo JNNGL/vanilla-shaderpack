@@ -13,7 +13,7 @@
 #define SHADOW_VIEW_FRUSTUM_Y vec2(-256.0, 256.0)
 #define SHADOW_VIEW_FRUSTUM_Z vec2(0.05, 512.0)
 
-#define SHADOW_MAP_PERIOD 16
+#define SHADOW_MAP_UPDATE_PERIOD 16
 
 
 // ========<  WATER  >======== //

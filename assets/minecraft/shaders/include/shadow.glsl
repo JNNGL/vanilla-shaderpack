@@ -33,7 +33,7 @@ vec4 distortShadow(vec4 clipSpace) {
 }
 
 bool isShadowMapFrame(float time) {
-    return (hash(floatBitsToUint(time + 13.0)) % uint(SHADOW_MAP_PERIOD)) == 0u;
+    return (hash(floatBitsToUint(time + 13.0)) % uint(SHADOW_MAP_UPDATE_PERIOD)) == 0u;
 }
 
 const float sunPathRotationX = radians(SUN_PATH_ROTATION_X);

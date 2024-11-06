@@ -92,9 +92,11 @@ void main() {
 
     float roughness = 1.0 - texture(SpecularSampler, texCoord).r;
 
+    float speedSquared = dot(viewOffset, viewOffset);
+
     float distanceFactor = clamp((length(worldSpace) - 8.0) / 8.0, -2.0, 5.0);
     float roughnessFactor = clamp(pow(roughness, 2.0) * 50.0, 0.0, 10.0);
-    float staticFactor = (float(dot(viewOffset, viewOffset) < 0.0001) + roughness) * 5.0;
+    float staticFactor = (float(speedSquared < 0.0001) + roughness) * 5.0 + (float(speedSquared > 0.1)) * -3.0;
 
     vec3 previousSample = decodeLogLuv(texture(HistorySampler, screenSpace.xy * (InSize / HistorySize)));
     vec3 currentSample = decodeLogLuv(fragColor);
