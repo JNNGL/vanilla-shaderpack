@@ -75,7 +75,7 @@ void main() {
     vec3 L_viewSpace = mat3(ModelViewMat) * L;
 
     vec2 lightLevel = texture(LightmapSampler, texCoord).rg;
-    vec3 radiance = sampleSkyLUT(SkySampler, L, sunDirection) * sunIntensity * LIGHT_COLOR_MULTIPLIER * lightLevel.y * 0.75;
+    vec3 radiance = sampleSkyLUT(SkySampler, L, sunDirection) * sunIntensity * LIGHT_COLOR_MULTIPLIER * lightLevel.y;
 
     vec2 strideSteps = roughness < 0.2 ? vec2(SMOOTH_BLOCK_REFLECTION_STRIDE, SMOOTH_BLOCK_REFLECTION_STEPS) : vec2(ROUGH_BLOCK_REFLECTION_STRIDE, ROUGH_BLOCK_REFLECTION_STEPS);
 

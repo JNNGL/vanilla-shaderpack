@@ -205,6 +205,16 @@
             "output": "swap3"
         },
         {
+            "program": "minecraft:denoiser/spatial",
+            "inputs": [ { "sampler_name": "In", "target": "swap3" },
+                        { "sampler_name": "Data", "target": "minecraft:main" },
+                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
+                        { "sampler_name": "Normal", "target": "normals" },
+                        { "sampler_name": "Specular", "target": "specular" } ],
+            "uniforms": [ { "name": "Step", "values": [ 1.0 ] } ],
+            "output": "reflection"
+        },
+        {
             "program": "minecraft:main/shade1",
             "inputs": [ { "sampler_name": "In", "target": "swap" },
                         { "sampler_name": "Data", "target": "shadowmap_depth" },
@@ -212,7 +222,7 @@
                         { "sampler_name": "Shadow", "target": "shadow" },
                         { "sampler_name": "Normal", "target": "normals" },
                         { "sampler_name": "Sky", "target": "sky_view", "bilinear": true },
-                        { "sampler_name": "Reflection", "target": "swap3" },
+                        { "sampler_name": "Reflection", "target": "reflection" },
                         { "sampler_name": "Translucent", "target": "translucent" },
                         { "sampler_name": "AerialPerspective", "target": "aerial_perspective", "bilinear": true },
                         { "sampler_name": "TranslucentDepth", "target": "translucent", "use_depth_buffer": true },
