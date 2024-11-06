@@ -70,6 +70,18 @@ vec4 packF32toF8x4(float f) {
     return packUI32toF8x4(bits);
 }
 
+vec2 packF01U16toF8x2(float f) {
+    f = clamp(f, 0.0, 1.0);
+    int bits = int(f * 65535.0);
+    return vec2(bits >> 8, bits & 0xFF) / 255.0;
+}
+
+float unpackF01U16fromF8x2(vec2 v) {
+    ivec2 data = ivec2(v * 255.0);
+    int bits = (data.r << 8) | data.g;
+    return float(bits) / 65535.0;
+}
+
 vec4 packR11G11B10LtoF8x4(vec3 rgb) {
     uint bits = 0u;
     bits |= (uint(rgb.r * 2047.0) & 0x7FFu) << 21u;

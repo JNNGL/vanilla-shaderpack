@@ -1,0 +1,11 @@
+{
+    "vertex": "minecraft:buffer/normals_depth",
+    "fragment": "minecraft:buffer/normals_depth",
+    "samplers": [
+        { "name": "DataSampler" },
+        { "name": "HistorySampler" },
+        { "name": "DepthSampler" },
+        { "name": "NormalSampler" }
+    ],
+    "uniforms": []
+}

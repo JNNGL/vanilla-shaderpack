@@ -4,7 +4,9 @@
     "samplers": [
         { "name": "InSampler" },
         { "name": "DataSampler" },
+        { "name": "NormalSampler" },
         { "name": "DepthSampler" },
+        { "name": "HistoryNDSampler" },
         { "name": "FrameSampler" },
         { "name": "SpecularSampler" },
         { "name": "HistorySampler" }

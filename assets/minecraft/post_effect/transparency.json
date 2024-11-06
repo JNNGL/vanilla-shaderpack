@@ -29,6 +29,7 @@
         "aerial_perspective": {"width": 576, "height": 48},
 
         "history": {"width": 4001, "height": 3000},
+        "prev_normal_depth": {"width": 4004, "height": 3000},
 
         "a": {}, "b": {}, "c": {}, "d": {}, "e": {}, "f": {},
         "e1": {}, "d1": {}, "c1": {}, "b1": {}, "a1": {}, "bloom": {}
@@ -154,7 +155,9 @@
             "inputs": [ { "sampler_name": "In", "target": "reflection", "bilinear": false }, 
                         { "sampler_name": "Data", "target": "minecraft:main" }, 
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
+                        { "sampler_name": "Normal", "target": "normals" },
                         { "sampler_name": "History", "target": "reflection_hist" },
+                        { "sampler_name": "HistoryND", "target": "prev_normal_depth" },
                         { "sampler_name": "Specular", "target": "specular" },
                         { "sampler_name": "Frame", "target": "history" } ],
             "output": "swap3"
@@ -346,9 +349,24 @@
         },
 
         {
+            "program": "minecraft:buffer/normals_depth",
+            "inputs": [ { "sampler_name": "Data", "target": "minecraft:main" },
+                        { "sampler_name": "History", "target": "prev_normal_depth" },
+                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
+                        { "sampler_name": "Normal", "target": "normals" } ],
+            "output": "swap3"
+        },
+        {
+            "program": "minecraft:util/copy_over_frame",
+            "inputs": [ { "sampler_name": "In", "target": "swap3" } ],
+            "output": "prev_normal_depth"
+        },
+
+        {
             "program": "minecraft:util/copy",
-            "inputs": [ { "sampler_name": "In", "target": "final_comp", "bilinear": false },
-                        { "sampler_name": "Mojank", "target": "final_prev" } ],
+            "inputs": [ { "sampler_name": "In", "target": "final_comp" },
+                        { "sampler_name": "Mojank", "target": "final_prev" },
+                        { "sampler_name": "Mojank2", "target": "prev_normal_depth" } ],
             "output": "minecraft:main"
         }
     ]

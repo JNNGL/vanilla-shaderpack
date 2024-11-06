@@ -65,7 +65,17 @@ void main() {
 
     vec3 color = decodeLogLuv(texture(InSampler, texCoord));
     if (gl_FragCoord.y > 1.0) {
-        color += decodeLogLuv(texture(ReflectionSampler, texCoord)) * shadow.g;
+        vec2 oneTexel = 1.0 / InSize;
+        
+        vec3 l = decodeLogLuv(texture(ReflectionSampler, clamp(texCoord + vec2(-oneTexel.x, 0.0), 0.0, 1.0)));
+        vec3 r = decodeLogLuv(texture(ReflectionSampler, clamp(texCoord + vec2(+oneTexel.x, 0.0), 0.0, 1.0)));
+        vec3 d = decodeLogLuv(texture(ReflectionSampler, clamp(texCoord + vec2(0.0, -oneTexel.y), 0.0, 1.0)));
+        vec3 u = decodeLogLuv(texture(ReflectionSampler, clamp(texCoord + vec2(0.0, +oneTexel.y), 0.0, 1.0)));
+
+        vec3 specular = decodeLogLuv(texture(ReflectionSampler, texCoord));
+        specular = min(specular, (l + r + d + u) * 0.25); // Remove fireflies
+
+        color += specular * shadow.g;
     }
 
     float linearDepth = linearizeDepth(depth * 2.0 - 1.0, planes);

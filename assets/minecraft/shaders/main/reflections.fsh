@@ -71,7 +71,7 @@ void main() {
     vec3 H = tbn * sampleGGXVNDF(V_tangentSpace, roughness, rand.xy);
     vec3 L = reflect(-V, H);
 
-    vec3 fragPosViewSpace = mat3(ModelViewMat) * fragPos;
+    vec3 fragPosViewSpace = mat3(ModelViewMat) * (fragPos + normal * 0.025);
     vec3 L_viewSpace = mat3(ModelViewMat) * L;
 
     vec2 lightLevel = texture(LightmapSampler, texCoord).rg;
