@@ -4,12 +4,20 @@
 #moj_import <minecraft:constants.glsl>
 
 in vec3 Position;
+#ifdef TEX_COLOR
+in vec2 UV0;
+in vec4 Color;
+#endif
 
 uniform sampler2D Sampler0;
 
 uniform mat4 ModelViewMat;
 uniform mat4 ProjMat;
 
+#ifdef TEX_COLOR
+out vec2 texCoord0;
+out vec4 vertexColor;
+#endif
 out float isSun;
 out vec4 position0;
 out vec4 position1;
@@ -22,7 +30,8 @@ void main() {
     isSun = 0.0;
     position0 = position1 = vec4(0.0);
 
-    if (texSize.x == texSize.y) {
+    ivec4 texel = ivec4(round(texelFetch(Sampler0, ivec2(0, 0), 0) * 255.0));
+    if (texSize == vec2(32.0) && texel == ivec4(61, 162, 158, 7)) {
         vec4 corners = vec4(-1.0, -1.0, 1.0, 1.0);
 
         switch (gl_VertexID % 4) {
@@ -35,7 +44,12 @@ void main() {
         isSun = 1.0;
     }
 
-    if (texSize.x / texSize.y == 2.0) {
+    if (texSize == vec2(128.0, 64.0) && texel == ivec4(61, 162, 158, 6)) {
         gl_Position = GLPOS_DISCARD;
     }
+
+#ifdef TEX_COLOR
+    texCoord0 = UV0;
+    vertexColor = Color;
+#endif
 }
