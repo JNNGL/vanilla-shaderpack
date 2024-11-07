@@ -4,11 +4,6 @@
 #moj_import <minecraft:datamarker.glsl>
 #moj_import <minecraft:shadow.glsl>
 
-uniform sampler2D Sampler0;
-
-uniform vec4 ColorModulator;
-
-in vec2 texCoord0;
 in float isSun;
 in vec4 position0;
 in vec4 position1;
