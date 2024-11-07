@@ -4,7 +4,6 @@
 #moj_import <minecraft:constants.glsl>
 
 in vec3 Position;
-in vec2 UV0;
 
 uniform sampler2D Sampler0;
 
