@@ -5,6 +5,7 @@
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:shadow.glsl>
 #moj_import <minecraft:datamarker.glsl>
+#moj_import <minecraft:projections.glsl>
 #moj_import <settings:settings.glsl>
 
 uniform sampler2D Sampler0;
@@ -30,6 +31,10 @@ flat in int quadId;
 in vec2 lmCoord;
 in vec3 fragPos;
 in vec4 glPos;
+flat in ivec2 atlasDim;
+in vec3 texBound0;
+in vec3 texBound1;
+flat in vec2 planes;
 
 out vec4 fragColor;
 
@@ -40,7 +45,48 @@ vec4 unshadeBlock(vec4 color, vec3 normal) {
     return color;
 }
 
+float sampleHeightmap(vec2 texCoord, vec4 texMinMax) {
+    texCoord = fract(texCoord) * (texMinMax.zw - texMinMax.xy) + texMinMax.xy;
+    vec4 color = texture(Sampler0, texCoord, 0);
+
+    ivec4 coord = ivec4(color * 255.0);
+    int subX = coord.x & 0xF;
+    int subY = coord.y & 0xF;
+
+    int index = ((coord.x & 0xF0) | (coord.y >> 4)) * 256 + coord.z;
+    int baseX = (index * 16) % atlasDim.x;
+    int baseY = ((index * 16) / atlasDim.x) * 16;
+
+    ivec2 atlasCoord = ivec2(baseX + subX, baseY + subY);
+    return 1.0 - texelFetch(Sampler0, atlasCoord, 0).a;
+}
+
+vec2 parallaxMapping(vec2 texCoords, vec3 viewDir, vec4 texMinMax, out float distance) {
+    const float minLayers = 128;
+    const float maxLayers = 256;
+    float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));  
+    float layerDepth = 1.0 / numLayers;
+    float currentLayerDepth = 0.0;
+    vec2 P = viewDir.xy / viewDir.z * 0.25; 
+    vec2 deltaTexCoords = P / numLayers;
+  
+    vec2  currentTexCoords     = texCoords;
+    float currentDepthMapValue = sampleHeightmap(currentTexCoords, texMinMax);
+    
+    for (int i = 0; i < numLayers && currentLayerDepth < currentDepthMapValue; i++) {
+        currentTexCoords -= deltaTexCoords;
+        currentDepthMapValue = sampleHeightmap(currentTexCoords, texMinMax);
+        currentLayerDepth += layerDepth;  
+    }
+
+    distance = currentLayerDepth;
+    
+    return fract(currentTexCoords);
+}
+
 void main() {
+    gl_FragDepth = gl_FragCoord.z;
+
     if (discardSunData(gl_FragCoord.xy)) {
         discard;
     }
@@ -67,11 +113,11 @@ void main() {
 #if (ENABLE_DIRECTIONAL_LIGHTMAP == yes)
     vec2 lmDeriv = vec2(dFdx(lmCoord.x), dFdy(lmCoord.x));
 
-    vec3 tangent = normalize(cross(normal, vec3(0.0, 1.0, 1.0)));
-    vec3 bitangent = cross(normal, tangent);
-    mat3 tbn = mat3(tangent, bitangent, normal);
+    vec3 lmTangent = normalize(cross(normal, vec3(0.0, 1.0, 1.0)));
+    vec3 lmBitangent = cross(normal, lmTangent);
+    mat3 lmTbn = mat3(lmTangent, lmBitangent, normal);
 
-    vec3 lmDirection = dot(lmDeriv, lmDeriv) < 0.00001 ? vec3(0.0) : normalize(cross(p2, normal) * lmDeriv.x + cross(normal, p1) * lmDeriv.y) * tbn;
+    vec3 lmDirection = dot(lmDeriv, lmDeriv) < 0.00001 ? vec3(0.0) : normalize(cross(p2, normal) * lmDeriv.x + cross(normal, p1) * lmDeriv.y) * lmTbn;
     
     lmDirection = sign(lmDirection) * vec3(greaterThan(abs(lmDirection), vec3(0.001))) + 1;
     uint lmPacked = uint(lmDirection.x) | (uint(lmDirection.y) << 2u);
@@ -88,11 +134,34 @@ void main() {
     ivec2 fragCoord = ivec2(gl_FragCoord.xy);
     ivec2 local = fragCoord % 2;
 
+    vec3 tangent = normalize(cross(p2, normal) * t1.x + cross(normal, p1) * t2.x);
+
     float lodAlpha = texelFetch(Sampler0, ivec2(texCoord0 * textureSize(Sampler0, 0)), 0).a;
     int textureAlpha = int(round(color.a * 255.0));
     if (textureAlpha >= 5 && textureAlpha <= 250 && lodAlpha < 1.0 && lodAlpha >= 5.0 / 255.0) {
-        color = textureLod(Sampler0, texCoord0, 0);
-        vec3 tangent = normalize(cross(p2, normal) * t1.x + cross(normal, p1) * t2.x);
+        vec2 mappedTexCoord = texCoord0;
+        // if (shadow == 0) {
+        //     vec2 bound0 = texBound0.xy / texBound0.z;
+        //     vec2 bound1 = texBound1.xy / texBound1.z;
+        //     vec2 texMin = min(bound0, bound1);
+        //     vec2 texMax = max(bound0, bound1);
+        //     vec2 texLocal = (texCoord0 - texMin) / (texMax - texMin);
+
+        //     mat3 tbn = mat3(tangent, cross(tangent, normal), normal);
+
+        //     vec3 fragPosTangent = fragPos * tbn;
+        //     vec3 viewDirTangent = normalize(fragPosTangent);
+
+        //     float pomDistance;
+        //     texLocal = parallaxMapping(texLocal, viewDirTangent, vec4(texMin, texMax), pomDistance);
+        //     mappedTexCoord = texLocal * (texMax - texMin) + texMin;
+
+        //     float depth = linearizeDepth(gl_FragCoord.z * 2.0 - 1.0, planes);
+        //     depth += pomDistance * 0.25;
+        //     gl_FragDepth = unlinearizeDepth(depth, planes) * 0.5 + 0.5;
+        // }
+
+        color = textureLod(Sampler0, mappedTexCoord, 0);
 
         fragColor = color;
 
@@ -118,7 +187,6 @@ void main() {
         fragColor.a = float(alpha) / 255.0;
     } else {
         if (local == ivec2(0, 0) && color != vec4(0.0, 0.0, 0.0, 1.0)) {
-            vec3 tangent = normalize(cross(p2, normal) * t1.x + cross(normal, p1) * t2.x);
             fragColor = vec4(vec2(lmCoord) / 255.0, encodeDirectionToF8(tangent), float(15 << 4) / 255.0);
         } else {
             fragColor = color * unshadeBlock(vertexColor, normal) * ColorModulator;

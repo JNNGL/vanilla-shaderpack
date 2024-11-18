@@ -7,6 +7,7 @@
 #moj_import <minecraft:shadow.glsl>
 #moj_import <minecraft:waving.glsl>
 #moj_import <minecraft:lightmap.glsl>
+#moj_import <minecraft:projections.glsl>
 
 in vec3 Position;
 in vec4 Color;
@@ -36,6 +37,10 @@ flat out int quadId;
 out vec2 lmCoord;
 out vec3 fragPos;
 out vec4 glPos;
+flat out ivec2 atlasDim;
+out vec3 texBound0;
+out vec3 texBound1;
+flat out vec2 planes;
 
 float halton(int i, int b) {
     float f = 1.0;
@@ -56,8 +61,18 @@ void main() {
     dataQuad = col.rgb == ivec3(76, 195, 86) ? 1 : 0;
     fragPos = pos;
 
+    vec4 atlasData = texelFetch(Sampler0, ivec2(0, 0), 0);
+    ivec2 dimLog2 = ivec2(atlasData.xy * 255.0);
+    atlasDim = ivec2(round(pow(vec2(2.0), vec2(dimLog2))));
+
     quadId = gl_VertexID / 8;
     lmCoord = vec2(UV2);
+
+    texBound0 = texBound1 = vec3(0.0);
+    switch (gl_VertexID % 4) {
+        case 0: texBound0 = vec3(UV0, 1.0); break;
+        case 2: texBound1 = vec3(UV0, 1.0); break;
+    }
 
     vec3 worldPos = pos;
 
@@ -118,4 +133,6 @@ void main() {
             case 3: gl_Position = vec4(topRightCorner.x,   topRightCorner.y,   -1.0, 1.0); break;
         }
     }
+
+    planes = getPlanes(ProjMat);
 }

@@ -1,37 +1,37 @@
 {
     "targets" : {
-        "swap": {},
-        "swap2": {},
-        "swap3": {},
+        "swap":     {},
+        "swap2":    {},
+        "swap3":    {},
 
-        "uvs": {},
-        "lmcoord": {},
-        "albedo": {},
+        "uvs":      {},
+        "lmcoord":  {},
+        "albedo":   {},
         "specular": {},
 
-        "normals": {},
+        "normals":      {},
         "prev_normals": {},
 
         "shadowmap_depth": {},
-        "shadowmap_depth_cache": {"width": 4000, "height": 3000},
 
-        "shadow": {},
+        "shadow":     {},
         "reflection": {},
-        "reflection_hist": {"width": 4003, "height": 3000},
 
-        "final": {},
+        "final":      {},
         "final_comp": {},
-        "final_prev": {"width": 4002, "height": 3000},
 
-        "transmittance": {"width": 256, "height": 128},
-        "multiple_scattering": {"width": 32, "height": 32},
-        "sky_view": {"width": 200, "height": 200},
-        "aerial_perspective": {"width": 576, "height": 48},
+        "transmittance":       { "width": 256, "height": 128 },
+        "multiple_scattering": { "width": 32, "height": 32 },
+        "sky_view":            { "width": 200, "height": 200 },
+        "aerial_perspective":  { "width": 576, "height": 48 },
 
-        "history": {"width": 4001, "height": 3000},
-        "prev_normal_depth": {"width": 4004, "height": 3000},
+        "prev_shadowmap_depth": { "width": 4000, "height": 3000 },
+        "history":              { "width": 4001, "height": 3000 },
+        "fallback":             { "width": 4002, "height": 3000 },
+        "reflection_temp":      { "width": 4003, "height": 3000 },
+        "prev_normal_depth":    { "width": 4004, "height": 3000 },
 
-        "a": {}, "b": {}, "c": {}, "d": {}, "e": {}, "f": {},
+        "a":  {}, "b":  {}, "c":  {}, "d":  {}, "e":  {}, "f":     {},
         "e1": {}, "d1": {}, "c1": {}, "b1": {}, "a1": {}, "bloom": {}
     },
     "passes": [
@@ -64,13 +64,13 @@
             "program": "minecraft:buffer/shadowmap",
             "inputs": [ { "sampler_name": "Data", "target": "minecraft:main" },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
-                        { "sampler_name": "Previous", "target": "shadowmap_depth_cache" } ],
+                        { "sampler_name": "Previous", "target": "prev_shadowmap_depth" } ],
             "output": "shadowmap_depth"
         },
         {
             "program": "minecraft:util/copy_over_frame",
             "inputs": [ { "sampler_name": "In", "target": "shadowmap_depth" } ],
-            "output": "shadowmap_depth_cache"
+            "output": "prev_shadowmap_depth"
         },
 
         { 
@@ -106,7 +106,7 @@
                         { "sampler_name": "Uv", "target": "uvs"},
                         { "sampler_name": "Atlas", "location": "atlas", "width": 1024, "height": 1024, "bilinear": true },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
-                        { "sampler_name": "Mojank", "target": "shadowmap_depth_cache" } ],
+                        { "sampler_name": "Mojank", "target": "prev_shadowmap_depth" } ],
             "output": "normals"
         },
 
@@ -156,7 +156,7 @@
                         { "sampler_name": "Data", "target": "minecraft:main" }, 
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
                         { "sampler_name": "Normal", "target": "normals" },
-                        { "sampler_name": "History", "target": "reflection_hist" },
+                        { "sampler_name": "History", "target": "reflection_temp" },
                         { "sampler_name": "HistoryND", "target": "prev_normal_depth" },
                         { "sampler_name": "Specular", "target": "specular" },
                         { "sampler_name": "Frame", "target": "history" } ],
@@ -165,7 +165,7 @@
         {
             "program": "minecraft:util/copy_over_frame",
             "inputs": [ { "sampler_name": "In", "target": "swap3" } ],
-            "output": "reflection_hist"
+            "output": "reflection_temp"
         },
         {
             "program": "minecraft:denoiser/spatial",
@@ -230,7 +230,7 @@
                         { "sampler_name": "AerialPerspective", "target": "aerial_perspective", "bilinear": true },
                         { "sampler_name": "TranslucentDepth", "target": "translucent", "use_depth_buffer": true },
                         { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 },
-                        { "sampler_name": "Mojank", "target": "reflection_hist" } ],
+                        { "sampler_name": "Mojank", "target": "reflection_temp" } ],
             "output": "swap2"
         },
 
@@ -339,13 +339,13 @@
             "program": "minecraft:post/composite",
             "inputs": [ { "sampler_name": "In", "target": "final" },
                         { "sampler_name": "Data", "target": "minecraft:main" },
-                        { "sampler_name": "Fallback", "target": "final_prev" } ],
+                        { "sampler_name": "Fallback", "target": "fallback" } ],
             "output": "final_comp"
         },
         {
             "program": "minecraft:util/copy_over_frame",
             "inputs": [ { "sampler_name": "In", "target": "final_comp" } ],
-            "output": "final_prev"
+            "output": "fallback"
         },
 
         {
@@ -365,7 +365,7 @@
         {
             "program": "minecraft:util/copy",
             "inputs": [ { "sampler_name": "In", "target": "final_comp" },
-                        { "sampler_name": "Mojank", "target": "final_prev" },
+                        { "sampler_name": "Mojank", "target": "fallback" },
                         { "sampler_name": "Mojank2", "target": "prev_normal_depth" } ],
             "output": "minecraft:main"
         }

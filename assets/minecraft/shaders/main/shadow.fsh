@@ -5,6 +5,7 @@
 #moj_import <minecraft:encodings.glsl>
 #moj_import <minecraft:shadow.glsl>
 #moj_import <minecraft:random.glsl>
+#moj_import <minecraft:ssrt.glsl>
 #moj_import <settings:settings.glsl>
 
 uniform sampler2D DataSampler;
@@ -53,6 +54,10 @@ bool checkOcclusion(vec3 projection, vec3 lightDir, vec3 normal) {
 }
 
 float estimateShadowContribution(mat4 lightProj, vec3 lightDir, vec3 fragPos, vec3 normal) {
+    // vec3 hitPoint;
+    // bool hit = traceScreenSpaceRay(DepthSampler, projection, mat3(ModelViewMat) * (fragPos + offset), mat3(ModelViewMat) * lightDir, 32, random(NoiseSampler, gl_FragCoord.xy, timeSeed).x, 1.0e6, hitPoint);
+    // if (hit) return 1.0;
+
     float filterSize = length(fragPos) * 0.07 + 1.0;
 
     vec3 tangent = normalize(cross(lightDir, normal)) * filterSize * 1.0;
