@@ -198,26 +198,6 @@
             "output": "reflection"
         },
         {
-            "program": "minecraft:denoiser/spatial",
-            "inputs": [ { "sampler_name": "In", "target": "reflection" },
-                        { "sampler_name": "Data", "target": "minecraft:main" },
-                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
-                        { "sampler_name": "Normal", "target": "normals" },
-                        { "sampler_name": "Specular", "target": "specular" } ],
-            "uniforms": [ { "name": "Step", "values": [ 8.0 ] } ],
-            "output": "swap3"
-        },
-        {
-            "program": "minecraft:denoiser/spatial",
-            "inputs": [ { "sampler_name": "In", "target": "swap3" },
-                        { "sampler_name": "Data", "target": "minecraft:main" },
-                        { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
-                        { "sampler_name": "Normal", "target": "normals" },
-                        { "sampler_name": "Specular", "target": "specular" } ],
-            "uniforms": [ { "name": "Step", "values": [ 1.0 ] } ],
-            "output": "reflection"
-        },
-        {
             "program": "minecraft:main/shade1",
             "inputs": [ { "sampler_name": "In", "target": "swap" },
                         { "sampler_name": "Data", "target": "shadowmap_depth" },

@@ -11,6 +11,6 @@ void main() {
     if (isShadowMap > 0) {
         fragColor = texelFetch(FallbackSampler, ivec2(gl_FragCoord.xy), 0);
     } else {
-        fragColor = texelFetch(InSampler, ivec2(gl_FragCoord.xy), 0);
+        fragColor = texelFetch(InSampler, clamp(ivec2(gl_FragCoord.xy), 1, 16384), 0);
     }
 }

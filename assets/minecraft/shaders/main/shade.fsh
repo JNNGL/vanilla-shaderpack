@@ -94,7 +94,7 @@ void main() {
         float halfLambert = pow(NdotL * 0.25 + 0.75, 1.0);
         vec3 subsurface = halfLambert * shadow.z * albedo * lightColor;
         
-        diffuse = mix(diffuse, subsurface, subsurfaceFactor);
+        diffuse = mix(diffuse, subsurface, sqrt(subsurfaceFactor));
 #endif // ENABLE_SUBSURFACE_SCATTERING
 
         // TODO: Refactor this shit
