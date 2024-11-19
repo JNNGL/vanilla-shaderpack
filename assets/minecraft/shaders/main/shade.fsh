@@ -98,6 +98,8 @@ void main() {
 #endif // ENABLE_SUBSURFACE_SCATTERING
 
         // TODO: Refactor this shit
+
+        if (metalId >= 230) diffuse *= 0.0;
         
         float NDF = DistributionGGX(N, H, roughness);
         float G = SmithGGXMaskingShadowing(N, V, L, roughness);

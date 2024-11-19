@@ -94,7 +94,7 @@ void main() {
     vec3 F = fresnel(metalId, dot(H, V), albedo, vec3(specularData.g));
     vec3 specular = radiance * F * (G2 / G1);
 
-    if (metalId >= 230) specular *= albedo;
+    // if (metalId >= 230) specular *= albedo;
 
     fragColor = encodeLogLuv(specular);
 #endif // ENABLE_BLOCK_REFLECTIONS

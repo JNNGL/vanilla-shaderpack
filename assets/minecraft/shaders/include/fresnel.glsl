@@ -26,21 +26,21 @@ vec3 fresnelConductor(float cosT, vec3 N, vec3 K) {
     return clamp((Rs + Rp) * 0.5, 0.0, 1.0);
 }
 
+vec3 F0toIOR(vec3 f0) {
+    vec3 r = sqrt(f0);
+    return (1.0 + r) / max(1.0 - r, 1.0e-5);
+}
+
 vec3 fresnel(int metalId, float cosTheta, vec3 albedo, vec3 f0) {
     cosTheta = max(cosTheta, 0.0);
 
-    if (metalId >= 230 && metalId <= 237) {
-        mat2x3 NK = HARDCODED_METALS[metalId - 230];
+    if (metalId >= 230) {
+        mat2x3 NK = metalId > 237 ? mat2x3(F0toIOR(albedo), vec3(0.0)) : HARDCODED_METALS[metalId - 230];
         return fresnelConductor(cosTheta, NK[0], NK[1]);
     } else {
-        vec3 F0 = metalId > 237 ? albedo : f0;
+        vec3 F0 = f0;
         return fresnelSchlick(cosTheta, F0);
     }
-}
-
-vec3 F0toIOR(vec3 f0) {
-    vec3 r = sqrt(f0);
-    return (1.0 + r) / (1.0 - r);
 }
 
 #endif // _FRESNEL_GLSL
