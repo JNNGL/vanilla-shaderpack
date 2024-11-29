@@ -13,7 +13,7 @@
 #define SHADOW_VIEW_FRUSTUM_Y vec2(-256.0, 256.0)
 #define SHADOW_VIEW_FRUSTUM_Z vec2(0.05, 512.0)
 
-#define SHADOW_MAP_UPDATE_PERIOD 48
+#define SHADOW_MAP_UPDATE_PERIOD 24
 
 
 // ========<  WATER  >======== //
@@ -30,8 +30,8 @@
 #define WATER_WAVE_SCALE 1.5
 
 #define ENABLE_WATER_SSR yes
-#define WATER_SSR_STRIDE 16
-#define WATER_SSR_STEPS 64
+#define WATER_SSR_STRIDE 24
+#define WATER_SSR_STEPS 48
 
 // ========<  BLOCK REFLECTIONS  >======== //
 
@@ -50,7 +50,7 @@
 #define LIGHT_COLOR_MULTIPLIER 1.0
 #define BLOCKLIGHT_COLOR vec3(2.50, 1.73, 0.98)
 
-#define ENABLE_DIRECTIONAL_LIGHTMAP no
+#define ENABLE_DIRECTIONAL_LIGHTMAP yes
 #define DIRECTIONAL_LIGHTMAP_HEIGHT 1.0
 
 #define ENABLE_SUBSURFACE_SCATTERING yes
@@ -60,7 +60,7 @@
 
 #define ENABLE_AERIAL_PERSPECTIVE yes
 #define ENABLE_VOLUMETRIC_SHADOWS yes
-#define VOLUMETRIC_SHADOW_SAMPLES 16
+#define VOLUMETRIC_SHADOW_SAMPLES 12
 
 #define ENABLE_SSAO yes
 #define SSAO_SAMPLES 8
@@ -72,7 +72,7 @@
 
 // ========< POST-PROCESS >======== //
 
-#define BLOOM_STRENGTH 0.09
+#define BLOOM_STRENGTH 0.07
 
 
 // ========<  ATMOSPHERE  >======== //

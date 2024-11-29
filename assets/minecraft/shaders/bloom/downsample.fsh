@@ -17,7 +17,7 @@ out vec4 fragColor;
 vec3 textureClamped(sampler2D samp, vec2 texCoord) {
     texCoord = clamp(texCoord, 1.5 / OutSize, 1.0 - 1.5 / OutSize);
     vec3 hdr = decodeLogLuv(texture(samp, texCoord));
-    if (Iteration == 1.0) hdr = max(hdr - 1.0, 0.0);
+    if (Iteration == 1.0) hdr = max(hdr - 0.2, 0.0);
     return hdr;
 }
 

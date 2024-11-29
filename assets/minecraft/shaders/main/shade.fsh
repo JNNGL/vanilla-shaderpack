@@ -72,7 +72,7 @@ void main() {
         vec3 lightColor = transmittance * LIGHT_COLOR_MULTIPLIER;
         vec3 radiance = SUN_INTENSITY * 0.75 * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);
 
-        vec3 N = normalize(round(normal * 16.0) / 16.0);
+        vec3 N = normalize(normal);
         vec3 L = normalize(sunDirection);
         vec3 V = -direction;
         vec3 H = normalize(V + L);
@@ -98,8 +98,6 @@ void main() {
 #endif // ENABLE_SUBSURFACE_SCATTERING
 
         // TODO: Refactor this shit
-
-        if (metalId >= 230) diffuse *= 0.0;
         
         float NDF = DistributionGGX(N, H, roughness);
         float G = SmithGGXMaskingShadowing(N, V, L, roughness);
@@ -138,10 +136,16 @@ void main() {
 
         vec3 ambient0 = vec3(0.7, 0.8, 1.0) * 0.025 * albedo;
 
+        if (metalId >= 230) {
+            diffuse *= 0.0;
+            ambient *= 0.7;
+            blockLight *= 0.2;
+        }
+
         color = vec3(0.0);
         color += (diffuse + specular) * (1.0 - shadow.x) * mix(0.5, 1.0, lightLevel.y);
         color += mix(ambient0 * 0.5, ambient, lightLevel.y * lightLevel.y);
-        color += mix(ambient0 * 0.5, blockLight * blockMult * (metalId >= 230 ? 0.2 : 1.0), lightLevel.x * lightLevel.x);
+        color += mix(ambient0 * 0.5, blockLight * blockMult, lightLevel.x * lightLevel.x);
 
         if (fract(specularData.a) != 0.0) {
             color += pow(albedo, vec3(1.8)) * 13.0 * mix(0.0, 1.0, pow(specularData.a, 1.0 / 3.0));

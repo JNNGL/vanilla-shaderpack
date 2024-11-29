@@ -42,6 +42,12 @@ out vec3 texBound0;
 out vec3 texBound1;
 flat out vec2 planes;
 
+// out float isSphere;
+// flat out mat4 projView;
+// flat out mat4 invProjView;
+// out vec4 corner0;
+// out vec4 corner1;
+
 float halton(int i, int b) {
     float f = 1.0;
     float r = 0.0;
@@ -68,11 +74,12 @@ void main() {
     quadId = gl_VertexID / 8;
     lmCoord = vec2(UV2);
 
-    texBound0 = texBound1 = vec3(0.0);
-    switch (gl_VertexID % 4) {
-        case 0: texBound0 = vec3(UV0, 1.0); break;
-        case 2: texBound1 = vec3(UV0, 1.0); break;
-    }
+    // texBound0 = texBound1 = vec3(0.0);
+    // corner0 = corner1 = vec4(0.0);
+    // switch (gl_VertexID % 4) {
+    //     case 0: texBound0 = vec3(UV0, 1.0); corner0 = vec4(Position, 1.0); break;
+    //     case 2: texBound1 = vec3(UV0, 1.0); corner1 = vec4(Position, 1.0); break;
+    // }
 
     vec3 worldPos = pos;
 
@@ -88,6 +95,20 @@ void main() {
     jitteredProj = ProjMat;
     jitteredProj[2][0] += haltonX / ScreenSize.x;
     jitteredProj[2][1] += haltonY / ScreenSize.y;
+
+    // isSphere = 0.0;
+    // int subX = col.x & 0xF;
+    // int subY = col.y & 0xF;
+    // int index = ((col.x & 0xF0) | (col.y >> 4)) * 256 + col.z;
+    // int baseX = (index * 16) % atlasDim.x;
+    // int baseY = ((index * 16) / atlasDim.x) * 16;
+    // ivec2 texCoord = ivec2(baseX + subX, baseY + subY);
+    // ivec4 texColor = ivec4(round(texelFetch(Sampler0, texCoord, 0) * 255.0));
+    // if (texColor.rgb == ivec3(226, 22, 8) || texColor.rgb == ivec3(91, 230, 42) || texColor.rgb == ivec3(42, 78, 230) || texColor.rgb == ivec3(237, 229, 228)) {
+    //     isSphere = 1.0;
+    //     projView = jitteredProj * ModelViewMat;
+    //     invProjView = inverse(projView);
+    // }
 
     gl_Position = jitteredProj * ModelViewMat * vec4(worldPos, 1.0);
     glPos = gl_Position;
@@ -106,8 +127,13 @@ void main() {
 
         pos -= fract(ModelOffset);
         gl_Position = proj * view * vec4(pos, 1.0);
-        gl_Position = distortShadow(gl_Position);
         glPos = gl_Position;
+        gl_Position = distortShadow(gl_Position);
+
+        // if (isSphere > 0) {
+        //     projView = proj * view;
+        //     invProjView = inverse(projView);
+        // }
         
         shadow = 1;
     }
@@ -115,7 +141,7 @@ void main() {
     vertexDistance = fog_distance(worldPos, FogShape);
     vertexColor = Color;
     texCoord0 = UV0;
-    normal = ProjMat * ModelViewMat * vec4(Normal, 0.0);
+    normal = vec4(Normal, 0.0);
 
     if (dataQuad > 0) {
         if (ModelOffset == vec3(0.0)) {

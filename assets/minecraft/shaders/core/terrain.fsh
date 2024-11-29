@@ -6,6 +6,7 @@
 #moj_import <minecraft:shadow.glsl>
 #moj_import <minecraft:datamarker.glsl>
 #moj_import <minecraft:projections.glsl>
+#moj_import <minecraft:intersectors.glsl>
 #moj_import <settings:settings.glsl>
 
 uniform sampler2D Sampler0;
@@ -35,6 +36,12 @@ flat in ivec2 atlasDim;
 in vec3 texBound0;
 in vec3 texBound1;
 flat in vec2 planes;
+
+// in float isSphere;
+// flat in mat4 projView;
+// flat in mat4 invProjView;
+// in vec4 corner0;
+// in vec4 corner1;
 
 out vec4 fragColor;
 
@@ -125,6 +132,26 @@ void main() {
 
     int mipLevel = clamp(int(textureQueryLOD(Sampler0, texCoord0).x), 0, 4);
 
+    // if (isSphere > 0.5) {
+    //     vec4 near = getPointOnNearPlane(invProjView, glPos.xy / glPos.w);
+    //     vec4 far = getPointOnFarPlane(invProjView, glPos.xy / glPos.w);
+
+    //     vec3 origin = near.xyz / near.w;
+    //     vec3 direction = normalize(far.xyz / far.w - origin);
+
+    //     vec3 center = mix(corner0.xyz / corner0.w, corner1.xyz / corner1.w, 0.5) + ModelOffset;
+    //     if (shadow > 0) center -= fract(ModelOffset);
+    //     center -= normalize(normal.xyz) * 0.5;
+
+    //     vec2 t0t1 = raySphereIntersection(origin - center, direction, 0.5);
+    //     float t = t0t1.x < 0.0 ? t0t1.y : t0t1.x;
+    //     if (t < 0.0) discard;
+
+    //     vec3 it = origin + direction * t;
+    //     vec4 clip = projView * vec4(it, 1.0);
+    //     gl_FragDepth = (clip.z / clip.w) * 0.5 + 0.5;
+    // }
+
 #ifdef ALPHA_CUTOUT
     if (color.a < ALPHA_CUTOUT) {
         discard;
@@ -173,8 +200,9 @@ void main() {
 
         if (local == ivec2(0, 0)) {
             fragColor = vec4(vec2(lmCoord) / 255.0, encodeDirectionToF8(tangent), 1.0);
+            // if (isSphere > 0.5) fragColor.xy = vec2(0.0, 1.0);
         } else if (local == ivec2(1, 1)) {
-            vec3 fragmentColor = unshadeBlock(vertexColor, normal).rgb;
+            vec3 fragmentColor = clamp(unshadeBlock(vertexColor, normal).rgb, 0.0, 1.0);
 #if (ENABLE_DIRECTIONAL_LIGHTMAP == yes)
             fragColor.rgb = encodeYCoCg776(fragmentColor, lmPacked);
 #else

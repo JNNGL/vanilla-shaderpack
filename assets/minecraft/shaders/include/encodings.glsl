@@ -118,10 +118,7 @@ vec3 unpackRGB565fromF8x2(vec2 v) {
 vec2 encodeDirectionToF8x2(vec3 direction) {
     direction = clamp(direction, -1.0, 1.0);
     float theta = acos(direction.y) / PI;
-    float phi = abs(direction.x) < 0.01 && abs(direction.z) < 0.01 ? 
-                0.0 : mix(PI / 2.0 - atan(direction.x, direction.z), 
-                          atan(direction.z, direction.x),
-                          float(abs(direction.x) < abs(direction.z)));
+    float phi = atan(direction.z, direction.x);
     phi = (phi / PI) * 0.5 + 0.5;
     return vec2(theta, phi);
 }
