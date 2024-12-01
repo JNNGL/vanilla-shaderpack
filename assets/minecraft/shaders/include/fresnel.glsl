@@ -3,9 +3,6 @@
 #ifndef _FRESNEL_GLSL
 #define _FRESNEL_GLSL
 
-#extension GL_MC_moj_import : enable
-#moj_import <minecraft:metals.glsl>
-
 vec3 fresnelSchlick(float cosTheta, vec3 F0) {
     return F0 + (1.0 - F0) * clamp(pow(1.0 - cosTheta, 5.0), 0.0, 1.0);
 }
@@ -38,8 +35,7 @@ vec3 fresnel(int metalId, float cosTheta, vec3 albedo, vec3 f0) {
     cosTheta = max(cosTheta, 0.0);
 
     if (metalId >= 230) {
-        mat2x3 NK = metalId > 237 ? mat2x3(F0toIOR(albedo), vec3(0.0)) : HARDCODED_METALS[metalId - 230];
-        // mat2x3 NK = HARDCODED_METALS[0]; // Gold
+        mat2x3 NK = mat2x3(F0toIOR(albedo), vec3(0.0));
         return fresnelConductor(cosTheta, NK[0], NK[1]);
     } else {
         vec3 F0 = f0;

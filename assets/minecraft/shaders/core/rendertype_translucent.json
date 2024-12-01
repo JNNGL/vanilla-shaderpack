@@ -1,6 +1,6 @@
 {
     "vertex": "minecraft:core/terrain",
-    "fragment": "minecraft:core/terrain",
+    "fragment": "minecraft:core/translucent",
     "samplers": [
         { "name": "Sampler0" },
         { "name": "Sampler2" }

@@ -7,7 +7,6 @@
 #moj_import <minecraft:matrices.glsl>
 #moj_import <minecraft:random.glsl>
 #moj_import <minecraft:ssrt.glsl>
-#moj_import <minecraft:metals.glsl>
 #moj_import <minecraft:fresnel.glsl>
 #moj_import <minecraft:brdf.glsl>
 #moj_import <minecraft:srgb.glsl>

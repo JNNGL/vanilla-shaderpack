@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all_no_inner",
+  "textures": {
+    "all": "minecraft:block/light_gray_stained_glass"
+  }
+}

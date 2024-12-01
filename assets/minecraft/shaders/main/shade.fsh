@@ -7,7 +7,6 @@
 #moj_import <minecraft:random.glsl>
 #moj_import <minecraft:encodings.glsl>
 #moj_import <minecraft:brdf.glsl>
-#moj_import <minecraft:metals.glsl>
 #moj_import <minecraft:fresnel.glsl>
 #moj_import <settings:settings.glsl>
 

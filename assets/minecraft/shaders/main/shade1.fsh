@@ -7,7 +7,6 @@
 #moj_import <minecraft:random.glsl>
 #moj_import <minecraft:ssrt.glsl>
 #moj_import <minecraft:brdf.glsl>
-#moj_import <minecraft:metals.glsl>
 #moj_import <minecraft:srgb.glsl>
 #moj_import <settings:settings.glsl>
 
@@ -81,7 +80,7 @@ void main() {
     float linearDepth = linearizeDepth(depth * 2.0 - 1.0, planes);
     float apLinearDepth = linearDepth;
 
-    vec3 translucentColor = texture(TranslucentSampler, texCoord).rgb;
+    vec4 translucentColor = texture(TranslucentSampler, texCoord);
 
     if (translucentDepth < depth) {
         vec3 ambientColor = pow(sampleSkyLUT(SkySampler, vec3(0.0001, 1.0, 0.0), sunDirection), vec3(1.0 / 3.0));
@@ -94,7 +93,7 @@ void main() {
         vec2 wavePosition = (viewSpacePos * mat3(ModelViewMat)).xz + totalOffset.xz;
 
 #if (ENABLE_WATER_WAVES == yes)
-        if (translucentColor == vec3(0.0)) {
+        if (translucentColor.rgb == vec3(0.0)) {
             waterNormal = waveNormal(wavePosition, GameTime * 2000.0 * WATER_WAVE_SPEED);
             waterNormal = mix(waterNormal, vec3(0.0, 1.0, 0.0), 1.0 - dot(-direction, vec3(0.0, 1.0, 0.0)));
         }
@@ -111,10 +110,10 @@ void main() {
         float linearDepthWater = linearizeDepth(translucentDepth * 2.0 - 1.0, planes);
         apLinearDepth = linearDepthWater;
 
-#if (ENABLE_WATER_SSR == yes)
+#if (ENABLE_TRANSLUCENT_SSR == yes)
         vec2 hitPixel;
         vec3 hitPoint;
-        bool hit = traceScreenSpaceRay(DepthSampler, projection, planes, InSize, viewSpacePos, viewDirection, float(WATER_SSR_STRIDE), random(NoiseSampler, gl_FragCoord.xy, mod(GameTime * 1.0e6, 8.0) / 8.0).x, float(WATER_SSR_STEPS), 1.0e6, hitPixel, hitPoint);
+        bool hit = traceScreenSpaceRay(DepthSampler, projection, planes, InSize, viewSpacePos, viewDirection, float(TRANSLUCENT_SSR_STRIDE), random(NoiseSampler, gl_FragCoord.xy, mod(GameTime * 1.0e6, 8.0) / 8.0).x, float(TRANSLUCENT_SSR_STEPS), 1.0e6, hitPixel, hitPoint);
         float hitDepth = texelFetch(DepthSampler, ivec2(hitPixel), 0).r;
         if (hit && hitDepth != 1.0) {
             vec2 hitTexCoord = hitPixel / InSize;
@@ -144,12 +143,18 @@ void main() {
             apLinearDepth += apOffset;
             apLinearDepth = clamp(apLinearDepth, planes.x, planes.y);
         }
-#endif // ENABLE_WATER_SSR
+#endif // ENABLE_TRANSLUCENT_SSR
 
-        vec3 waterTransmittance = exp(-WATER_ABSORPTION * (linearDepth - linearDepthWater));
-        vec3 waterColor = ambientColor * WATER_COLOR;
+        vec3 transmittance, translucent;
+        if (translucentColor.rgb == vec3(0.0)) {
+            transmittance = exp(-WATER_ABSORPTION * (linearDepth - linearDepthWater));
+            translucent = ambientColor * WATER_COLOR;
+        } else {
+            transmittance = vec3(translucentColor.a);
+            translucent = srgbToLinear(translucentColor.rgb);
+        }
 
-        color = color * waterTransmittance + waterColor * (1.0 - waterTransmittance);
+        color = color * transmittance + translucent * (1.0 - transmittance);
         color = mix(color, reflection, reflectance);
     }
 
