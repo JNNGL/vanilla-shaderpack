@@ -5,7 +5,6 @@
 #moj_import <minecraft:light.glsl>
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:shadow.glsl>
-#moj_import <minecraft:waving.glsl>
 #moj_import <minecraft:lightmap.glsl>
 #moj_import <minecraft:projections.glsl>
 
@@ -85,7 +84,7 @@ void main() {
 
     int alpha = int(textureLod(Sampler0, UV0, -4).a * 255.0);
     if (alpha == 251 || alpha == 4) {
-        worldPos = applyWaving(worldPos, GameTime);
+        // worldPos = applyWaving(worldPos, GameTime);
     }
 
     int jitterIndex = int(hash(floatBitsToUint(GameTime)) % 8u);
