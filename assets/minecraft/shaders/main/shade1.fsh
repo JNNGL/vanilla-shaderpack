@@ -95,7 +95,8 @@ void main() {
 #if (ENABLE_WATER_WAVES == yes)
         if (translucentColor.rgb == vec3(0.0)) {
             waterNormal = waveNormal(wavePosition, GameTime * 2000.0 * WATER_WAVE_SPEED);
-            waterNormal = mix(waterNormal, vec3(0.0, 1.0, 0.0), 1.0 - dot(-direction, vec3(0.0, 1.0, 0.0)));
+            float mixFactor = clamp(0.95 - abs(dot(-direction, vec3(0.0, 1.0, 0.0))), 0.0, 1.0);
+            waterNormal = mix(waterNormal, vec3(0.0, 1.0, 0.0), mixFactor);
         }
 #endif // ENABLE_WATER_WAVES
 

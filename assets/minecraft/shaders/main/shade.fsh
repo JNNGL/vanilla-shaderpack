@@ -89,16 +89,20 @@ void main() {
         vec3 ambient = albedo * ambientOcclusion * ambientColor * 0.2 * (lightColorLength + 0.13) * (-sqrt(clamp(-NdotL, 0.0, 0.6)) * 0.2 * lightColorLength + 1.0);
 
 #if (ENABLE_SUBSURFACE_SCATTERING == yes)
-        // lame subsurface scattering "approximation"
         float halfLambert = pow(NdotL * 0.25 + 0.75, 1.0);
         vec3 subsurface = halfLambert * shadow.z * albedo * lightColor;
         
         diffuse = mix(diffuse, subsurface, sqrt(subsurfaceFactor));
 #endif // ENABLE_SUBSURFACE_SCATTERING
-
-        // TODO: Refactor this shit
         
-        float NDF = DistributionGGX(N, H, roughness);
+#if (USE_AREA_LIGHT_SPECULAR_APPROXIMATION == yes)
+        float NdotH2 = NdotL < 0.0 ? 0.0 : GetNoHSquared(0.05, NdotL, dot(N, V), dot(V, L));
+#else
+        float NdotH = max(0.0, dot(N, H));
+        float NdotH2 = NdotH * NdotH;
+#endif // USE_AREA_LIGHT_SPECULAR_APPROXIMATION
+
+        float NDF = DistributionGGX(NdotH2, roughness);
         float G = SmithGGXMaskingShadowing(N, V, L, roughness);
         
         vec3 numerator = NDF * G * F;

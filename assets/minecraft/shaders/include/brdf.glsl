@@ -6,11 +6,40 @@
 #extension GL_MC_moj_import : enable
 #moj_import <minecraft:constants.glsl>
 
-float DistributionGGX(vec3 N, vec3 H, float a) {
-    float a2 = a * a;
+float GetNoHSquared(float radiusTan, float NoL, float NoV, float VoL) {
+    float radiusCos = inversesqrt(1.0 + radiusTan * radiusTan);
 
-    float NdotH = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH * NdotH;
+    float RoL = 2.0 * NoL * NoV - VoL;
+    if (RoL >= radiusCos) {
+        return 1.0;
+    }
+
+    float rOverLengthT = radiusCos * radiusTan * inversesqrt(1.0 - RoL * RoL);
+    float NoTr = rOverLengthT * (NoV - RoL * NoL);
+    float VoTr = rOverLengthT * (2.0 * NoV * NoV - 1.0 - RoL * VoL);
+
+    float triple = sqrt(clamp(1.0 - NoL * NoL - NoV * NoV - VoL * VoL + 2.0 * NoL * NoV * VoL, 0.0, 1.0));
+
+    float NoBr = rOverLengthT * triple, VoBr = rOverLengthT * (2.0 * triple * NoV);
+    float NoLVTr = NoL * radiusCos + NoV + NoTr, VoLVTr = VoL * radiusCos + 1.0 + VoTr;
+    float p = NoBr * VoLVTr, q = NoLVTr * VoLVTr, s = VoBr * NoLVTr;
+    float xNum = q * (-0.5 * p + 0.25 * VoBr * NoLVTr);
+    float xDenom = p * p + s * ((s - 2.0 * p)) + NoLVTr * ((NoL * radiusCos + NoV) * VoLVTr * VoLVTr + q * (-0.5 * (VoLVTr + VoL * radiusCos) - 0.5));
+    float twoX1 = 2.0 * xNum / (xDenom * xDenom + xNum * xNum);
+    float sinTheta = twoX1 * xDenom;
+    float cosTheta = 1.0 - twoX1 * xNum;
+    NoTr = cosTheta * NoTr + sinTheta * NoBr;
+    VoTr = cosTheta * VoTr + sinTheta * VoBr;
+
+    float newNoL = NoL * radiusCos + NoTr;
+    float newVoL = VoL * radiusCos + VoTr;
+    float NoH = NoV + newNoL;
+    float HoH = 2.0 * newVoL + 2.0;
+    return max(0.0, NoH * NoH / HoH);
+}
+
+float DistributionGGX(float NdotH2, float a) {
+    float a2 = a * a;
 
     float numerator = a2;
     float denominator = (NdotH2 * (a2 - 1.0) + 1.0);
