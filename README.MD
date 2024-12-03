@@ -22,9 +22,9 @@ Features:
 
 ![image](images/image2.png)
 
-![image](images/image3.png)
+![image](images/image3_1.png)
 
-![image](images/image4.png)
+![image](images/image4_1.png)
 
 ![image](images/image5.png)
 
