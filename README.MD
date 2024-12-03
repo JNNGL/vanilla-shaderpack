@@ -9,7 +9,7 @@ Features:
 - Atmospheric scattering
 - Bloom
 - Screen-space reflections
-- Material support: smoothness, normal mapping, ao, emissiveness, reflectance, sss, generic metals.
+- PBR material support: smoothness, normal mapping, ao, emissiveness, reflectance, sss, generic metals.
 - Temporal AA
 - Directional lightmap
 - Water waves
