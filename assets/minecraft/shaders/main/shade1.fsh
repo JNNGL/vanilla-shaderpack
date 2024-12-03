@@ -148,13 +148,13 @@ void main() {
 #endif // ENABLE_TRANSLUCENT_SSR
 
         vec3 transmittance, translucent;
-        if (translucentColor.rgb == vec3(0.0)) {
+        // if (translucentColor.rgb == vec3(0.0)) {
             transmittance = exp(-WATER_ABSORPTION * (linearDepth - linearDepthWater));
             translucent = ambientColor * WATER_COLOR;
-        } else {
-            transmittance = vec3(translucentColor.a);
-            translucent = srgbToLinear(translucentColor.rgb);
-        }
+        // } else {
+        //     transmittance = vec3(translucentColor.a);
+        //     translucent = srgbToLinear(translucentColor.rgb);
+        // }
 
         color = color * transmittance + translucent * (1.0 - transmittance);
         color = mix(color, reflection, reflectance);
