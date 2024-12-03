@@ -3,7 +3,7 @@
 #ifndef _ATMOSPHERE_GLSL
 #define _ATMOSPHERE_GLSL
 
-// Multiple scattering & LUTs from https://www.shadertoy.com/view/slSXRW
+// Multiple scattering & LUT mappings are from https://www.shadertoy.com/view/slSXRW
 
 #extension GL_MC_moj_import : enable
 #moj_import <minecraft:constants.glsl>

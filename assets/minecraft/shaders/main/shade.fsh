@@ -89,8 +89,8 @@ void main() {
         vec3 ambient = albedo * ambientOcclusion * ambientColor * 0.2 * (lightColorLength + 0.13) * (-sqrt(clamp(-NdotL, 0.0, 0.6)) * 0.2 * lightColorLength + 1.0);
 
 #if (ENABLE_SUBSURFACE_SCATTERING == yes)
-        float halfLambert = pow(NdotL * 0.25 + 0.75, 1.0);
-        vec3 subsurface = halfLambert * shadow.z * albedo * lightColor;
+        float quartLambert = pow(NdotL * 0.25 + 0.75, 1.0);
+        vec3 subsurface = quartLambert * shadow.z * albedo * lightColor;
         
         diffuse = mix(diffuse, subsurface, sqrt(subsurfaceFactor));
 #endif // ENABLE_SUBSURFACE_SCATTERING
@@ -102,13 +102,13 @@ void main() {
         float NdotH2 = NdotH * NdotH;
 #endif // USE_AREA_LIGHT_SPECULAR_APPROXIMATION
 
-        float NDF = DistributionGGX(NdotH2, roughness);
+        float D = DistributionGGX(NdotH2, roughness);
         float G = SmithGGXMaskingShadowing(N, V, L, roughness);
         
-        vec3 numerator = NDF * G * F;
+        vec3 numerator = D * G * F;
         float denominator = 4.0 * max(dot(N, V), 0.0) + 0.0001;
 
-        vec3 specular = radiance * min(numerator / (denominator * 2.0 * PI), 10.0);
+        vec3 specular = radiance * min(numerator / denominator, 10.0);
 
         vec3 absNormal = abs(normal) * vec3(0.6, 1.0, 0.8);
         float ambientFactor = 0.6 + 0.1 * float(absNormal.x > absNormal.z);

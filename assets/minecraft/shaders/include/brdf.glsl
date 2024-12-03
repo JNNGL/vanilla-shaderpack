@@ -42,11 +42,8 @@ float GetNoHSquared(float radiusTan, float NoL, float NoV, float VoL) {
 float DistributionGGX(float NdotH2, float a) {
     float a2 = a * a;
 
-    float numerator = a2;
-    float denominator = (NdotH2 * (a2 - 1.0) + 1.0);
-    denominator *= denominator * PI;
-
-    return numerator / denominator;
+    float d = 1.0 + NdotH2 * (a2 - 1.0);
+    return a2 / (d * d * PI);
 }
 
 float SmithGGXMasking(vec3 N, vec3 V, float a) {
