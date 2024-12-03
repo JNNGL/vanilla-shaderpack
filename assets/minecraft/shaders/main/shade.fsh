@@ -69,7 +69,7 @@ void main() {
 
         vec3 transmittance = sampleTransmittanceLUT(TransmittanceSampler, vec3(0.0, earthRadius + cameraHeight, 0.0) + fragPos, sunDirection);
         vec3 lightColor = transmittance * LIGHT_COLOR_MULTIPLIER;
-        vec3 radiance = SUN_INTENSITY * 0.75 * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);
+        vec3 radiance = SUN_INTENSITY * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);
 
         vec3 N = normalize(normal);
         vec3 L = normalize(sunDirection);

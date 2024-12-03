@@ -80,7 +80,7 @@
 // ========<  ATMOSPHERE  >======== //
 
 #define CAMERA_HEIGHT 1.0
-#define SUN_INTENSITY 7.0
+#define SUN_INTENSITY 6.0
 
 #define EARTH_RADIUS 6371.0e3
 #define ATMOSPHERE_RADIUS 6471.0e3
@@ -91,7 +91,7 @@
 #define MIE_SCATTERING_BETA 1.4e-5
 #define MIE_DENSITY_PROFILE vec4(1.0, 1.0 / 2.2e3, 0.0, 0.0)
 #define MIE_ABSORPTION_BASE 4.4e-7
-#define MIE_ANISOTROPY_FACTOR 0.74
+#define MIE_ANISOTROPY_FACTOR 0.8
 
 #define OZONE_ABSORPTION vec3(0.650e-6, 1.881e-6, 0.085e-6)
 #define OZONE_DENSITY_PROFILE vec4(0.0, 0.0, -25.0, 15.0)
@@ -104,7 +104,7 @@
 #define ATMOSPHERE_RAYMARCH_SAMPLES 20
 #define ATMOSPHERE_MS_SAMPLES ivec2(8, 20)
 
-#define ENABLE_DISTANT_FOG yes
+#define ENABLE_DISTANT_FOG no
 
 // ========<  END  >======== //
 
