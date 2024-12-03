@@ -96,7 +96,7 @@ void main() {
 #endif // ENABLE_SUBSURFACE_SCATTERING
         
 #if (USE_AREA_LIGHT_SPECULAR_APPROXIMATION == yes)
-        float NdotH2 = NdotL < 0.0 ? 0.0 : GetNoHSquared(0.05, NdotL, dot(N, V), dot(V, L));
+        float NdotH2 = NdotL < 0.0 ? 0.0 : GetNoHSquared(0.03, NdotL, dot(N, V), dot(V, L));
 #else
         float NdotH = max(0.0, dot(N, H));
         float NdotH2 = NdotH * NdotH;

@@ -104,7 +104,7 @@ void main() {
             discard;
         }
 
-        fragColor = writeDataMarker(pixel, jitteredProj, FogStart, FogEnd, ModelOffset, GameTime, shadow > 0, mat3(ModelViewMat), skyFactor, ProjMat[2].xy);
+        fragColor = writeDataMarker(pixel, jitteredProj, FogStart, FogEnd, ModelOffset, GameTime, shadow > 0, mat3(ModelViewMat), skyFactor, ProjMat[2].xy, FogColor.rgb);
         return;
     }
 

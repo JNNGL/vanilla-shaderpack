@@ -15,9 +15,11 @@
 // 23-31 - view matrix
 // 32-34 - sun direction
 // 35-36 - sky factor
+// 37-38 - proj unjitter
+// 39 - fog color
 
 bool discardDataMarker(ivec2 pixel) {
-    return pixel.y >= 1 || pixel.x > 38;
+    return pixel.y >= 1 || pixel.x > 39;
 }
 
 bool discardSunData(vec2 fragCoord) {
@@ -25,7 +27,7 @@ bool discardSunData(vec2 fragCoord) {
     return pixel.y == 0 && pixel.x >= 32 && pixel.x <= 34;
 }
 
-vec4 writeDataMarker(ivec2 pixel, mat4 projMat, float fogStart, float fogEnd, vec3 chunkOffset, float gameTime, bool isShadowMap, mat3 viewMat, float skyFactor, vec2 projUnjitter) {
+vec4 writeDataMarker(ivec2 pixel, mat4 projMat, float fogStart, float fogEnd, vec3 chunkOffset, float gameTime, bool isShadowMap, mat3 viewMat, float skyFactor, vec2 projUnjitter, vec3 fogColor) {
     if (pixel.x <= 15) { // projection matrix
         int index = int(pixel.x);
         return vec4(packFPtoF8x3(projMat[index / 4][index % 4], FP_PRECISION_HIGH), 1.0);
@@ -52,6 +54,8 @@ vec4 writeDataMarker(ivec2 pixel, mat4 projMat, float fogStart, float fogEnd, ve
     } else if (pixel.x <= 38) { // proj unjitter
         int index = int(pixel.x) - 37;
         return vec4(packFPtoF8x3(projUnjitter[index], FP_PRECISION_HIGH), 1.0);
+    } else if (pixel.x <= 39) {
+        return vec4(fogColor, 1.0);
     }
 
     return vec4(0.0);
@@ -151,6 +155,10 @@ mat4 decodeUnjitteredProjection(sampler2D dataSampler) {
 
     projection[2].xy = unjitter;
     return projection;
+}
+
+vec3 decodeFogColor(sampler2D dataSampler) {
+    return texelFetch(dataSampler, ivec2(39, 0), 0).rgb;
 }
 
 

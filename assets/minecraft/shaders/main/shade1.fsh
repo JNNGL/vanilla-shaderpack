@@ -34,6 +34,7 @@ flat in vec2 planes;
 flat in vec3 totalOffset;
 flat in int shouldUpdate;
 flat in vec2 fogStartEnd;
+flat in int underWater;
 in vec4 near;
 
 out vec4 fragColor;
@@ -42,6 +43,8 @@ void main() {
     if (shouldUpdate == 0) {
         return;
     }
+
+    vec3 ambientColor = pow(sampleSkyLUT(SkySampler, vec3(0.0001, 1.0, 0.0), sunDirection), vec3(1.0 / 3.0));
 
     float depth = texture(DepthSampler, texCoord).r;
     float translucentDepth = texture(TranslucentDepthSampler, texCoord).r;
@@ -83,8 +86,6 @@ void main() {
     vec4 translucentColor = texture(TranslucentSampler, texCoord);
 
     if (translucentDepth < depth) {
-        vec3 ambientColor = pow(sampleSkyLUT(SkySampler, vec3(0.0001, 1.0, 0.0), sunDirection), vec3(1.0 / 3.0));
-
         vec3 waterNormal = reconstructNormal(TranslucentDepthSampler, invProjViewMat, texCoord, InSize);
 
         vec3 viewSpacePos = unprojectScreenSpace(invProjection, texCoord, translucentDepth);
