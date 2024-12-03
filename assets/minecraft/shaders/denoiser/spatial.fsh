@@ -43,32 +43,31 @@ void main() {
     float wSum = 1.0;
     vec3 cSum = centerColor * wSum;
 
-    float roughnessSqrt = 1.0 - centerSmooth;
+    float roughness = 1.0 - centerSmooth;
 
     float step = Step;
 #if (DENOISE_BLOCK_REFLECTIONS == yes)
-    if (step * step <= roughnessSqrt * roughnessSqrt * 1600.0) {
+    if (step * step <= roughness * roughness * 1600.0) {
         const int radius = 2;
         for (int x = -radius; x <= radius; x++) {
             for (int y = -radius; y <= radius; y++) {
                 if (x == 0 && y == 0) continue;
 
                 vec2 sampleOffset = vec2(x, y);
-                float lSampleOffset = length(sampleOffset);
+                float lOff = length(sampleOffset);
                 vec2 sampleCoord = gl_FragCoord.xy + vec2(x, y) * step;
                 if (sampleCoord.y <= 1.5) continue;
 
                 vec2 sampleUV = sampleCoord / InSize;
                 vec3 color = decodeLogLuv(texture(InSampler, sampleUV));
                 vec3 normal = decodeDirectionFromF8x2(texture(NormalSampler, sampleUV).xy);
-                float depth = texture(DepthSampler, sampleUV).r;
                 float smoothness = texture(SpecularSampler, sampleUV).r;
                 float luma = luminance(color);
 
                 float wNorm = pow(max(0.0, dot(centerNormal, normal)), normalExp);
                 float wLum = min(abs(luma - centerLuma) * 0.8, 1.0);
                 float wSmooth = abs(smoothness - centerSmooth) * smoothMult;
-                float wOff = smoothWeight * (sin(lSampleOffset) / lSampleOffset - 1.0) + 1.0;
+                float wOff = smoothWeight * (sin(lOff) / lOff - 1.0) + 1.0;
                 float wTotal = exp(-wLum - wSmooth) * wOff * wNorm;
 
                 wSum += wTotal;

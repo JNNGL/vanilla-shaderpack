@@ -6,6 +6,8 @@
 #extension GL_MC_moj_import : enable
 #moj_import <minecraft:projections.glsl>
 
+// https://jcgt.org/published/0003/04/04/
+
 float distanceSquared(vec2 a, vec2 b) {
     a -= b;
     return dot(a, b);

@@ -2,6 +2,7 @@
 
 #extension GL_MC_moj_import : enable
 #moj_import <minecraft:light.glsl>
+#moj_import <minecraft:jitter.glsl>
 #moj_import <minecraft:atmosphere.glsl>
 #moj_import <minecraft:shadow.glsl>
 #moj_import <minecraft:lightmap.glsl>
@@ -45,19 +46,6 @@ out vec3 fragPos;
 flat out int quadId;
 flat out int isPBR;
 
-float halton(int i, int b) {
-    float f = 1.0;
-    float r = 0.0;
-
-    while (i > 0) {
-        f /= float(b);
-        r  += f * float(i % b);
-        i = int(floor(float(i) / float(b)));
-    }
-
-    return r;
-}
-
 void main() {
     quadId = gl_VertexID / 4;
 
@@ -93,7 +81,7 @@ void main() {
         vec3 transmittance = computeTransmittanceToBoundary(position, sunDirection, travelDistance, 6);
 
         vec3 lightColor = transmittance * LIGHT_COLOR_MULTIPLIER;
-        vec3 radiance = 4.0 * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);            
+        vec3 radiance = SUN_INTENSITY * 0.75 * lightColor * clamp(1.0 + min(0.0, sunDirection.y) * 200.0, 0.0, 1.0);            
         float NdotL = dot(mat3(ModelViewMat) * Normal, normalize(vec3(0.0, 1.7, 1.0)));
 
         handDiffuse += (1.0 / PI) * clamp(NdotL, 0.0, 1.0) * radiance * length(transmittance);
@@ -117,8 +105,8 @@ void main() {
 #endif
 
     int jitterIndex = int(hash(floatBitsToUint(GameTime)) % 8u);
-    float haltonX = 2.0 * halton(jitterIndex + 1, 2) - 1.0;
-    float haltonY = 2.0 * halton(jitterIndex + 1, 3) - 1.0;
+    float haltonX = 2.0 * HALTON2[jitterIndex] - 1.0;
+    float haltonY = 2.0 * HALTON3[jitterIndex] - 1.0;
 
     mat4 jitteredProj = ProjMat;
     if (isGUI < 0.5) {

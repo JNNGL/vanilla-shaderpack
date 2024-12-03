@@ -150,6 +150,7 @@ vec3 decodeDirectionFromF8(float f) {
     return decodeDirectionFromByte(int(f * 255.0));
 }
 
+// LogLuv encoding from https://therealmjp.github.io/posts/logluv-encoding-for-hdr/
 const mat3 LOGLUV_M = mat3(
     0.2209, 0.1138, 0.0102,
     0.3390, 0.6780, 0.1130,

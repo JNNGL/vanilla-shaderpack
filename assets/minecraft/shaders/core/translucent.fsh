@@ -37,12 +37,6 @@ in vec3 texBound0;
 in vec3 texBound1;
 flat in vec2 planes;
 
-// in float isSphere;
-// flat in mat4 projView;
-// flat in mat4 invProjView;
-// in vec4 corner0;
-// in vec4 corner1;
-
 out vec4 fragColor;
 
 vec4 unshadeBlock(vec4 color, vec3 normal) {

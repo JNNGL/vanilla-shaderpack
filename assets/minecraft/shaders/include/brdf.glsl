@@ -6,6 +6,7 @@
 #extension GL_MC_moj_import : enable
 #moj_import <minecraft:constants.glsl>
 
+// NdotH maximization from https://advances.realtimerendering.com/s2017/DecimaSiggraph2017.pdf
 float GetNoHSquared(float radiusTan, float NoL, float NoV, float VoL) {
     float radiusCos = inversesqrt(1.0 + radiusTan * radiusTan);
 

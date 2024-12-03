@@ -2,6 +2,7 @@
 
 #extension GL_MC_moj_import : enable
 #moj_import <minecraft:constants.glsl>
+#moj_import <minecraft:jitter.glsl>
 #moj_import <minecraft:light.glsl>
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:shadow.glsl>
@@ -88,8 +89,8 @@ void main() {
     }
 
     int jitterIndex = int(hash(floatBitsToUint(GameTime)) % 8u);
-    float haltonX = 2.0 * halton(jitterIndex + 1, 2) - 1.0;
-    float haltonY = 2.0 * halton(jitterIndex + 1, 3) - 1.0;
+    float haltonX = 2.0 * HALTON2[jitterIndex] - 1.0;
+    float haltonY = 2.0 * HALTON3[jitterIndex] - 1.0;
     
     jitteredProj = ProjMat;
     jitteredProj[2][0] += haltonX / ScreenSize.x;
