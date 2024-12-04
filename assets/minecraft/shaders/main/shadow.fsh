@@ -189,7 +189,9 @@ void main() {
     float translucentDepth = texture(TranslucentDepthSampler, texCoord).r;
 
     vec3 fragPos = unprojectScreenSpace(invViewProjMat, texCoord, depth);
-    vec3 normal = decodeDirectionFromF8x2(texture(NormalSampler, texCoord).rg);
+    vec4 normalData = texture(NormalSampler, texCoord);
+    vec3 normal = decodeDirectionFromF8x2(normalData.rg);
+    vec3 flatNormal = decodeDirectionFromF8(normalData.b);
 
     vec3 rayOrigin = near.xyz / near.w;
     vec3 rayDirection = normalize(fragPos - rayOrigin);
@@ -238,7 +240,7 @@ void main() {
 #endif // ENABLE_SUBSURFACE_SCATTERING
     } else {
 #if (ENABLE_SHADOWS == yes)
-        shadow = estimateShadowContribution(shadowProjMat, lightDir, fragPos - offset, normal);
+        shadow = estimateShadowContribution(shadowProjMat, lightDir, fragPos - offset, flatNormal);
 #endif // ENABLE_SHADOWS
     }
 
