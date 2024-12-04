@@ -217,7 +217,7 @@ void main() {
 
     float shadow = 0.0;
     float subsurface = 1.0;
-    if (dot(lightDir, normal) < -0.01) {
+    if (dot(lightDir, flatNormal) < -0.01) {
 #if (ENABLE_SUBSURFACE_SCATTERING == yes)
         vec3 rnd = random(NoiseSampler, gl_FragCoord.xy, timeSeed);
         vec3 rndVec = vec3(rnd.xy * 2.0 - 1.0, 0.0);
