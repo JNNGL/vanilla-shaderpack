@@ -104,7 +104,7 @@
 #define ATMOSPHERE_RAYMARCH_SAMPLES 20
 #define ATMOSPHERE_MS_SAMPLES ivec2(8, 20)
 
-#define ENABLE_DISTANT_FOG no
+#define ENABLE_DISTANT_FOG yes
 
 // ========<  END  >======== //
 
