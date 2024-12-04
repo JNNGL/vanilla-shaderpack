@@ -221,14 +221,14 @@ void main() {
 #if (ENABLE_SUBSURFACE_SCATTERING == yes)
         vec3 rnd = random(NoiseSampler, gl_FragCoord.xy, timeSeed);
         vec3 rndVec = vec3(rnd.xy * 2.0 - 1.0, 0.0);
-        vec3 tangent = normalize(rndVec - normal);
-        vec3 bitangent = cross(normal, tangent);
-        mat3 tbn = mat3(tangent, bitangent, normal);
+        vec3 tangent = normalize(rndVec - flatNormal);
+        vec3 bitangent = cross(flatNormal, tangent);
+        mat3 tbn = mat3(tangent, bitangent, flatNormal);
 
         float occlusionDistance = 1024.0;
         for (int i = 0; i < SUBSURFACE_SCATTERING_SAMPLES; i++) {
             vec3 jitter = tbn * vec3(random(NoiseSampler, gl_FragCoord.xy, i * 5 + timeSeed).xy * 2.0 - 1.0, 0.0);
-            vec3 projection = projectShadowMap(shadowProjMat, fragPos - offset + jitter * SUBSURFACE_SAMPLE_RADIUS, normal);
+            vec3 projection = projectShadowMap(shadowProjMat, fragPos - offset + jitter * SUBSURFACE_SAMPLE_RADIUS, flatNormal);
             if (projection.y - 0.005 < projection.x) {
                 float currentDistance = (projection.x - projection.y) / projection.x;
                 occlusionDistance = max(0.0, min(occlusionDistance, currentDistance));
