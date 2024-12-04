@@ -1,5 +1,9 @@
 # A vanilla shaderpack
 
+> [[Download]](https://github.com/JNNGL/vanilla-shaderpack/releases/latest)
+
+------
+
 My attempt to create a decent looking shader using the vanilla pipeline.
 
 Features:
