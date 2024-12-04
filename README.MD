@@ -1,6 +1,6 @@
 # A vanilla shaderpack
 
-> [[Download]](https://github.com/JNNGL/vanilla-shaderpack/releases/latest)
+[[Download]](https://github.com/JNNGL/vanilla-shaderpack/releases/latest)
 
 ------
 
