@@ -136,7 +136,7 @@ float estimateAmbientOcclusion(vec3 fragPos, vec3 normal) {
 
     float occlusion = 0.0;
     for (int i = 0; i < samples; i++) {
-        vec3 sample = sampleVectors[i] * 3.0;
+        vec3 sample = sampleVectors[i] * 2.0;
 
         vec3 pos = tbn * sample;
         pos = fragPos + pos;

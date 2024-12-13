@@ -153,8 +153,6 @@ void main() {
         if (fract(specularData.a) != 0.0) {
             color += pow(albedo, vec3(1.8)) * 13.0 * mix(0.0, 1.0, pow(specularData.a, 1.0 / 3.0));
         }
-
-        // color = vec3(ambientOcclusion);
     }
 
     fragColor = encodeLogLuv(color);
