@@ -148,7 +148,7 @@ void main() {
         color = vec3(0.0);
         color += (diffuse + specular) * (1.0 - shadow.x) * mix(0.5, 1.0, lightLevel.y);
         color += mix(ambient0 * 0.5, ambient, lightLevel.y * lightLevel.y);
-        color += mix(ambient0 * 0.5, blockLight * blockMult, lightLevel.x * lightLevel.x);
+        color += mix(ambient0 * 0.5, blockLight * blockMult * 0.5, lightLevel.x * lightLevel.x);
 
         if (fract(specularData.a) != 0.0) {
             color += pow(albedo, vec3(1.8)) * 13.0 * mix(0.0, 1.0, pow(specularData.a, 1.0 / 3.0));

@@ -69,7 +69,7 @@ float sampleHeightmap(vec2 texCoord, vec4 texMinMax) {
 }
 
 vec2 parallaxMapping(vec2 texCoords, vec3 viewDir, vec4 texMinMax, out float distance) {
-    const float minLayers = 128;
+    const float minLayers = 256;
     const float maxLayers = 256;
     float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));  
     float layerDepth = 1.0 / numLayers;
@@ -183,9 +183,9 @@ void main() {
         //     texLocal = parallaxMapping(texLocal, viewDirTangent, vec4(texMin, texMax), pomDistance);
         //     mappedTexCoord = texLocal * (texMax - texMin) + texMin;
 
-        //     float depth = linearizeDepth(gl_FragCoord.z * 2.0 - 1.0, planes);
-        //     depth += pomDistance * 0.25;
-        //     gl_FragDepth = unlinearizeDepth(depth, planes) * 0.5 + 0.5;
+        //     // float depth = linearizeDepth(gl_FragCoord.z * 2.0 - 1.0, planes);
+        //     // depth += pomDistance * 0.25;
+        //     // gl_FragDepth = unlinearizeDepth(depth, planes) * 0.5 + 0.5;
         // }
 
         color = textureLod(Sampler0, mappedTexCoord, 0);
