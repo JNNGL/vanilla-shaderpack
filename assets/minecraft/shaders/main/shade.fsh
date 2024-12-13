@@ -44,6 +44,7 @@ void main() {
     vec4 normalData = texture(NormalSampler, texCoord);
     vec4 shadow = texelFetch(ShadowSampler, ivec2(gl_FragCoord.x, max(1.0, gl_FragCoord.y)), 0);
     vec3 normal = decodeDirectionFromF8x2(normalData.rg);
+    vec3 flatNormal = decodeDirectionFromF8(normalData.z);
     
     vec3 pointOnNearPlane = near.xyz / near.w;
     vec3 direction = normalize(fragPos - pointOnNearPlane);
@@ -108,7 +109,7 @@ void main() {
         vec3 numerator = D * G * F;
         float denominator = 4.0 * max(dot(N, V), 0.0) + 0.0001;
 
-        vec3 specular = radiance * min(numerator / denominator, 10.0);
+        vec3 specular = max(0.0, sign(dot(flatNormal, sunDirection))) * radiance * min(numerator / denominator, 10.0) * shadow.g;
 
         vec3 absNormal = abs(normal) * vec3(0.6, 1.0, 0.8);
         float ambientFactor = 0.6 + 0.1 * float(absNormal.x > absNormal.z);
@@ -118,7 +119,6 @@ void main() {
 
 #if (ENABLE_DIRECTIONAL_LIGHTMAP == yes)
         if (albedoData.a < 15.5 / 255.0) {
-            vec3 flatNormal = decodeDirectionFromF8(normalData.z);
             vec3 lmTangent = normalize(cross(flatNormal, vec3(0.0, 1.0, 1.0)));
             vec3 lmBitangent = cross(flatNormal, lmTangent);
             mat3 lmTBN = mat3(lmTangent, lmBitangent, flatNormal);
@@ -153,6 +153,8 @@ void main() {
         if (fract(specularData.a) != 0.0) {
             color += pow(albedo, vec3(1.8)) * 13.0 * mix(0.0, 1.0, pow(specularData.a, 1.0 / 3.0));
         }
+
+        // color = vec3(ambientOcclusion);
     }
 
     fragColor = encodeLogLuv(color);
