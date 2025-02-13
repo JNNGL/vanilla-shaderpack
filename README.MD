@@ -14,7 +14,7 @@ Features:
 - Bloom
 - Screen-space reflections
 - PBR material support: smoothness, normal mapping, ao, emissiveness, reflectance, sss, generic metals.
-- Temporal AA
+- Temporal AA (+ some terrible ghosting)
 - Directional lightmap
 - Water waves
 
