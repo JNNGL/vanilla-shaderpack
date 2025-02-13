@@ -106,7 +106,7 @@
                         { "sampler_name": "Uv", "target": "uvs"},
                         { "sampler_name": "Atlas", "location": "atlas", "width": 1024, "height": 1024, "bilinear": true },
                         { "sampler_name": "Depth", "target": "minecraft:main", "use_depth_buffer": true },
-                        { "sampler_name": "Mojank", "target": "prev_shadowmap_depth" } ],
+                        { "sampler_name": "RefA", "target": "prev_shadowmap_depth" } ],
             "output": "normals"
         },
 
@@ -210,7 +210,7 @@
                         { "sampler_name": "AerialPerspective", "target": "aerial_perspective", "bilinear": true },
                         { "sampler_name": "TranslucentDepth", "target": "translucent", "use_depth_buffer": true },
                         { "sampler_name": "Noise", "location": "blue_noise", "width": 512, "height": 512 },
-                        { "sampler_name": "Mojank", "target": "reflection_temp" } ],
+                        { "sampler_name": "RefA", "target": "reflection_temp" } ],
             "output": "swap2"
         },
 
@@ -231,7 +231,7 @@
         {
             "program": "minecraft:bloom/downsample",
             "inputs": [ { "sampler_name": "In", "target": "swap", "bilinear": true },
-                        { "sampler_name": "Mojank", "target": "history" } ],
+                        { "sampler_name": "RefA", "target": "history" } ],
             "uniforms": [ { "name": "Iteration", "values": [ 1.0 ] } ],
             "output": "a"
         },
@@ -345,8 +345,8 @@
         {
             "program": "minecraft:util/copy",
             "inputs": [ { "sampler_name": "In", "target": "final_comp" },
-                        { "sampler_name": "Mojank", "target": "fallback" },
-                        { "sampler_name": "Mojank2", "target": "prev_normal_depth" } ],
+                        { "sampler_name": "RefA", "target": "fallback" },
+                        { "sampler_name": "RefB", "target": "prev_normal_depth" } ],
             "output": "minecraft:main"
         }
     ]
