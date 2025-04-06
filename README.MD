@@ -1,4 +1,4 @@
-# A vanilla shaderpack
+# A vanilla shaderpack [1.21.4]
 
 [[Download]](https://github.com/JNNGL/vanilla-shaderpack/releases/latest)
 
